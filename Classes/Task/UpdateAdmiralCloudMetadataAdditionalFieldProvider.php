@@ -45,7 +45,10 @@ class UpdateAdmiralCloudMetadataAdditionalFieldProvider extends AbstractAddition
         $fieldHtml = '<select class="form-control" name="' . $fieldName . '" id="' . $fieldId . '">';
 
         foreach ($fieldOptions as $fieldOption) {
-            $selected = ($fieldOption[0] === $task->actionType) ? ' selected' : '';
+            $selected = '';
+            if ($task !== null) {
+                $selected = ($fieldOption[0] === $task->actionType) ? ' selected' : '';
+            }
 
             $fieldHtml .= sprintf(
                 '<option value="%s" %s>%s</option>',

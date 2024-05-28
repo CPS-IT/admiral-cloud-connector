@@ -32,7 +32,7 @@ use TYPO3\CMS\Recordlist\Tree\View\LinkParameterProviderInterface;
  * Link handler for page (and content) links
  * @internal This class is a specific LinkHandler implementation and is not part of the TYPO3's Core API.
  */
-class PageLinkHandler extends \TYPO3\CMS\Recordlist\LinkHandler\PageLinkHandler
+class PageLinkHandler extends \TYPO3\CMS\Backend\LinkHandler\PageLinkHandler
 {
 
 }

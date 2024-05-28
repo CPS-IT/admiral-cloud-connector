@@ -19,9 +19,9 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\Http\JsonResponse;
+use TYPO3\CMS\Core\LinkHandling\TypoLinkCodecService;
 use TYPO3\CMS\Core\Page\JavaScriptModuleInstruction;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Frontend\Service\TypoLinkCodecService;
 
 
 /**
@@ -32,7 +32,7 @@ class LinkBrowserController extends AbstractLinkBrowserController
     /**
      * Initialize $this->currentLinkParts
      */
-    protected function initCurrentUrl()
+    protected function initCurrentUrl(): void
     {
         $currentLink = isset($this->parameters['currentValue']) ? trim($this->parameters['currentValue']) : '';
         /** @var array<string, string> $currentLinkParts */
@@ -52,10 +52,8 @@ class LinkBrowserController extends AbstractLinkBrowserController
         parent::initCurrentUrl();
     }
 
-    protected function initDocumentTemplate()
+    protected function initDocumentTemplate(): void
     {
-        parent::initDocumentTemplate();
-
         if (!$this->areFieldChangeFunctionsValid() && !$this->areFieldChangeFunctionsValid(true)) {
             $this->parameters['fieldChangeFunc'] = [];
         }
@@ -63,20 +61,21 @@ class LinkBrowserController extends AbstractLinkBrowserController
 
         if (($this->parameters['fieldChangeFuncType'] ?? null) === 'items') {
             $this->pageRenderer->getJavaScriptRenderer()->addJavaScriptModuleInstruction(
-                JavaScriptModuleInstruction::forRequireJS('TYPO3/CMS/Backend/FormEngineLinkBrowserAdapter')
+                JavaScriptModuleInstruction::create('@typo3/backend/form-engine-link-browser-adapter.js')
                     // @todo use a proper constructor when migrating to TypeScript
                     ->invoke('setOnFieldChangeItems', $this->parameters['fieldChangeFunc'])
             );
+
         } else {
             // @deprecated
             $update = [];
             foreach ($this->parameters['fieldChangeFunc'] as $v) {
                 // @todo this is very special and only works when JS code invokes global `window` items
-                $update[] = 'FormEngineLinkBrowserAdapter.getParent().' . $v;
+                $update[] = 'form-engine-link-browser-adapter.getParent().' . $v;
             }
             $inlineJS = implode(LF, $update);
-            $this->pageRenderer->loadRequireJsModule('TYPO3/CMS/Backend/FormEngineLinkBrowserAdapter', 'function(FormEngineLinkBrowserAdapter) {
-    			FormEngineLinkBrowserAdapter.updateFunctions = function() {' . $inlineJS . '};
+            $this->pageRenderer->loadJavaScriptModule('@cpsit/admiral-cloud-connector/Browser.js', 'function(form-engine-link-browser-adapter) {
+    			form-engine-link-browser-adapter.updateFunctions = function() {' . $inlineJS . '};
     		}');
         }
     }
@@ -148,7 +147,7 @@ class LinkBrowserController extends AbstractLinkBrowserController
      *
      * @return int
      */
-    protected function getCurrentPageId()
+    protected function getCurrentPageId(): int
     {
         $pageId = 0;
         $browserParameters = $this->parameters;

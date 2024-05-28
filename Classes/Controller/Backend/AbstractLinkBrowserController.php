@@ -17,6 +17,8 @@ namespace CPSIT\AdmiralCloudConnector\Controller\Backend;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use TYPO3\CMS\Backend\LinkHandler\LinkHandlerVariableProviderInterface;
+use TYPO3\CMS\Backend\LinkHandler\LinkHandlerViewProviderInterface;
 use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Backend\Template\ModuleTemplate;
 use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
@@ -30,15 +32,30 @@ use TYPO3\CMS\Core\Page\PageRenderer;
 use TYPO3\CMS\Core\Service\DependencyOrderingService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\HttpUtility;
+use TYPO3\CMS\Core\View\ViewInterface;
 use TYPO3\CMS\Fluid\View\StandaloneView;
-use TYPO3\CMS\Recordlist\LinkHandler\LinkHandlerInterface;
 
 /**
  * Script class for the Link Browser window.
  * @internal This class is a specific Backend controller implementation and is not part of the TYPO3's Core API.
  */
-abstract class AbstractLinkBrowserController extends \TYPO3\CMS\Recordlist\Controller\AbstractLinkBrowserController
+abstract class AbstractLinkBrowserController extends \TYPO3\CMS\Backend\Controller\AbstractLinkBrowserController
 {
+    /**
+     * @var ModuleTemplate
+     */
+    protected ModuleTemplate $moduleTemplate;
+
+    protected ModuleTemplateFactory $moduleTemplateFactory;
+
+    /**
+     * AbstractLinkBrowserController constructor.
+     */
+    public function __construct()
+    {
+        $this->moduleTemplateFactory = GeneralUtility::makeInstance(ModuleTemplateFactory::class);
+    }
+    
     /**
      * Injects the request object for the current request or subrequest
      * As this controller goes only through the main() method, it is rather simple for now
@@ -48,24 +65,9 @@ abstract class AbstractLinkBrowserController extends \TYPO3\CMS\Recordlist\Contr
      */
     public function mainAction(ServerRequestInterface $request): ResponseInterface
     {
-        $this->moduleTemplate = $this->moduleTemplateFactory->create($request);
-        $this->moduleTemplate->getDocHeaderComponent()->disable();
-        $view = $this->moduleTemplate->getView();
-        $view->setTemplate('LinkBrowser');
-        $view->getRequest()->setControllerExtensionName('recordlist');
-        $view->setTemplateRootPaths(['EXT:recordlist/Resources/Private/Templates/LinkBrowser/']);
-        $view->setPartialRootPaths(['EXT:recordlist/Resources/Private/Partials/LinkBrowser/']);
-        $view->setLayoutRootPaths(['EXT:backend/Resources/Private/Layouts/', 'EXT:recordlist/Resources/Private/Layouts/']);
+        $this->setUpBasicPageRendererForBackend($this->pageRenderer, $this->extensionConfiguration, $request, $this->getLanguageService());
         $this->pageRenderer->addInlineLanguageLabelFile('EXT:core/Resources/Private/Language/locallang_misc.xlf');
         $this->pageRenderer->addInlineLanguageLabelFile('EXT:core/Resources/Private/Language/locallang_core.xlf');
-        if(($request->getQueryParams()['act'] ?? null) == 'admiralCloud'){
-            $this->moduleTemplate->getPageRenderer()->loadRequireJsModule('TYPO3/CMS/AdmiralCloudConnector/Browser');
-            $view->setTemplate('AdmiralCloud');
-            $view = $this->moduleTemplate->getView();
-            $view->getRequest()->setControllerExtensionName('AdmiralCloudConnector');
-            $view->setLayoutRootPaths([GeneralUtility::getFileAbsFileName('EXT:admiral_cloud_connector/Resources/Private/Layouts')]);
-            $view->setTemplateRootPaths([GeneralUtility::getFileAbsFileName('EXT:admiral_cloud_connector/Resources/Private/Templates/LinkBrowser')]);
-        }
 
         $this->determineScriptUrl($request);
         $this->initVariables($request);
@@ -73,34 +75,69 @@ abstract class AbstractLinkBrowserController extends \TYPO3\CMS\Recordlist\Contr
         $this->initCurrentUrl();
 
         $menuData = $this->buildMenuArray();
-        $renderLinkAttributeFields = $this->renderLinkAttributeFields();
+        if ($this->displayedLinkHandler instanceof LinkHandlerViewProviderInterface) {
+            $view = $this->displayedLinkHandler->createView($this->backendViewFactory, $request);
+        } else {
+            if(($request->getQueryParams()['act'] ?? null) == 'admiralCloud') {
+                $view = $this->backendViewFactory->create($request, ['cpsit/admiral-cloud-connector']);
+                $this->pageRenderer->loadJavaScriptModule('@cpsit/admiral-cloud-connector/Browser.js');
+            } else {
+                $view = $this->backendViewFactory->create($request, ['typo3/cms-backend']);
+            }
+        }
+        if ($this->displayedLinkHandler instanceof LinkHandlerVariableProviderInterface) {
+            $this->displayedLinkHandler->initializeVariables($request);
+        }
+        $renderLinkAttributeFields = $this->renderLinkAttributeFields($view);
+        if (!empty($this->currentLinkParts)) {
+            $this->renderCurrentUrl($view);
+        }
         if (method_exists($this->displayedLinkHandler, 'setView')) {
             $this->displayedLinkHandler->setView($view);
         }
-        $browserContent = $this->displayedLinkHandler->render($request);
-        if(($request->getQueryParams()['act'] ?? null) == 'admiralCloud'){
-            $this->moduleTemplate->setContent($browserContent);
-            $view->assign('html', $browserContent);
+        $view->assignMultiple([
+            'initialNavigationWidth' => $this->getBackendUser()->uc['selector']['navigation']['width'] ?? 250,
+            'menuItems' => $menuData,
+            'linkAttributes' => $renderLinkAttributeFields,
+            'contentOnly' => $request->getQueryParams()['contentOnly'] ?? false,
+        ]);
+        $content = $this->displayedLinkHandler->render($request);
+        if (empty($content)) {
+            // @todo: b/w compat layer for link handler that don't render full view but return empty
+            //        string instead. This case is unfortunate and should be removed if it gives
+            //        headaches at some point. If so, above  method_exists($this->displayedLinkHandler, 'setView')
+            //        should be removed and setView() method should be made mandatory, or the entire
+            //        construct should be refactored a bit.
+            $content = $view->render();
         }
-
         $this->initDocumentTemplate();
-
-        $this->moduleTemplate->setTitle('Link Browser');
-        if (!empty($this->currentLinkParts)) {
-            $this->renderCurrentUrl();
-        }
-
-        $view->assign('menuItems', $menuData);
-        $view->assign('linkAttributes', $renderLinkAttributeFields);
-        $view->assign('contentOnly', $request->getQueryParams()['contentOnly'] ?? false);
-
+        $this->pageRenderer->setTitle('Link Browser');
         if ($request->getQueryParams()['contentOnly'] ?? false) {
-            return new HtmlResponse($view->render());
+            return new HtmlResponse($content);
         }
-        if ($browserContent) {
-            $view->assign('content', $browserContent);
+        $this->pageRenderer->setBodyContent('<body ' . GeneralUtility::implodeAttributes($this->getBodyTagAttributes(), true, true) . '>' . $content);
+        return $this->pageRenderer->renderResponse();
+    }
+
+    /**
+     * Renders the link attributes for the selected link handler
+     */
+    protected function customRenderLinkAttributeFields(ViewInterface $view): string
+    {
+        $fieldRenderingDefinitions = $this->getLinkAttributeFieldDefinitions();
+        $fieldRenderingDefinitions = $this->displayedLinkHandler->modifyLinkAttributes($fieldRenderingDefinitions);
+        $this->linkAttributeFields = $this->getAllowedLinkAttributes();
+        $content = '';
+        foreach ($this->linkAttributeFields as $attribute) {
+            $content .= $fieldRenderingDefinitions[$attribute] ?? '';
         }
-        return new HtmlResponse($this->moduleTemplate->renderContent());
+        $view->assign('allowedLinkAttributes', array_combine($this->linkAttributeFields, $this->linkAttributeFields));
+
+        // add update button if appropriate
+        if (!empty($this->currentLinkParts) && $this->displayedLinkHandler === $this->currentLinkHandler && $this->currentLinkHandler->isUpdateSupported()) {
+            $view->assign('showUpdateParametersButton', true);
+        }
+        return $content;
     }
 
 }

@@ -8,11 +8,12 @@
   "homepage": "https://www.cps-it.de/",
   "license": "GPL-3.0+",
   "require": {
-    "php": ">= 7.2",
+    "php": ">= 8.1",
     "guzzlehttp/guzzle": "*",
     "guzzlehttp/oauth-subscriber": "*",
-    "typo3/cms-core": ">=9.5.0 || ^10.4 || ^11.5",
-    "typo3/cms-fluid": "^9.5 || ^10.4 || ^11.5"
+    "typo3/cms-core": "^12.4",
+    "typo3/cms-fluid": "^12.4",
+    "typo3/cms-filemetadata": "^12.4"
   },
   "autoload": {
     "psr-4": {

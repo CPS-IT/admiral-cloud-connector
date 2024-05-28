@@ -5,6 +5,8 @@ namespace CPSIT\AdmiralCloudConnector\Backend;
 use CPSIT\AdmiralCloudConnector\Exception\NotImplementedException;
 use CPSIT\AdmiralCloudConnector\Utility\ConfigurationUtility;
 use Psr\Http\Message\ServerRequestInterface;
+use TYPO3\CMS\Backend\Controller\AbstractLinkBrowserController;
+use TYPO3\CMS\Backend\LinkHandler\AbstractLinkHandler;
 use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\Imaging\Icon;
@@ -13,15 +15,12 @@ use TYPO3\CMS\Core\LinkHandling\LinkService;
 use TYPO3\CMS\Core\Page\PageRenderer;
 use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Recordlist\Controller\AbstractLinkBrowserController;
-use TYPO3\CMS\Recordlist\LinkHandler\AbstractLinkHandler;
-use TYPO3\CMS\Recordlist\LinkHandler\LinkHandlerInterface;
 
 /**
  * Class AdmiralCloudLinkHandler
  * @package CPSIT\AdmiralCloudConnector\Backend
  */
-class AdmiralCloudLinkHandler extends AbstractLinkHandler implements LinkHandlerInterface
+class AdmiralCloudLinkHandler extends AbstractLinkHandler implements \TYPO3\CMS\Backend\LinkHandler\LinkHandlerInterface
 {
     /**
      * Parts of the current link
@@ -89,7 +88,7 @@ class AdmiralCloudLinkHandler extends AbstractLinkHandler implements LinkHandler
             return false;
         }
         if (isset($linkParts['url'][$this->mode]) && $linkParts['url'][$this->mode] instanceof $this->expectedClass) {
-            if(GeneralUtility::isFirstPartOfStr($linkParts['url'][$this->mode]->getMimeType(), 'admiralCloud/')){
+            if(str_starts_with($linkParts['url'][$this->mode]->getMimeType(), 'admiralCloud/')){
                 $this->linkParts = $linkParts;
                 return true;
             }
@@ -110,7 +109,8 @@ class AdmiralCloudLinkHandler extends AbstractLinkHandler implements LinkHandler
      */
     public function render(ServerRequestInterface $request)
     {
-        GeneralUtility::makeInstance(PageRenderer::class)->loadRequireJsModule('TYPO3/CMS/AdmiralCloudConnector/Browser');
+        //GeneralUtility::makeInstance(PageRenderer::class)->loadRequireJsModule('TYPO3/CMS/AdmiralCloudConnector/Browser');
+        GeneralUtility::makeInstance(PageRenderer::class)->loadJavaScriptModule('@cpsit/admiral-cloud-connector/Browser.js');
 
         $languageService = $this->getLanguageService();
 

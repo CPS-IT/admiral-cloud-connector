@@ -43,22 +43,22 @@ class AdmiralCloudApi
     /**
      * @var string Base Url necessary for API calls.
      */
-    protected $baseUrl;
+    protected string $baseUrl;
 
     /**
      * @var string code token
      */
-    protected $code;
+    protected string $code;
 
     /**
      * @var string device
      */
-    protected $device;
+    protected string $device;
 
     /**
      * @var string data
      */
-    protected $data;
+    protected string $data;
 
     /**
      * Initialises a new instance of the class.
@@ -167,7 +167,7 @@ class AdmiralCloudApi
 
         $curl = curl_init();
 
-        $state = '0.' . base_convert(self::random() . '00', 10, 36);
+        $state = '0.' . base_convert(rand() . '00', 10, 36);
         $params = [
             "accessSecret" => $credentials->getAccessSecret(),
             "controller" => $settings['controller'],
@@ -342,7 +342,10 @@ class AdmiralCloudApi
         if(isset($GLOBALS['BE_USER']->user['security_group']) && $GLOBALS['BE_USER']->user['security_group']){
             return $GLOBALS['BE_USER']->user['security_group'];
         }
-        $groups = $GLOBALS['BE_USER']->user['usergroup_cached_list'] ?? '';
+        $groups = array_map(
+            'strval',
+            GeneralUtility::makeInstance(Context::class)->getPropertyFromAspect('backend.user', 'groupIds', [])
+        );
         /** @var QueryBuilder $queryBuilder */
         $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('tx_admiralcloudconnector_security_groups');
         $queryBuilder->getRestrictions()->removeAll();
@@ -358,7 +361,7 @@ class AdmiralCloudApi
             $sgs[$row['ac_security_group_id']] = $row['be_groups'];
         }
         foreach ($sgs as $sgId=>$be_groups){
-            $containsAllValues = !array_diff(explode(',', (string)$be_groups), explode(',', (string)$groups));
+            $containsAllValues = !array_diff(explode(',', (string)$be_groups), $groups);
             if($containsAllValues){
                 return (string)$sgId;
             }

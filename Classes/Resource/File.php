@@ -213,4 +213,14 @@ class File extends \TYPO3\CMS\Core\Resource\File
         }
         return $extension;
     }
+
+    /**
+     * Returns the identifier of this file
+     *
+     * @return string
+     */
+    public function getIdentifier()
+    {
+        return strval($this->identifier);
+    }
 }

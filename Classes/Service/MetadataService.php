@@ -117,12 +117,12 @@ class MetadataService
         $cacheKey = 'lastImportedChangedDate';
 
         /** @var FrontendInterface $cache */
-        $cache = GeneralUtility::makeInstance(ObjectManager::class)
-            ->get(CacheManager::class)
+        $cache = GeneralUtility::makeInstance(CacheManager::class)
             ->getCache(ConfigurationUtility::EXTENSION);
 
         if ($cache->has($cacheKey)) {
-            $lastUpdatedMetaDataDate = \DateTime::createFromFormat('U', (string)$cache->get($cacheKey));
+            preg_match('/\d+/',(string)$cache->get($cacheKey), $m);
+            $lastUpdatedMetaDataDate = \DateTime::createFromFormat('U', $m[0]);
         } else {
             $lastUpdatedMetaDataDate = new \DateTime(static::DEFAULT_LAST_CHANGED_DATE);
         }
@@ -149,7 +149,7 @@ class MetadataService
             }
         }
 
-        $cache->set($cacheKey, $now->getTimestamp());
+        $cache->set($cacheKey, (string)$now->getTimestamp());
 
         if ($iteration === static::MAXIMUM_ITERATION) {
             throw new RuntimeException(

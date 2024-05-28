@@ -53,7 +53,7 @@ class Extractor implements Resource\Index\ExtractorInterface
      */
     public function canProcess(Resource\File $file): bool
     {
-        return GeneralUtility::isFirstPartOfStr($file->getMimeType(), 'admiralCloud/');
+        return str_starts_with($file->getMimeType(), 'admiralCloud/');
     }
 
     /**

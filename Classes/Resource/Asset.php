@@ -352,7 +352,7 @@ class Asset
             $temporaryPath = $this->getTemporaryPathForFile($url, $file);
             if (!is_file($temporaryPath)) {
                 try {
-                    $data = GeneralUtility::getUrl($url, 0, false);
+                    $data = GeneralUtility::getUrl($url);
                 } catch (\Exception $e) {
                     throw new InvalidThumbnailException(
                         sprintf('Requested url "%s" couldn\'t be found', $url),

@@ -43,7 +43,7 @@ class AssetRenderer implements FileRendererInterface
     public function canRender(FileInterface $file)
     {
         try {
-            if (GeneralUtility::isFirstPartOfStr($file->getMimeType(), 'admiralCloud/')) {
+            if (str_starts_with($file->getMimeType(), 'admiralCloud/')) {
                 $asset = $this->getAsset($file->getIdentifier());
                 return $asset->isImage($file->getStorage()->getUid()) || $asset->isDocument() || $asset->isAudio() || $asset->isVideo();
             }

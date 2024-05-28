@@ -27,20 +27,19 @@ class FileReference extends \TYPO3\CMS\Core\Resource\FileReference
      * WARNING: Access to the file may be restricted by further means, e.g.
      * some web-based authentication. You have to take care of this yourself.
      *
-     * @param bool  $relativeToCurrentScript   Determines whether the URL returned should be relative to the current script, in case it is relative at all (only for the LocalDriver)
      * @return string|null NULL if file is missing or deleted, the generated url otherwise
      */
-    public function getPublicUrl($relativeToCurrentScript = false)
+    public function getPublicUrl()
     {
         $file = $this->originalFile;
-        if(GeneralUtility::isFirstPartOfStr($file->getMimeType(), 'admiralCloud/')){
+        if(str_starts_with($file->getMimeType(), 'admiralCloud/')){
             $fe_group = PermissionUtility::getPageFeGroup();
             if($this->getProperty('tablenames') == 'tt_content' && $this->getProperty('uid_foreign') && !$fe_group){
                 $fe_group = PermissionUtility::getContentFeGroupFromReference($this->getProperty('uid_foreign'));
             }
             $GLOBALS['admiralcloud']['fe_group'][$file->getIdentifier()] = $fe_group;
         }
-        $publicUrl = $file->getPublicUrl($relativeToCurrentScript);
+        $publicUrl = $file->getPublicUrl();
         unset($GLOBALS['admiralcloud']['fe_group'][$file->getIdentifier()]);
         return $publicUrl;
     }

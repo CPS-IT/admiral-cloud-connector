@@ -13,78 +13,41 @@ namespace CPSIT\AdmiralCloudConnector\Backend;
 use CPSIT\AdmiralCloudConnector\Resource\AdmiralCloudDriver;
 use CPSIT\AdmiralCloudConnector\Utility\ConfigurationUtility;
 use CPSIT\AdmiralCloudConnector\Utility\PermissionUtility;
+use Psr\EventDispatcher\EventDispatcherInterface;
+use TYPO3\CMS\Backend\Form\Container\FileReferenceContainer;
+use TYPO3\CMS\Backend\Form\Event\CustomFileControlsEvent;
+use TYPO3\CMS\Backend\Form\InlineStackProcessor;
 use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\Imaging\Icon;
 use TYPO3\CMS\Core\Page\JavaScriptModuleInstruction;
+use TYPO3\CMS\Core\Resource\Filter\FileExtensionFilter;
 use TYPO3\CMS\Core\Resource\ResourceStorage;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Core\Utility\MathUtility;
+use TYPO3Fluid\Fluid\View\TemplateView;
 
 /**
  * Class InlineControlContainer
  *
  * Override core InlineControlContainer to inject AdmiralCloud button
  */
-class InlineControlContainer extends \TYPO3\CMS\Backend\Form\Container\InlineControlContainer
+class FilesControlContainer extends \TYPO3\CMS\Backend\Form\Container\FilesControlContainer
 {
-
-    /**
-     * @param array $inlineConfiguration
-     * @return string
-     */
-    protected function renderPossibleRecordsSelectorTypeGroupDB(array $inlineConfiguration): string
+    protected function getFileSelectors(array $inlineConfiguration, FileExtensionFilter $fileExtensionFilter): array
     {
-        $selector = parent::renderPossibleRecordsSelectorTypeGroupDB($inlineConfiguration);
-
-        if (PermissionUtility::userHasPermissionForAdmiralCloud()) {
-            if (!$this->getBackendUserAuthentication()->isAdmin()
-                && getenv('ADMIRALCLOUD_DISABLE_FILEUPLOAD') == 1) {
-                foreach ($this->requireJsModules as $key => $module) {
-                    if ($module === 'TYPO3/CMS/Backend/DragUploader'
-                        || is_array($module) && isset($module['TYPO3/CMS/Backend/DragUploader'])
-                        || $module instanceof JavaScriptModuleInstruction && $module->getName() === 'TYPO3/CMS/Backend/DragUploader'
-                    ) {
-                        unset($this->requireJsModules[$key]);
-                        $regex = '/<a href="#" class="btn btn-default t3js.drag.uploader.*?\/a>/s';
-                        if (preg_match($regex, $selector, $matches)) {
-                            $selector = preg_replace($regex, '', $selector);
-                        }
-                    }
-                }
-            }
-
-            $button = $this->renderAdmiralCloudOverviewButton($inlineConfiguration);
-
-            // Inject button before help-block
-            if (strpos($selector, '</div><div class="help-block">') > 0) {
-                $selector = str_replace('</div><div class="help-block">', $button . '</div><div class="help-block">', $selector);
-            // Try to inject it into the form-control container
-            } elseif (preg_match('/<\/div><\/div>$/i', $selector)) {
-                $selector = preg_replace('/<\/div><\/div>$/i', $button . '</div></div>', $selector);
-            } else {
-                $selector .= $button;
-            }
-            $button = $this->renderAdmiralCloudUploadButton($inlineConfiguration);
-
-            // Inject button before help-block
-            if (strpos($selector, '</div><div class="help-block">') > 0) {
-                $selector = str_replace('</div><div class="help-block">', $button . '</div><div class="help-block">', $selector);
-            // Try to inject it into the form-control container
-            } elseif (preg_match('/<\/div><\/div>$/i', $selector)) {
-                $selector = preg_replace('/<\/div><\/div>$/i', $button . '</div></div>', $selector);
-            } else {
-                $selector .= $button;
-            }
-        }
-
-        return $selector;
+        $controls = parent::getFileSelectors($inlineConfiguration, $fileExtensionFilter);
+        $controls[] = $this->renderAdmiralCloudOverviewButton();
+        $controls[] = $this->renderAdmiralCloudUploadButton();
+        return $controls;
     }
 
+
     /**
-     * @param array $inlineConfiguration
      * @return string
+     * @throws \TYPO3\CMS\Backend\Routing\Exception\RouteNotFoundException
      */
-    protected function renderAdmiralCloudOverviewButton(array $inlineConfiguration): string
+    protected function renderAdmiralCloudOverviewButton(): string
     {
         $languageService = $this->getLanguageService();
 
@@ -98,7 +61,7 @@ class InlineControlContainer extends \TYPO3\CMS\Backend\Form\Container\InlineCon
             return LF . implode(LF, $errorTextHtml);
         }
 
-        $foreign_table = $inlineConfiguration['foreign_table'];
+        $foreign_table = 'sys_file_reference';
         $currentStructureDomObjectIdPrefix = $this->inlineStackProcessor->getCurrentStructureDomObjectIdPrefix($this->data['inlineFirstPid']);
 
         $element = 'admiral_cloud' . md5($currentStructureDomObjectIdPrefix);
@@ -109,7 +72,7 @@ class InlineControlContainer extends \TYPO3\CMS\Backend\Form\Container\InlineCon
             'irreObject' => $currentStructureDomObjectIdPrefix . '-' . $foreign_table,
         ]);
 
-        $this->requireJsModules[] = '@cpsit/admiral-cloud-connector/Browser.js';
+        $this->javaScriptModules[] = JavaScriptModuleInstruction::create('@cpsit/admiral-cloud-connector/Browser.js');
         $buttonText = htmlspecialchars($languageService->sL('LLL:EXT:admiral_cloud_connector/Resources/Private/Language/locallang_be.xlf:browser.button'));
         $titleText = htmlspecialchars($languageService->sL('LLL:EXT:admiral_cloud_connector/Resources/Private/Language/locallang_be.xlf:browser.header'));
 
@@ -124,10 +87,10 @@ class InlineControlContainer extends \TYPO3\CMS\Backend\Form\Container\InlineCon
     }
 
     /**
-     * @param array $inlineConfiguration
      * @return string
+     * @throws \TYPO3\CMS\Backend\Routing\Exception\RouteNotFoundException
      */
-    protected function renderAdmiralCloudUploadButton(array $inlineConfiguration): string
+    protected function renderAdmiralCloudUploadButton(): string
     {
         $languageService = $this->getLanguageService();
 
@@ -141,7 +104,7 @@ class InlineControlContainer extends \TYPO3\CMS\Backend\Form\Container\InlineCon
             return LF . implode(LF, $errorTextHtml);
         }
 
-        $foreign_table = $inlineConfiguration['foreign_table'];
+        $foreign_table = 'sys_file_reference';
         $currentStructureDomObjectIdPrefix = $this->inlineStackProcessor->getCurrentStructureDomObjectIdPrefix($this->data['inlineFirstPid']);
 
         $element = 'admiral_cloud' . md5($currentStructureDomObjectIdPrefix);
@@ -152,7 +115,7 @@ class InlineControlContainer extends \TYPO3\CMS\Backend\Form\Container\InlineCon
             'irreObject' => $currentStructureDomObjectIdPrefix . '-' . $foreign_table,
         ]);
 
-        $this->requireJsModules[] = '@cpsit/admiral-cloud-connector/Browser.js';
+        $this->javaScriptModules[] = JavaScriptModuleInstruction::create('@cpsit/admiral-cloud-connector/Browser.js');
         $buttonText = htmlspecialchars($languageService->sL('LLL:EXT:admiral_cloud_connector/Resources/Private/Language/locallang_be.xlf:browser.uploadbutton'));
         $titleText = htmlspecialchars($languageService->sL('LLL:EXT:admiral_cloud_connector/Resources/Private/Language/locallang_be.xlf:browser.header'));
 
@@ -166,14 +129,6 @@ class InlineControlContainer extends \TYPO3\CMS\Backend\Form\Container\InlineCon
         return LF . implode(LF, $buttonHtml);
     }
 
-    /**
-     * Check if the BE user has access to the AdmiralCloud storage
-     *
-     * Admin has access when there is a resource storage with driver type AdmiralCloud
-     * Editors need to have access to a mount of that storage
-     *
-     * @return bool
-     */
     protected function admiralCloudStorageAvailable(): bool
     {
         /** @var ResourceStorage $fileStorage */
@@ -184,4 +139,6 @@ class InlineControlContainer extends \TYPO3\CMS\Backend\Form\Container\InlineCon
         }
         return false;
     }
+
+
 }

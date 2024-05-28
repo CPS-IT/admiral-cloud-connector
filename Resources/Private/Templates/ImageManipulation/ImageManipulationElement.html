@@ -1,11 +1,13 @@
+{namespace ac=CPSIT\AdmiralCloudConnector\ViewHelpers}
+
 <html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
 	xmlns:core="http://typo3.org/ns/TYPO3/CMS/Core/ViewHelpers">
 	<f:layout name="ImageManipulation" />
 
 	<f:section name="Main">
-		<f:be.pageRenderer includeRequireJsModules="{
-   0:'TYPO3/CMS/AdmiralCloudConnector/Browser'
-}"/>
+		<f:be.pageRenderer 
+			includeJavaScriptModules="{0:'@cpsit/admiral-cloud-connector/Browser.js'}"
+		/>
 		<div class="form-control-wrap">
 			<input type="hidden" id="{formEngine.field.id}"
 				   name="{formEngine.field.name}"
@@ -19,7 +21,7 @@
 			</f:if>
 		</div>
 		<f:if condition="{image}">
-			<img id="{formEngine.field.id}_image" src="{f:uri.image(image:image,txAdmiralCloudCrop:'{formEngine.field.value -> f:format.raw()}',maxHeight: '150')}"
+			<img id="{formEngine.field.id}_image" src="{ac:uri.image(image:image,txAdmiralCloudCrop:'{formEngine.field.value -> f:format.raw()}',maxHeight: '150')}"
 				 class="thumbnail thumbnail-status" alt="" title="" />
 		</f:if>
 		<f:comment>

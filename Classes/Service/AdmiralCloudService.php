@@ -711,14 +711,15 @@ class AdmiralCloudService implements SingletonInterface
     {
         $credentials = new Credentials();
         $enableAcReadableLinks = isset($GLOBALS["TSFE"]->tmpl->setup["config."]["enableAcReadableLinks"])?$GLOBALS["TSFE"]->tmpl->setup["config."]["enableAcReadableLinks"]:false;
-        if ($enableAcReadableLinks && !(($GLOBALS['admiralcloud']['fe_group'][$file->getIdentifier()] ?? null) || PermissionUtility::getPageFeGroup())) {
+        $feGroup = $GLOBALS['admiralcloud']['fe_group'][$file->getIdentifier()] ?? null;
 
+        if ($enableAcReadableLinks && !($feGroup || PermissionUtility::getPageFeGroup())) {
             return ConfigurationUtility::getLocalFileUrl() .
                 $file->getTxAdmiralCloudConnectorLinkhash() . '/' .
                 $file->getIdentifier() . '/' .
                 $file->getName();
         } else {
-            if($GLOBALS['admiralcloud']['fe_group'][$file->getIdentifier()] ||PermissionUtility::getPageFeGroup()){
+            if ($feGroup || PermissionUtility::getPageFeGroup()) {
                 if($token = $this->getSecuredToken($file,$this->getMediaType($file->getProperty('type')),'player')){
                     $auth = '?auth=' . base64_encode($credentials->getClientId() . ':' . $token['token']);
                     return ConfigurationUtility::getDirectFileUrl() . $token['hash'] . $auth;
