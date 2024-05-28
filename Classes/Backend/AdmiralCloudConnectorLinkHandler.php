@@ -5,6 +5,8 @@ namespace CPSIT\AdmiralCloudConnector\Backend;
 use CPSIT\AdmiralCloudConnector\Exception\NotImplementedException;
 use CPSIT\AdmiralCloudConnector\Utility\ConfigurationUtility;
 use Psr\Http\Message\ServerRequestInterface;
+use TYPO3\CMS\Backend\Controller\AbstractLinkBrowserController;
+use TYPO3\CMS\Backend\LinkHandler\AbstractLinkHandler;
 use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
 use TYPO3\CMS\Core\Imaging\Icon;
@@ -13,19 +15,24 @@ use TYPO3\CMS\Core\LinkHandling\LinkService;
 use TYPO3\CMS\Core\Page\PageRenderer;
 use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Core\View\ViewInterface;
 use TYPO3\CMS\Fluid\View\StandaloneView;
-use TYPO3\CMS\Recordlist\Controller\AbstractLinkBrowserController;
-use TYPO3\CMS\Recordlist\LinkHandler\AbstractLinkHandler;
 
 /**
  * Class AdmiralCloudLinkHandler
  * @package CPSIT\AdmiralCloudConnector\Backend
  */
-class AdmiralCloudConnectorLinkHandler implements \CPSIT\AdmiralCloudConnector\Backend\LinkHandlerInterface
+class AdmiralCloudConnectorLinkHandler extends AbstractLinkHandler implements \TYPO3\CMS\Backend\LinkHandler\LinkHandlerInterface
 {
    protected $linkAttributes = ['target', 'title', 'class', 'params', 'rel'];
-   protected $view;
    protected $configuration;
+
+    /**
+     * Parts of the current link
+     *
+     * @var array
+     */
+    protected $linkParts = [];
 
    /**
    * Initialize the handler
@@ -34,14 +41,9 @@ class AdmiralCloudConnectorLinkHandler implements \CPSIT\AdmiralCloudConnector\B
    * @param string $identifier
    * @param array $configuration Page TSconfig
    */
-   public function initialize(\CPSIT\AdmiralCloudConnector\Controller\Backend\AbstractLinkBrowserController $linkBrowser, $identifier, array $configuration)
+   public function initialize(AbstractLinkBrowserController $linkBrowser, $identifier, array $configuration)
    {
-      $this->linkBrowser = $linkBrowser;
-      $this->iconFactory = GeneralUtility::makeInstance(IconFactory::class);
-      $this->view = GeneralUtility::makeInstance(StandaloneView::class);
-      $this->view->getRequest()->setControllerExtensionName('AdmiralCloudConnector');
-      $this->view->setLayoutRootPaths([GeneralUtility::getFileAbsFileName('EXT:admiral_cloud_connector/Resources/Private/Layouts')]);
-      $this->view->setTemplateRootPaths([GeneralUtility::getFileAbsFileName('EXT:admiral_cloud_connector/Resources/Private/Templates/LinkBrowser')]);
+      parent::initialize($linkBrowser, $identifier, $configuration);
       $this->configuration = $configuration;
    }
 
@@ -60,7 +62,7 @@ class AdmiralCloudConnectorLinkHandler implements \CPSIT\AdmiralCloudConnector\B
             return false;
         }
         if (isset($linkParts['url'][$this->mode]) && $linkParts['url'][$this->mode] instanceof $this->expectedClass) {
-            if(GeneralUtility::isFirstPartOfStr($linkParts['url'][$this->mode]->getMimeType(), 'admiralCloud/')){
+            if(str_starts_with($linkParts['url'][$this->mode]->getMimeType(), 'admiralCloud/')){
                 $this->linkParts = $linkParts;
                 return true;
             }
@@ -88,31 +90,30 @@ class AdmiralCloudConnectorLinkHandler implements \CPSIT\AdmiralCloudConnector\B
    */
    public function render(ServerRequestInterface $request): string
    {
-      GeneralUtility::makeInstance(PageRenderer::class)
-         ->loadRequireJsModule('TYPO3/CMS/AdmiralCloudConnector/Browser');
+       $this->pageRenderer->loadJavaScriptModule('@cpsit/admiral-cloud-connector/Browser.js');
 
-      $languageService = $GLOBALS['LANG'];
+       $languageService = $GLOBALS['LANG'];
 
-      $uriBuilder = GeneralUtility::makeInstance(UriBuilder::class);
-      $compactViewUrl = $uriBuilder->buildUriFromRoute('admiral_cloud_browser_rte_link');
+       $uriBuilder = GeneralUtility::makeInstance(UriBuilder::class);
+       $compactViewUrl = $uriBuilder->buildUriFromRoute('admiral_cloud_browser_rte_link');
 
-      $rteLinkDownloadLabel = htmlspecialchars($languageService->sL('LLL:EXT:admiral_cloud_connector/Resources/Private/Language/locallang_be.xlf:linkHandler.rteLinkDownload'));
-      $buttonText = htmlspecialchars($languageService->sL('LLL:EXT:admiral_cloud_connector/Resources/Private/Language/locallang_be.xlf:browser.button'));
-      $titleText = htmlspecialchars($languageService->sL('LLL:EXT:admiral_cloud_connector/Resources/Private/Language/locallang_be.xlf:browser.header'));
+       $rteLinkDownloadLabel = htmlspecialchars($languageService->sL('LLL:EXT:admiral_cloud_connector/Resources/Private/Language/locallang_be.xlf:linkHandler.rteLinkDownload'));
+       $buttonText = htmlspecialchars($languageService->sL('LLL:EXT:admiral_cloud_connector/Resources/Private/Language/locallang_be.xlf:browser.button'));
+       $titleText = htmlspecialchars($languageService->sL('LLL:EXT:admiral_cloud_connector/Resources/Private/Language/locallang_be.xlf:browser.header'));
 
-      $buttonHtml = [];
-      $buttonHtml[] = '<div style="text-align: center;margin-top: 1rem;">'
-            . '<span style="display:none"><input id="rteLinkDownload" type="checkbox" style="margin-right: 0.5rem; position: relative; top: 2px;"/>' . $rteLinkDownloadLabel . '</span></div>'
-            . '<a href="#" class="btn btn-default t3js-admiral_cloud-browser-btn rte-link"'
-            . ' style="margin: 2rem auto;"'
-            . ' data-admiral_cloud-browser-url="' . htmlspecialchars($compactViewUrl) . '" '
-            . ' data-title="' . htmlspecialchars($titleText) . '">';
-      $buttonHtml[] = $this->iconFactory->getIcon('actions-admiral_cloud-browser', Icon::SIZE_SMALL)->render();
-      $buttonHtml[] = $buttonText;
-      $buttonHtml[] = '</a>';
+       $buttonHtml = [];
+       $buttonHtml[] = '<div style="text-align: center;margin-top: 1rem;">'
+             . '<span style="display:none"><input id="rteLinkDownload" type="checkbox" style="margin-right: 0.5rem; position: relative; top: 2px;"/>' . $rteLinkDownloadLabel . '</span></div>'
+             . '<a href="#" class="btn btn-default t3js-admiral_cloud-browser-btn rte-link"'
+             . ' style="margin: 2rem auto;"'
+             . ' data-admiral_cloud-browser-url="' . htmlspecialchars($compactViewUrl) . '" '
+             . ' data-title="' . htmlspecialchars($titleText) . '">';
+       $buttonHtml[] = $this->iconFactory->getIcon('actions-admiral_cloud-browser', Icon::SIZE_SMALL)->render();
+       $buttonHtml[] = $buttonText;
+       $buttonHtml[] = '</a>';
 
-      $this->view->assign('html', LF . implode(LF, $buttonHtml));
-      return $this->view->render('AdmiralCloud');
+       $this->view->assign('html', LF . implode(LF, $buttonHtml));
+       return $this->view->render('LinkBrowser/AdmiralCloud');
    }
 
    /**
@@ -120,9 +121,15 @@ class AdmiralCloudConnectorLinkHandler implements \CPSIT\AdmiralCloudConnector\B
    */
    public function getBodyTagAttributes(): array
    {
-    return [
-        'data-current-link' => GeneralUtility::makeInstance(LinkService::class)->asString(['type' => LinkService::TYPE_FILE, 'file' => $this->linkParts['url']['file']])
-    ];
+       if (count($this->linkParts) === 0 || empty($this->linkParts['url']['pageuid'])) {
+           return [];
+       }
+       return [
+           'data-current-link' => GeneralUtility::makeInstance(LinkService::class)->asString([
+               'type' => LinkService::TYPE_FILE,
+               'file' => $this->linkParts['url']['file']
+           ])
+       ];
    }
 
    /**
@@ -151,4 +158,9 @@ class AdmiralCloudConnectorLinkHandler implements \CPSIT\AdmiralCloudConnector\B
    {
       return FALSE;
    }
+
+    public function setView(ViewInterface $view): void
+    {
+        $this->view = $view;
+    }
 }

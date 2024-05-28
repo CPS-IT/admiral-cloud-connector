@@ -36,7 +36,7 @@ class AdmiralCloudToolbarItem implements ToolbarItemInterface
         );
 
         $request = $standaloneView->getRequest();
-        $request->setControllerExtensionName(ConfigurationUtility::EXTENSION);
+        //$request->setControllerExtensionName(ConfigurationUtility::EXTENSION);
         $standaloneView->assign('ACGroup',AdmiralCloudApi::getSecurityGroup());
 
         return $standaloneView->render();
@@ -63,7 +63,7 @@ class AdmiralCloudToolbarItem implements ToolbarItemInterface
         );
 
         $request = $standaloneView->getRequest();
-        $request->setControllerExtensionName($extensionName);
+        //$request->setControllerExtensionName($extensionName);
 
         return $standaloneView->render();
     }

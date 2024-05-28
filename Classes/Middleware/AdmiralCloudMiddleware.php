@@ -31,7 +31,7 @@ class AdmiralCloudMiddleware implements MiddlewareInterface
             // Don't use CSS adjustment for admins
             if (!($this->getBackendUser() && ($this->getBackendUser()->isAdmin() || $enableCss))) {
                 // Register as a skin
-                $GLOBALS['TBE_STYLES']['skins'][ConfigurationUtility::EXTENSION] = [
+                $GLOBALS['TYPO3_CONF_VARS']['BE']['stylesheets'] [ConfigurationUtility::EXTENSION] = [
                     'name' => ConfigurationUtility::EXTENSION,
                     'stylesheetDirectories' => [
                         'css' => 'EXT:admiral_cloud_connector/Resources/Public/Backend/Css/'

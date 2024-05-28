@@ -1,44 +1,14 @@
-define("optional", [], {
-    load : function (moduleName, parentRequire, onload, config){
+'use strict';
 
-        var onLoadSuccess = function(moduleInstance){
-            // Module successfully loaded, call the onload callback so that
-            // requirejs can work its internal magic.
-            onload(moduleInstance);
-        }
+import $ from 'jquery';
+import NProgress from 'nprogress';
+import Modal from '@typo3/backend/modal.js';
+import Notification from '@typo3/backend/notification.js';
+import LinkBrowser from "@typo3/backend/link-browser.js";
+import {MessageUtility} from '@typo3/backend/utility/message-utility.js';
+import {Acc} from "@cpsit/admiral-cloud-connector-backend/acc.js";
 
-        var onLoadFailure = function(err){
-            // optional module failed to load.
-            var failedId = err.requireModules && err.requireModules[0];
-            console.warn("Could not load optional module: " + failedId);
-
-            // Undefine the module to cleanup internal stuff in requireJS
-            requirejs.undef(failedId);
-
-            // Now define the module instance as a simple empty object
-            // (NOTE: you can return any other value you want here)
-            define(failedId, [], function(){return {};});
-
-            // Now require the module make sure that requireJS thinks
-            // that is it loaded. Since we've just defined it, requirejs
-            // will not attempt to download any more script files and
-            // will just call the onLoadSuccess handler immediately
-            parentRequire([failedId], onLoadSuccess);
-        }
-
-        parentRequire([moduleName], onLoadSuccess, onLoadFailure);
-    }
-});
-
-require([
-    'jquery',
-    'nprogress',
-    'TYPO3/CMS/Backend/Modal',
-    'TYPO3/CMS/Backend/Notification',
-    'TYPO3/CMS/Recordlist/LinkBrowser',
-    'optional!TYPO3/CMS/Backend/Utility/MessageUtility'
-], function ($, NProgress, Modal, Notification, LinkBrowser,MessageUtility) {
-    'use strict';
+const init = function() {
 
     /**
      * @type {{currentLink: string, identifier: string, linkRecord: function, linkCurrent: function}}
@@ -81,6 +51,7 @@ require([
         browserUrl: '',
         title: 'AdmiralCloud',
         currentLink: '',
+        acc: false,
         /**
          * @param {Event} event
          */
@@ -88,6 +59,9 @@ require([
             event.preventDefault();
 
             LinkBrowser.finalizeFunction(RecordLinkHandler.currentLink);
+        },
+        finalizeFunction: function(t) {
+            LinkBrowser.finalizeFunction(t);
         }
     };
 
@@ -97,7 +71,10 @@ require([
      * @private
      */
     Browser.initialize = function () {
-        $('#iframeContainer').append($('#elAdmiralCloud'))
+        //$('#iframeContainer').append($('#elAdmiralCloud'))
+
+        // start acc class once
+        Browser.acc = new Acc();
 
         // Add all listeners based on inline button
         $(document).on('click', Browser.overviewButton, function () {
@@ -120,7 +97,7 @@ require([
         });
 
         $(top.document).on('AdmiralCloudBrowserAddMedia', function (event) {
-            //console.log('received', event.detail.media);
+
             var target = event.detail.target;
             var media = event.detail.media;
             var modus = event.detail.modus;
@@ -131,7 +108,7 @@ require([
                         Browser.getMediaPublicUrl(media);
                     }
                 } else {
-                    if (LinkBrowser.parameters !== undefined) {
+                    if (LinkBrowser.parameters !== undefined && !$.isEmptyObject(LinkBrowser.parameters)) {
                         Browser.getMediaPublicUrl(media);
                     }
                 }
@@ -160,13 +137,37 @@ require([
             type: Modal.types.ajax,
             title: Browser.title,
             content: Browser.browserUrl,
-            size: Modal.sizes.full
+            size: Modal.sizes.full,
+            callback: Browser.loadAfter
         });
         $(parent.document).on("click", '.acModalParent', function () {
             Modal.dismiss();
         });
-
     };
+
+    Browser.loadAfter = function(currentModal) {
+
+        // Create an observer instance
+        const observer = new MutationObserver(function( mutations ) {
+            mutations.forEach(function( mutation ) {
+                const newNodes = mutation.addedNodes; // DOM NodeList
+                if( newNodes !== null ) { // If there are new nodes added
+                   [...newNodes].forEach(node => {
+                        if(node.nodeType === 1) {
+                            let hasAdmiralCloudBrowser = node.querySelector('#admiral_cloud-browser');
+                            if(hasAdmiralCloudBrowser) {
+                                Browser.acc.init(hasAdmiralCloudBrowser);
+                            }
+                        }
+                    });
+                }
+            });
+        });
+
+        // Pass in the target node, as well as the observer options
+        observer.observe(currentModal, {attributes: false, childList: true, subtree: true});
+    }
+
 
     /**
      * Add media to irre element in frontend for possible saving
@@ -200,7 +201,7 @@ require([
                         );
                     } else {
                         data.files.forEach((fileId) => {
-                            MessageUtility.MessageUtility.send({
+                            MessageUtility.send({
                                 objectGroup: target,
                                 table: 'sys_file',
                                 uid: fileId,
@@ -251,7 +252,7 @@ require([
             },
             success: function (data) {
                 if (data.cropperData.length && data.target.length) {
-                    console.info(data);
+                    //console.info(data);
                     $('#' + data.target).val(data.cropperData);
                     $('#' + data.target + '_image').attr('src',data.link);
                 }
@@ -282,7 +283,8 @@ require([
      * @private
      */
     Browser.getMediaPublicUrl = function (media) {
-        console.info(TYPO3.settings.ajaxUrls['admiral_cloud_browser_get_media_public_url']);
+        //console.info(TYPO3.settings.ajaxUrls['admiral_cloud_browser_get_media_public_url']);
+
         return $.ajax({
             type: 'POST',
             url: TYPO3.settings.ajaxUrls['admiral_cloud_browser_get_media_public_url'],
@@ -292,8 +294,8 @@ require([
                 rteLinkDownload: window.rteLinkDownload
             },
             beforeSend: function () {
-                Modal.dismiss();
                 NProgress.start();
+                Modal.dismiss();
             },
             success: function (data) {
                 if (data.publicUrl) {
@@ -322,4 +324,6 @@ require([
 
     Browser.initialize();
     return Browser;
-});
+}
+
+export default init();

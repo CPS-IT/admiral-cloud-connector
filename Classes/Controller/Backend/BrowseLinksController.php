@@ -23,6 +23,8 @@ use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\CMS\Core\Localization\LanguageServiceFactory;
 use TYPO3\CMS\Core\Page\JavaScriptModuleInstruction;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Core\View\ViewInterface;
+use TYPO3\CMS\Core\LinkHandling\LinkService;
 
 /**
  * Extended controller for link browser
@@ -111,7 +113,7 @@ class BrowseLinksController extends \CPSIT\AdmiralCloudConnector\Controller\Back
     /**
      * @param ServerRequestInterface $request
      */
-    protected function initVariables(ServerRequestInterface $request)
+    protected function initVariables(ServerRequestInterface $request): void
     {
         parent::initVariables($request);
 
@@ -124,6 +126,8 @@ class BrowseLinksController extends \CPSIT\AdmiralCloudConnector\Controller\Back
         $this->contentsLanguage = $queryParameters['contentsLanguage'];
 
         $this->contentLanguageService = GeneralUtility::makeInstance(LanguageServiceFactory::class)->create($this->contentsLanguage);
+
+        $this->moduleTemplate = $this->moduleTemplateFactory->create($request);
 
         $tcaFieldConf = ['enableRichtext' => true];
         if (!empty($queryParameters['P']['richtextConfigurationName'])) {
@@ -142,11 +146,10 @@ class BrowseLinksController extends \CPSIT\AdmiralCloudConnector\Controller\Back
         $this->buttonConfig = $this->thisConfig['buttons']['link'] ?? [];
     }
 
-    protected function initDocumentTemplate()
+    protected function initDocumentTemplate(): void
     {
-        parent::initDocumentTemplate();
         $this->pageRenderer->getJavaScriptRenderer()->addJavaScriptModuleInstruction(
-            JavaScriptModuleInstruction::forRequireJS('TYPO3/CMS/RteCkeditor/RteLinkBrowser')
+            JavaScriptModuleInstruction::create('@typo3/rte-ckeditor/rte-link-browser.js')
                 ->invoke('initialize', $this->editorId)
         );
     }
@@ -154,14 +157,15 @@ class BrowseLinksController extends \CPSIT\AdmiralCloudConnector\Controller\Back
     /**
      * Initialize $this->currentLink and $this->currentLinkHandler
      */
-    protected function initCurrentUrl()
+    protected function initCurrentUrl(): void
     {
         if (empty($this->currentLinkParts)) {
             return;
         }
 
         if (!empty($this->currentLinkParts['url'])) {
-            $data = $this->linkService->resolve($this->currentLinkParts['url']);
+            $linkService = GeneralUtility::makeInstance(LinkService::class);
+            $data = $linkService->resolve($this->currentLinkParts['url']);
             $this->currentLinkParts['type'] = $data['type'];
             unset($data['type']);
             $this->currentLinkParts['url'] = $data;
@@ -178,7 +182,7 @@ class BrowseLinksController extends \CPSIT\AdmiralCloudConnector\Controller\Back
      *
      * @return string
      */
-    protected function renderLinkAttributeFields()
+    protected function renderLinkAttributeFields(ViewInterface $view): string
     {
         // Processing the classes configuration
         if (!empty($this->buttonConfig['properties']['class']['allowedClasses'])) {
@@ -278,7 +282,7 @@ class BrowseLinksController extends \CPSIT\AdmiralCloudConnector\Controller\Back
                 $this->additionalAttributes[$attribute] = $this->linkAttributeValues[$attribute] ?? '';
             }
         }
-        return parent::renderLinkAttributeFields();
+        return parent::renderLinkAttributeFields($view);
     }
 
     /**
@@ -288,7 +292,7 @@ class BrowseLinksController extends \CPSIT\AdmiralCloudConnector\Controller\Back
      * @param bool $JScharCode If needs to be converted to an array of char numbers
      * @return string Localized string
      */
-    protected function getPageConfigLabel($string, $JScharCode = true)
+    protected function getPageConfigLabel($string, $JScharCode = true): string
     {
         if (strpos($string, 'LLL:') !== 0) {
             $label = $string;
@@ -299,10 +303,10 @@ class BrowseLinksController extends \CPSIT\AdmiralCloudConnector\Controller\Back
         return $JScharCode ? GeneralUtility::quoteJSvalue($label) : $label;
     }
 
-    protected function renderCurrentUrl()
+    protected function renderCurrentUrl(ViewInterface $view): void
     {
         $this->moduleTemplate->getView()->assign('removeCurrentLink', true);
-        parent::renderCurrentUrl();
+        parent::renderCurrentUrl($view);
     }
 
     /**
@@ -310,7 +314,7 @@ class BrowseLinksController extends \CPSIT\AdmiralCloudConnector\Controller\Back
      *
      * @return string[]
      */
-    protected function getAllowedItems()
+    protected function getAllowedItems(): array
     {
         $allowedItems = parent::getAllowedItems();
 
@@ -331,7 +335,7 @@ class BrowseLinksController extends \CPSIT\AdmiralCloudConnector\Controller\Back
      *
      * @return string[]
      */
-    protected function getAllowedLinkAttributes()
+    protected function getAllowedLinkAttributes(): array
     {
         $allowedLinkAttributes = parent::getAllowedLinkAttributes();
 
@@ -348,7 +352,7 @@ class BrowseLinksController extends \CPSIT\AdmiralCloudConnector\Controller\Back
      *
      * @return string[]
      */
-    protected function getLinkAttributeFieldDefinitions()
+    protected function getLinkAttributeFieldDefinitions(): array
     {
         $fieldRenderingDefinitions = parent::getLinkAttributeFieldDefinitions();
         $fieldRenderingDefinitions['title'] = $this->getTitleField();
@@ -385,7 +389,7 @@ class BrowseLinksController extends \CPSIT\AdmiralCloudConnector\Controller\Back
             <form action="" name="lrelform" id="lrelform" class="t3js-dummyform">
                  <div class="row mb-3">
                     <label class="col-sm-3 col-form-label">' .
-                        htmlspecialchars($this->getLanguageService()->getLL('linkRelationship')) .
+                        htmlspecialchars($this->getLanguageService()->sL('linkRelationship')) .
                     '</label>
                     <div class="col-sm-9">
                         <input type="text" name="lrel" class="form-control" value="' . htmlspecialchars($currentRel) . '" />
@@ -415,8 +419,8 @@ class BrowseLinksController extends \CPSIT\AdmiralCloudConnector\Controller\Back
             $targetSelector = '
 						<select name="ltarget_type" class="t3js-targetPreselect form-select">
 							<option value=""></option>
-							<option value="_top">' . htmlspecialchars($lang->getLL('top')) . '</option>
-							<option value="_blank">' . htmlspecialchars($lang->getLL('newWindow')) . '</option>
+							<option value="_top">' . htmlspecialchars($lang->sL('top')) . '</option>
+							<option value="_blank">' . htmlspecialchars($lang->sL('newWindow')) . '</option>
 						</select>
 			';
         }
@@ -424,7 +428,7 @@ class BrowseLinksController extends \CPSIT\AdmiralCloudConnector\Controller\Back
         return '
 				<form action="" name="ltargetform" id="ltargetform" class="t3js-dummyform">
                     <div class="row mb-3" ' . ($disabled ? ' style="display: none;"' : '') . '>
-                        <label class="col-sm-3 col-form-label">' . htmlspecialchars($lang->getLL('target')) . '</label>
+                        <label class="col-sm-3 col-form-label">' . htmlspecialchars($lang->sL('target')) . '</label>
 						<div class="col-sm-4">
 							<input type="text" name="ltarget" class="t3js-linkTarget form-control"
 							    value="' . htmlspecialchars($target) . '" />
@@ -462,7 +466,7 @@ class BrowseLinksController extends \CPSIT\AdmiralCloudConnector\Controller\Back
                 <form action="" name="ltitleform" id="ltitleform" class="t3js-dummyform">
                     <div class="row mb-3">
                         <label class="col-sm-3 col-form-label">
-                            ' . htmlspecialchars($this->getLanguageService()->getLL('title')) . '
+                            ' . htmlspecialchars($this->getLanguageService()->sL('title')) . '
                          </label>
                          <div class="col-sm-9">
                                 <input ' . ($readOnlyTitle ? 'disabled' : '') . ' type="text" name="ltitle" class="form-control t3js-linkTitle"
@@ -486,7 +490,7 @@ class BrowseLinksController extends \CPSIT\AdmiralCloudConnector\Controller\Back
                 <form action="" name="lclassform" id="lclassform" class="t3js-dummyform">
                     <div class="row mb-3">
                         <label class="col-sm-3 col-form-label">
-                            ' . htmlspecialchars($this->getLanguageService()->getLL('class')) . '
+                            ' . htmlspecialchars($this->getLanguageService()->sL('class')) . '
                         </label>
                         <div class="col-sm-9">
                             <select name="lclass" class="t3js-class-selector form-select">
@@ -505,7 +509,7 @@ class BrowseLinksController extends \CPSIT\AdmiralCloudConnector\Controller\Back
      *
      * @return int
      */
-    protected function getCurrentPageId()
+    protected function getCurrentPageId(): int
     {
         return (int)$this->parameters['pid'];
     }
@@ -517,7 +521,7 @@ class BrowseLinksController extends \CPSIT\AdmiralCloudConnector\Controller\Back
      *
      * @return array
      */
-    public function getConfiguration()
+    public function getConfiguration(): array
     {
         return $this->buttonConfig;
     }
@@ -527,7 +531,7 @@ class BrowseLinksController extends \CPSIT\AdmiralCloudConnector\Controller\Back
      *
      * @return string[] Array of body-tag attributes
      */
-    protected function getBodyTagAttributes()
+    protected function getBodyTagAttributes(): array
     {
         $parameters = parent::getBodyTagAttributes();
         $parameters['data-site-url'] = $this->siteUrl;
@@ -540,7 +544,7 @@ class BrowseLinksController extends \CPSIT\AdmiralCloudConnector\Controller\Back
      *
      * @return array Array of parameters which have to be added to URLs
      */
-    public function getUrlParameters(array $overrides = null)
+    public function getUrlParameters(array $overrides = null): array
     {
         return [
             'act' => $overrides['act'] ?? $this->displayedLinkHandlerId,

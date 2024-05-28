@@ -13,14 +13,13 @@ use Exception;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
-use TYPO3\CMS\Backend\View\BackendTemplateView;
+use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Log\LogManager;
 use TYPO3\CMS\Core\Resource\FileInterface;
 use TYPO3\CMS\Core\Resource\Index\Indexer;
 use TYPO3\CMS\Core\Resource\ResourceStorage;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Extbase\Mvc\View\ViewInterface;
 use Psr\Http\Message\ResponseInterface;
 use TYPO3\CMS\Backend\Template\ModuleTemplate;
 use TYPO3\CMS\Core\Http\HtmlResponse;
@@ -87,13 +86,6 @@ class BrowserController extends AbstractBackendController
     protected $layoutRootPaths = ['EXT:admiral_cloud_connector/Resources/Private/Layouts/Browser'];
 
     /**
-     * BackendTemplateView Container
-     *
-     * @var BackendTemplateView
-     */
-    protected $defaultViewObjectName = BackendTemplateView::class;
-
-    /**
      * AdmiralCloud service
      *
      * @var AdmiralCloudService
@@ -106,11 +98,11 @@ class BrowserController extends AbstractBackendController
     protected $logger;
 
     /**
-     * ModuleTemplate object
+     * ModuleTemplateFactory object
      *
-     * @var ModuleTemplate
+     * @var ModuleTemplateFactory
      */
-    protected $moduleTemplate;
+    protected $moduleTemplateFactory;
 
 
     /**
@@ -118,27 +110,9 @@ class BrowserController extends AbstractBackendController
      */
     public function __construct()
     {
-
-        #$this->view = GeneralUtility::makeInstance(StandaloneView::class);
-        #$this->view->setPartialRootPaths($this->partialRootPaths);
-        #$this->view->setTemplateRootPaths($this->templateRootPaths);
-        #$this->view->setLayoutRootPaths($this->layoutRootPaths);
         $this->admiralCloudService = GeneralUtility::makeInstance(AdmiralCloudService::class);
         $this->logger = GeneralUtility::makeInstance(LogManager::class)->getLogger(__CLASS__);
-        $this->moduleTemplate = GeneralUtility::makeInstance(ModuleTemplate::class);
-        $this->view = $this->getFluidTemplateObject('Show.html');
-    }
-
-    /**
-     * Set up the doc header properly here
-     *
-     * @param ViewInterface $view
-     */
-    protected function initializeView(ViewInterface $view)
-    {
-        if ($view instanceof BackendTemplateView) {
-            parent::initializeView($view);
-        }
+        $this->moduleTemplateFactory = GeneralUtility::makeInstance(ModuleTemplateFactory::class);
     }
 
     /**
@@ -176,12 +150,13 @@ class BrowserController extends AbstractBackendController
     public function cropAction(ServerRequestInterface $request = NULL): ResponseInterface
     {
         $credentials = new Credentials();
-        $this->view->assignMultiple([
+        $moduleTemplate = $this->moduleTemplateFactory->create($request);
+        $moduleTemplate->assignMultiple([
             'mediaContainerId' => $request->getQueryParams()['mediaContainerId'],
             'embedLink' => $request->getQueryParams()['embedLink'],
             'modus' => 'crop'
         ]);
-        return $this->prepareIframe($request,ConfigurationUtility::getIframeUrl() . 'overview?clientId=' . $credentials->getClientId() . '&cmsOrigin=');
+        return $this->prepareIframe($request,ConfigurationUtility::getIframeUrl() . 'overview?clientId=' . $credentials->getClientId() . '&cmsOrigin=', $moduleTemplate);
     }
 
     /**
@@ -192,18 +167,22 @@ class BrowserController extends AbstractBackendController
     public function rteLinkAction(ServerRequestInterface $request = NULL): ResponseInterface
     {
         $credentials = new Credentials();
-        $this->view->assign('modus', 'rte-link');
-        return $this->prepareIframe($request,ConfigurationUtility::getIframeUrl() . 'overview?clientId=' . $credentials->getClientId() . '&cmsOrigin=');
+        $moduleTemplate = $this->moduleTemplateFactory->create($request);
+        $moduleTemplate->assign('modus', 'rte-link');
+
+        return $this->prepareIframe($request,ConfigurationUtility::getIframeUrl() . 'overview?clientId=' . $credentials->getClientId() . '&cmsOrigin=', $moduleTemplate);
     }
 
     /**
      * @param ServerRequestInterface $request
      * @param string $callbackUrl
+     * @param ModuleTemplate $moduleTemplate
      * @return ResponseInterface
      * @throws \TYPO3\CMS\Backend\Routing\Exception\RouteNotFoundException
      */
-    public function prepareIframe(ServerRequestInterface $request,string $callbackUrl){
+    public function prepareIframe(ServerRequestInterface $request,string $callbackUrl, $moduleTemplate = false){
         $parameters = $request->getQueryParams();
+        $moduleTemplate = $moduleTemplate ? $moduleTemplate : $this->moduleTemplateFactory->create($request);
 
         $protocol = 'http';
         if ((isset($_SERVER['HTTP_HTTPS']) && $_SERVER['HTTP_HTTPS'] === 'on')
@@ -213,7 +192,7 @@ class BrowserController extends AbstractBackendController
         /** @var \TYPO3\CMS\Backend\Routing\UriBuilder $uriBuilder */
         $uriBuilder = GeneralUtility::makeInstance(\TYPO3\CMS\Backend\Routing\UriBuilder::class);
         $path = $uriBuilder->buildUriFromRoute('ajax_admiral_cloud_browser_auth');
-        $this->view->assignMultiple([
+        $moduleTemplate->assignMultiple([
             'iframeHost' => rtrim(ConfigurationUtility::getIframeUrl(),'/'),
             'ajaxUrl' => (string)$path,
             'iframeUrl' => $callbackUrl . base64_encode($protocol .'://' . $_SERVER['HTTP_HOST']),
@@ -222,9 +201,8 @@ class BrowserController extends AbstractBackendController
                 'irreObject' => $parameters['irreObject'] ?? null,
             ]
         ]);
-        $this->view->assign('iframeHost',rtrim(ConfigurationUtility::getIframeUrl(),'/'));
-        $this->moduleTemplate->setContent($this->view->render());
-        return new HtmlResponse($this->moduleTemplate->renderContent());
+
+        return $moduleTemplate->renderResponse('Backend/Browser/Show');
     }
 
     /**
@@ -283,9 +261,10 @@ class BrowserController extends AbstractBackendController
             $cropperData = $media['cropperData'];
 
             // First of all check that the file contain a valid hash in other case an exception would be thrown
-            $linkHash = $this->admiralCloudService->getLinkHashFromMediaContainer($mediaContainer, $cropperData['usePNG'] == "true");
+            $linkHash = $this->admiralCloudService->getLinkHashFromMediaContainer($mediaContainer, (isset($cropperData['usePNG'])?$cropperData['usePNG'] == "true":"false"));
 
             $file = $storage->getFile((string)$mediaContainer['id']);
+
             if ($file instanceof File) {
                 $file->setTxAdmiralCloudConnectorLinkhash($linkHash);
                 $file->setTypeFromMimeType($mediaContainer['type'] . '/' . $mediaContainer['fileExtension']);
@@ -347,7 +326,7 @@ class BrowserController extends AbstractBackendController
             $cropperData = $media['cropperData'];
 
             // Get link hash for media container
-            $linkHash = $this->admiralCloudService->getLinkHashFromMediaContainer($mediaContainer, $cropperData['usePNG'] == "true");
+            $linkHash = $this->admiralCloudService->getLinkHashFromMediaContainer($mediaContainer, (isset($cropperData['usePNG'])?$cropperData['usePNG'] == "true":"false"));
 
             /** @var AdmiralCloudService $admiralCloudService */
             $admiralCloudService = GeneralUtility::makeInstance(AdmiralCloudService::class);
@@ -449,26 +428,4 @@ class BrowserController extends AbstractBackendController
         return $GLOBALS['BE_USER'];
     }
 
-    /**
-     * Returns a new standalone view, shorthand function
-     *
-     * @param string $filename Which templateFile should be used.
-     * @return StandaloneView
-     */
-    protected function getFluidTemplateObject(string $filename): StandaloneView
-    {
-        $view = GeneralUtility::makeInstance(StandaloneView::class);
-        $view->setLayoutRootPaths($this->layoutRootPaths);
-        $view->setPartialRootPaths($this->partialRootPaths);
-        $view->setTemplateRootPaths($this->templateRootPaths);
-        #$this->view = GeneralUtility::makeInstance(StandaloneView::class);
-        #$this->view->setPartialRootPaths($this->partialRootPaths);
-        #$this->view->setTemplateRootPaths($this->templateRootPaths);
-        #$this->view->setLayoutRootPaths($this->layoutRootPaths);
-
-        $view->setTemplate($filename);
-
-        $view->getRequest()->setControllerExtensionName(ConfigurationUtility::EXTENSION);
-        return $view;
-    }
 }

@@ -40,9 +40,10 @@ class ReadableLinkResolver extends \TYPO3\CMS\Redirects\Http\Middleware\Redirect
             if(isset($matches[1]) && isset($matches[2])){
                 /** @var AdmiralCloudService $admiralCloudService */
                 $admiralCloudService = GeneralUtility::makeInstance(AdmiralCloudService::class);
+                $value = $request->getParsedBody()['download'] ?? $request->getQueryParams()['download'] ?? null;
                 $url = $admiralCloudService->getDirectPublicUrlForHash(
                     $matches[1],
-                    (bool) GeneralUtility::_GP('download')
+                    (bool) $value
                 );
                 $file = $admiralCloudService->getStorage()->getFile($matches[2]);
                 if ($file) {
