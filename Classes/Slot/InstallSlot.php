@@ -64,7 +64,6 @@ class InstallSlot
             'tstamp' => $GLOBALS['EXEC_TIME'],
             'title' => 'AdmiralCloud',
             'description' => 'Automatically created during the installation of EXT:admiral_cloud_connector',
-            'path' => '',
             'base' => $storageUid,
         ];
 
