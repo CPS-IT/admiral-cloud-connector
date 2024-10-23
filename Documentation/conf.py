@@ -9,7 +9,7 @@
 project = 'AdmiralCloud Connector'
 copyright = '2022, coding. powerful. systems. CPS GmbH'
 author = 'coding. powerful. systems. CPS GmbH'
-release = '2.0.0'
+release = '2.0.1'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
