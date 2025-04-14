@@ -1,11 +1,12 @@
 <?php
 
+declare(strict_types=1);
 
 namespace CPSIT\AdmiralCloudConnector\Resource;
 
 use CPSIT\AdmiralCloudConnector\Traits\AdmiralCloudStorage;
-use CPSIT\AdmiralCloudConnector\Utility\ConfigurationUtility;
 use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Resource\ProcessedFile;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
@@ -18,25 +19,11 @@ class File extends \TYPO3\CMS\Core\Resource\File
 
     /**
      * Link hash to generate AdmiralCloud public url
-     *
-     * @var string
      */
-    protected $txAdmiralCloudConnectorLinkhash = '';
+    protected string $txAdmiralCloudConnectorLinkhash = '';
+    protected string $txAdmiralCloudConnectorCrop = '';
+    protected string $contentFeGroup = '';
 
-    /**
-     * @var string
-     */
-    protected $txAdmiralCloudConnectorCrop = '';
-
-    /**
-     *
-     * @var string
-     */
-    protected $contentFeGroup = '';
-
-    /**
-     * @return string
-     */
     public function getTxAdmiralCloudConnectorLinkhash(): string
     {
         if (!$this->txAdmiralCloudConnectorLinkhash && !empty($this->properties['tx_admiralcloudconnector_linkhash'])) {
@@ -64,9 +51,6 @@ class File extends \TYPO3\CMS\Core\Resource\File
         return $this->txAdmiralCloudConnectorLinkhash;
     }
 
-    /**
-     * @param string $txAdmiralCloudConnectorLinkhash
-     */
     public function setTxAdmiralCloudConnectorLinkhash(string $txAdmiralCloudConnectorLinkhash): void
     {
         $this->txAdmiralCloudConnectorLinkhash = $txAdmiralCloudConnectorLinkhash;
@@ -75,9 +59,6 @@ class File extends \TYPO3\CMS\Core\Resource\File
         $this->updatedProperties[] = 'tx_admiralcloudconnector_linkhash';
     }
 
-    /**
-     * @return string
-     */
     public function getTxAdmiralCloudConnectorCrop(): string
     {
         if (!$this->txAdmiralCloudConnectorCrop && !empty($this->properties['tx_admiralcloudconnector_crop'])) {
@@ -98,15 +79,12 @@ class File extends \TYPO3\CMS\Core\Resource\File
         return implode(',', $cropArray['cropData']) . '/' . implode(',', $cropArray['focusPoint']);
     }
 
-    /**
-     * @param string $txAdmiralCloudconnectorLinkhashCrop
-     */
     public function setTxAdmiralCloudConnectorCrop(?string $txAdmiralCloudconnectorLinkhashCrop): void
     {
         $this->txAdmiralCloudConnectorCrop = $txAdmiralCloudconnectorLinkhashCrop;
     }
 
-    public function setTypeFromMimeType(string $mimeType)
+    public function setTypeFromMimeType(string $mimeType): int
     {
         // this basically extracts the mimetype and guess the filetype based
         // on the first part of the mimetype works for 99% of all cases, and
@@ -135,17 +113,15 @@ class File extends \TYPO3\CMS\Core\Resource\File
         }
 
         $this->updatedProperties[] = 'type';
-        return (int)$this->properties['type'];
+
+        return $this->properties['type'];
     }
 
-    /**
-     * @param string $type
-     * @return int
-     */
-    public function setType(string $type)
+    public function setType(string $type): int
     {
         $this->properties['type'] = $type;
         $this->updatedProperties[] = 'type';
+
         return (int)$this->properties['type'];
     }
 
@@ -156,7 +132,7 @@ class File extends \TYPO3\CMS\Core\Resource\File
      * @param array $configuration the processing configuration, see manual for that
      * @return ProcessedFile The processed file
      */
-    public function process($taskType, array $configuration)
+    public function process(string $taskType, array $configuration): ProcessedFile
     {
         if ($taskType === ProcessedFile::CONTEXT_IMAGEPREVIEW
             && $this->getStorage()->getUid() === $this->getAdmiralCloudStorage()->getUid()) {
@@ -168,32 +144,17 @@ class File extends \TYPO3\CMS\Core\Resource\File
         return $this->getStorage()->processFile($this, $taskType, $configuration);
     }
 
-    /**
-     * @return Index\FileIndexRepository
-     */
-    protected function getFileIndexRepository()
+    protected function getFileIndexRepository(): Index\FileIndexRepository
     {
         return GeneralUtility::makeInstance(Index\FileIndexRepository::class);
     }
 
-    /**
-     * Get the value of contentFeGroup
-     *
-     * @return  string
-     */ 
-    public function getContentFeGroup()
+    public function getContentFeGroup(): string
     {
         return $this->contentFeGroup;
     }
 
-    /**
-     * Set the value of contentFeGroup
-     *
-     * @param  string  $contentFeGroup
-     *
-     * @return  self
-     */ 
-    public function setContentFeGroup(string $contentFeGroup)
+    public function setContentFeGroup(string $contentFeGroup): self
     {
         $this->contentFeGroup = $contentFeGroup;
 
@@ -202,25 +163,20 @@ class File extends \TYPO3\CMS\Core\Resource\File
 
     /**
      * Get the extension of this file in a lower-case variant
-     *
-     * @return string The file extension
      */
-    public function getExtension()
+    public function getExtension(): string
     {
         $extension = parent::getExtension();
-        if(!$extension and $this->getProperty('type') == 2){
+
+        if (!$extension && (int)$this->getProperty('type') === 2) {
             return 'jpg';
         }
+
         return $extension;
     }
 
-    /**
-     * Returns the identifier of this file
-     *
-     * @return string
-     */
-    public function getIdentifier()
+    public function getIdentifier(): string
     {
-        return strval($this->identifier);
+        return (string)$this->identifier;
     }
 }
