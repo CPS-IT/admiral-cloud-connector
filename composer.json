@@ -5,8 +5,8 @@
 	"type": "typo3-cms-extension",
 	"require": {
 		"php": "^8.2",
-		"guzzlehttp/guzzle": "*",
-		"guzzlehttp/oauth-subscriber": "*",
+		"guzzlehttp/guzzle": "^7.9",
+		"guzzlehttp/oauth-subscriber": "^0.8.1",
 		"typo3/cms-core": "^13.4",
 		"typo3/cms-filemetadata": "^13.4",
 		"typo3/cms-fluid": "^13.4"
