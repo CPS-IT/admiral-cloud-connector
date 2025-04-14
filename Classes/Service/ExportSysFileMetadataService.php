@@ -4,7 +4,6 @@ namespace CPSIT\AdmiralCloudConnector\Service;
 
 use CPSIT\AdmiralCloudConnector\Exception\InvalidArgumentException;
 use CPSIT\AdmiralCloudConnector\Exception\RuntimeException;
-use Doctrine\DBAL\FetchMode;
 use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -106,12 +105,12 @@ class ExportSysFileMetadataService
                 // Execute the query with current offset
                 $result = $queryBuilder
                     ->setFirstResult($iteration * static::EXPORT_SYS_FILE_ITERATION_LIMIT)
-                    ->execute();
+                    ->executeQuery();
 
                 $iteration++;
 
                 if ($result->rowCount()) {
-                    while ($row = $result->fetch(FetchMode::ASSOCIATIVE)) {
+                    while ($row = $result->fetchAssociative()) {
                         // Get security group for current file
                         $securityGroup = $this->getSecurityGroup($row, $securityGroupMapping);
 
