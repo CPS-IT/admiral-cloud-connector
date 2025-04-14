@@ -8,7 +8,7 @@ composer require cpsit/admiral-cloud-connector
 
 run following SQL to install file_storage
 ```
-INSERT INTO `sys_file_storage` (`pid`, `deleted`, `description`, `name`, `driver`, `configuration`, `is_default`, `is_browsable`, `is_public`, `is_writable`, `is_online`, `auto_extract_metadata`, `processingfolder`) VALUES 
+INSERT INTO `sys_file_storage` (`pid`, `deleted`, `description`, `name`, `driver`, `configuration`, `is_default`, `is_browsable`, `is_public`, `is_writable`, `is_online`, `auto_extract_metadata`, `processingfolder`) VALUES
 (0, 0, 'Automatically created during the installation of EXT:admiral_cloud_connector', 'AdmiralCloud', 'AdmiralCloud', '', 0, 1, 1, 0, 1, 1, '1:/_processed_/');
 ```
 
@@ -67,11 +67,11 @@ To enable editors for AdmiralCloud functions, please add at least the following 
 ## Mounts & Workspaces
 
 * Add "AdmiralCloud" to the list of accessible FileMounts
-* Fileoperation permissions / File: check permission for [addFileViaAdmiralCloud] 
+* Fileoperation permissions / File: check permission for [addFileViaAdmiralCloud]
 
 ## optional
 
-Allow cropping tool for AdmiralCloud images: 
+Allow cropping tool for AdmiralCloud images:
 check permission for (tx_admiralcloudconnector_crop) on tab „Access Lists“ / „Allowed excludefields” in “File Reference”.
 
 
