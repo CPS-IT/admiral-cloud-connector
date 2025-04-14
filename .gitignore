@@ -64,3 +64,7 @@ Html/Installation/UserConfiguration.html
 Html/Introduction/Index.html
 Html/Introduction/About/Index.html
 Html/Introduction/Faq/Index.html
+
+/public
+/vendor
+/composer.lock

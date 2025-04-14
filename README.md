@@ -1,6 +1,6 @@
 # TYPO3 Extension `admiral_cloud_connector`
 
-This extension connects the AdmiralCloud with Typo3. It adds a seperate file_storage for AdmiralCloud files. At every place sys_file_reference is used, you can use AdmiralCloud files
+This extension connects the AdmiralCloud with TYPO3. It adds a separate file_storage for AdmiralCloud files. At every place sys_file_reference is used, you can use AdmiralCloud files
 
 # Installation
 

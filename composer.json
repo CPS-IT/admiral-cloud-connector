@@ -8,12 +8,12 @@
   "homepage": "https://www.cps-it.de/",
   "license": "GPL-3.0+",
   "require": {
-    "php": ">= 8.1",
+    "php": "^8.1",
     "guzzlehttp/guzzle": "*",
     "guzzlehttp/oauth-subscriber": "*",
-    "typo3/cms-core": "^12.4.22",
-    "typo3/cms-fluid": "^12.4.22",
-    "typo3/cms-filemetadata": "^12.4.22"
+    "typo3/cms-core": "^13.4",
+    "typo3/cms-fluid": "^13.4",
+    "typo3/cms-filemetadata": "^13.4"
   },
   "autoload": {
     "psr-4": {
@@ -27,6 +27,12 @@
   "extra": {
     "typo3/cms": {
       "extension-key": "admiral_cloud_connector"
+    }
+  },
+  "config": {
+    "allow-plugins": {
+      "typo3/class-alias-loader": true,
+      "typo3/cms-composer-installers": true
     }
   }
 }
