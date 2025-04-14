@@ -1,5 +1,8 @@
 * text=auto
 /.github export-ignore
+/.editorconfig export-ignore
 /.gitattributes export-ignore
 /.gitignore export-ignore
+/.php-cs-fixer.php export-ignore
 /ChangeLog export-ignore
+/rector.php export-ignore

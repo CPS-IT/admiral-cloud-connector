@@ -1,38 +1,65 @@
 {
-  "name": "cpsit/admiral-cloud-connector",
-  "type": "typo3-cms-extension",
-  "description": "AdmiralCloud connector",
-  "keywords": [
-    "TYPO3"
-  ],
-  "homepage": "https://www.cps-it.de/",
-  "license": "GPL-2.0-or-later",
-  "require": {
-    "php": "^8.2",
-    "guzzlehttp/guzzle": "*",
-    "guzzlehttp/oauth-subscriber": "*",
-    "typo3/cms-core": "^13.4",
-    "typo3/cms-fluid": "^13.4",
-    "typo3/cms-filemetadata": "^13.4"
-  },
-  "autoload": {
-    "psr-4": {
-      "CPSIT\\AdmiralCloudConnector\\": "Classes/"
-    }
-  },
-  "autoload-dev": {
-    "psr-4": {
-    }
-  },
-  "extra": {
-    "typo3/cms": {
-      "extension-key": "admiral_cloud_connector"
-    }
-  },
-  "config": {
-    "allow-plugins": {
-      "typo3/class-alias-loader": true,
-      "typo3/cms-composer-installers": true
-    }
-  }
+	"name": "cpsit/admiral-cloud-connector",
+	"description": "AdmiralCloud connector",
+	"license": "GPL-2.0-or-later",
+	"type": "typo3-cms-extension",
+	"require": {
+		"php": "^8.2",
+		"guzzlehttp/guzzle": "*",
+		"guzzlehttp/oauth-subscriber": "*",
+		"typo3/cms-core": "^13.4",
+		"typo3/cms-filemetadata": "^13.4",
+		"typo3/cms-fluid": "^13.4"
+	},
+	"require-dev": {
+		"armin/editorconfig-cli": "^2.1",
+		"ergebnis/composer-normalize": "^2.46",
+		"shipmonk/composer-dependency-analyser": "^1.8",
+		"ssch/typo3-rector": "^3.1",
+		"typo3/coding-standards": "^0.8.0"
+	},
+	"autoload": {
+		"psr-4": {
+			"CPSIT\\AdmiralCloudConnector\\": "Classes/"
+		}
+	},
+	"config": {
+		"allow-plugins": {
+			"ergebnis/composer-normalize": true,
+			"typo3/class-alias-loader": true,
+			"typo3/cms-composer-installers": true
+		},
+		"sort-packages": true
+	},
+	"extra": {
+		"typo3/cms": {
+			"extension-key": "admiral_cloud_connector"
+		}
+	},
+	"scripts": {
+		"analyze": [
+			"@analyze:dependencies"
+		],
+		"analyze:dependencies": "composer-dependency-analyser",
+		"fix": [
+			"@fix:composer",
+			"@fix:editorconfig",
+			"@fix:php"
+		],
+		"fix:composer": "@composer normalize --no-check-lock --no-update-lock",
+		"fix:editorconfig": "@lint:editorconfig --fix",
+		"fix:php": "php-cs-fixer fix",
+		"lint": [
+			"@lint:composer",
+			"@lint:editorconfig",
+			"@lint:php"
+		],
+		"lint:composer": "@fix:composer --dry-run",
+		"lint:editorconfig": "ec --git-only",
+		"lint:php": "@fix:php --dry-run",
+		"migration": [
+			"@migration:rector"
+		],
+		"migration:rector": "rector process"
+	}
 }
