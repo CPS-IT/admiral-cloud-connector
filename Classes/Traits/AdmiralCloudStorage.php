@@ -7,7 +7,6 @@ use CPSIT\AdmiralCloudConnector\Resource\AdmiralCloudDriver;
 use CPSIT\AdmiralCloudConnector\Resource\Index\FileIndexRepository;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use TYPO3\CMS\Core\Resource\Index\Indexer;
-use TYPO3\CMS\Core\Resource\ResourceFactory;
 use TYPO3\CMS\Core\Resource\ResourceStorage;
 use TYPO3\CMS\Core\Resource\ResourceStorageInterface;
 use TYPO3\CMS\Core\Resource\StorageRepository;
@@ -70,10 +69,6 @@ trait AdmiralCloudStorage
      */
     protected function getFileIndexRepository()
     {
-        if(version_compare(\TYPO3\CMS\Core\Utility\VersionNumberUtility::getCurrentTypo3Version(), '10.4.0', '<')){
-            return GeneralUtility::makeInstance(FileIndexRepository::class);
-        } else {
-            return GeneralUtility::makeInstance(FileIndexRepository::class, GeneralUtility::makeInstance(EventDispatcherInterface::class));
-        }
+        return GeneralUtility::makeInstance(FileIndexRepository::class, GeneralUtility::makeInstance(EventDispatcherInterface::class));
     }
 }

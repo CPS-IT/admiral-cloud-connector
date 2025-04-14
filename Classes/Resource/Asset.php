@@ -3,7 +3,6 @@
 
 namespace CPSIT\AdmiralCloudConnector\Resource;
 
-use CPSIT\AdmiralCloudConnector\Exception\InvalidArgumentException;
 use CPSIT\AdmiralCloudConnector\Exception\InvalidAssetException;
 use CPSIT\AdmiralCloudConnector\Exception\InvalidPropertyException;
 use CPSIT\AdmiralCloudConnector\Exception\InvalidThumbnailException;
@@ -13,10 +12,7 @@ use CPSIT\AdmiralCloudConnector\Service\AdmiralCloudService;
 use CPSIT\AdmiralCloudConnector\Traits\AdmiralCloudStorage;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use TYPO3\CMS\Core\Core\Environment;
-use TYPO3\CMS\Core\Resource\ResourceStorage;
-use TYPO3\CMS\Core\Resource\ResourceStorageInterface;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Extbase\Utility\DebuggerUtility;
 
 /**
  * Class Asset
@@ -159,18 +155,10 @@ class Asset
         $this->type = '';
 
 
-        if(version_compare(\TYPO3\CMS\Core\Utility\VersionNumberUtility::getCurrentTypo3Version(), '11.5.0', '<')){
-            /** @var File $file */
-            $file = $this->getFileIndexRepository()->findOneByStorageUidAndIdentifier(
-                ($storageUid ? $storageUid : $this->getAdmiralCloudStorage()->getUid()),
-                $this->identifier
-            );
-        } else {
-            $file = $this->getFileIndexRepository()->findOneByStorageAndIdentifier(
-                $this->getAdmiralCloudStorage(),
-                $this->identifier
-            );
-        }
+        $file = $this->getFileIndexRepository()->findOneByStorageAndIdentifier(
+            $this->getAdmiralCloudStorage(),
+            $this->identifier
+        );
 
         if ($file) {
             $mimeType = str_replace('admiralCloud/', '', $file['mime_type']);
@@ -208,7 +196,7 @@ class Asset
         if(isset($GLOBALS['admiralcloud']['fe_group'][$file->getIdentifier()])){
             $file->setContentFeGroup($GLOBALS['admiralcloud']['fe_group'][$file->getIdentifier()]);
         }
-            
+
         switch ($assetType) {
             case self::TYPE_IMAGE:
                 $publicUrl = $this->getAdmiralCloudService()->getImagePublicUrl($file);
@@ -389,19 +377,10 @@ class Asset
             return $this->file;
         }
 
-        if(version_compare(\TYPO3\CMS\Core\Utility\VersionNumberUtility::getCurrentTypo3Version(), '11.5.0', '<')){
-            $fileData = $this->getFileIndexRepository()->findOneByStorageUidAndIdentifier(
-                ($storageUid ?: $this->getAdmiralCloudStorage()->getUid()),
-                $this->identifier
-            );
-        } else {
-            $fileData = $this->getFileIndexRepository()->findOneByStorageAndIdentifier(
-                $this->getAdmiralCloudStorage(),
-                $this->identifier
-            );
-        }
-
-
+        $fileData = $this->getFileIndexRepository()->findOneByStorageAndIdentifier(
+            $this->getAdmiralCloudStorage(),
+            $this->identifier
+        );
 
         if ($fileData) {
             $this->file = GeneralUtility::makeInstance(File::class, $fileData, $this->getAdmiralCloudStorage($storageUid));
@@ -442,12 +421,8 @@ class Asset
      */
     protected function getFileIndexRepository()
     {
-        if(version_compare(\TYPO3\CMS\Core\Utility\VersionNumberUtility::getCurrentTypo3Version(), '10.4.0', '<')){
-            return GeneralUtility::makeInstance(FileIndexRepository::class);
-        } else {
-            $this->eventDispatcher = $eventDispatcher ?? GeneralUtility::getContainer()->get(EventDispatcherInterface::class);
-            return GeneralUtility::makeInstance(FileIndexRepository::class, $this->eventDispatcher);
-        }
+        $this->eventDispatcher ??= GeneralUtility::getContainer()->get(EventDispatcherInterface::class);
 
+        return GeneralUtility::makeInstance(FileIndexRepository::class, $this->eventDispatcher);
     }
 }

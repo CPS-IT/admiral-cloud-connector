@@ -3,23 +3,12 @@
 defined('TYPO3') || die('Access denied.');
 
 
-$versionInformation = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(
-    \TYPO3\CMS\Core\Information\Typo3Version::class
-);
-
 \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addPageTSConfig(
     "@import 'EXT:admiral_cloud_connector/Configuration/TSconfig/LinkHandler.tsconfig'"
 );
-// Only include page.tsconfig if TYPO3 version is below 12 so that it is not imported twice.
-if ($versionInformation->getMajorVersion() < 10) {
-    \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addPageTSConfig(
-        '<INCLUDE_TYPOSCRIPT: source="FILE:EXT:admiral_cloud_connector/Configuration/TSconfig/LinkHandler.tsconfig">'
-    );
-} else {
-    \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addPageTSConfig(
-        "@import 'EXT:admiral_cloud_connector/Configuration/TSconfig/LinkHandler.tsconfig'"
-    );
-}
+\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addPageTSConfig(
+    "@import 'EXT:admiral_cloud_connector/Configuration/TSconfig/LinkHandler.tsconfig'"
+);
 
 $GLOBALS['TYPO3_CONF_VARS']['SYS']['formEngine']['nodeRegistry'][1433198160] = [
     'nodeName' => 'file',
@@ -103,22 +92,19 @@ if (!is_array($GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations
     $GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['admiral_cloud_connector']['backend'] = \TYPO3\CMS\Core\Cache\Backend\SimpleFileBackend::class;
 }
 
-if(version_compare(\TYPO3\CMS\Core\Utility\VersionNumberUtility::getCurrentTypo3Version(), '11.5.0', '<')){
-} else {
-    $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Backend\Controller\AbstractLinkBrowserController::class] = [
-        'className' => CPSIT\AdmiralCloudConnector\Controller\Backend\AbstractLinkBrowserController::class
-    ];
-    $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Backend\LinkHandler\LinkHandlerInterface::class] = [
-        'className' => CPSIT\AdmiralCloudConnector\Backend\LinkHandlerInterface::class
-    ];
-    $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\CPSIT\AdmiralCloudConnector\LinkHandler\PageLinkHandler::class] = [
-        'className' => CPSIT\AdmiralCloudConnector\LinkHandler\PageLinkHandler::class
-    ];
-    $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Backend\Controller\LinkBrowserController::class] = [
-        'className' => \CPSIT\AdmiralCloudConnector\Controller\Backend\LinkBrowserController::class
-    ];
-    $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\RteCKEditor\Controller\BrowseLinksController::class] = [
-        'className' => CPSIT\AdmiralCloudConnector\Controller\Backend\BrowseLinksController::class
-    ];
-}
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Backend\Controller\AbstractLinkBrowserController::class] = [
+    'className' => CPSIT\AdmiralCloudConnector\Controller\Backend\AbstractLinkBrowserController::class
+];
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Backend\LinkHandler\LinkHandlerInterface::class] = [
+    'className' => CPSIT\AdmiralCloudConnector\Backend\LinkHandlerInterface::class
+];
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\CPSIT\AdmiralCloudConnector\LinkHandler\PageLinkHandler::class] = [
+    'className' => CPSIT\AdmiralCloudConnector\LinkHandler\PageLinkHandler::class
+];
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Backend\Controller\LinkBrowserController::class] = [
+    'className' => \CPSIT\AdmiralCloudConnector\Controller\Backend\LinkBrowserController::class
+];
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\RteCKEditor\Controller\BrowseLinksController::class] = [
+    'className' => CPSIT\AdmiralCloudConnector\Controller\Backend\BrowseLinksController::class
+];
 
