@@ -1,16 +1,21 @@
 <?php
 
-/**
- * Licensed under the MIT License. For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
+declare(strict_types=1);
+
+/*
+ * This file is part of the TYPO3 CMS extension "admiral_cloud_connector".
+ *
+ * It is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License, either version 2
+ * of the License, or any later version.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE.txt file that was distributed with this source code.
+ *
+ * The TYPO3 project - inspiring people to share!
  */
 
 namespace CPSIT\AdmiralCloudConnector\Api;
-
-use CPSIT\AdmiralCloudConnector\Api\AdmiralCloudApi;
-use CPSIT\AdmiralCloudConnector\Exception\RuntimeException;
-use InvalidArgumentException;
-use Psr\Http\Message\ServerRequestInterface;
 
 /**
  * Static Factory class used to create instances of AdmiralCloudApi.
@@ -18,30 +23,18 @@ use Psr\Http\Message\ServerRequestInterface;
 class AdmiralCloudApiFactory
 {
     /**
-     * Creates an instance of AdmiralCloudApi using the given settings.
-     *
-     * @param array $settings
-     * @param string $method
-     * @return AdmiralCloudApi instance.
-     * @throws InvalidArgumentException Oauth settings not valid, consumer key or secret not in array.
-     * @throws RuntimeException
+     * @throws \InvalidArgumentException Oauth settings not valid, consumer key or secret not in array.
      */
-    public static function create(array $settings,string $method = 'post'): AdmiralCloudApi
+    public static function create(array $settings, string $method = 'POST'): AdmiralCloudApi
     {
-        return AdmiralCloudApi::create($settings,$method);
+        return AdmiralCloudApi::create($settings, $method);
     }
 
     /**
-     * Creates an instance of AdmiralCloudApi using the given settings.
-     *
-     * @param array $settings
-     * @return string
-     * @throws InvalidArgumentException Oauth settings not valid, consumer key or secret not in array.
-     * @throws RuntimeException
+     * @throws \InvalidArgumentException Oauth settings not valid, consumer key or secret not in array.
      */
     public static function auth(array $settings): string
     {
         return AdmiralCloudApi::auth($settings);
     }
-
 }

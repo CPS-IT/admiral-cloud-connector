@@ -1,9 +1,18 @@
 <?php
 
-/**
+declare(strict_types=1);
+
+/*
+ * This file is part of the TYPO3 CMS extension "admiral_cloud_connector".
  *
- * Licensed under the MIT License. For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
+ * It is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License, either version 2
+ * of the License, or any later version.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE.txt file that was distributed with this source code.
+ *
+ * The TYPO3 project - inspiring people to share!
  */
 
 namespace CPSIT\AdmiralCloudConnector\Api\Oauth;
@@ -11,84 +20,45 @@ namespace CPSIT\AdmiralCloudConnector\Api\Oauth;
 /**
  * Class to hold Oauth tokens necessary for every API request.
  */
-class Credentials
+final class Credentials
 {
+    private string $accessKey;
+    private string $accessSecret;
+    private string $clientId;
 
-    /**
-     * @var string Access key.
-     */
-    private $accessKey;
-    /**
-     * @var string Access Secret.
-     */
-    private $accessSecret;
-    /**
-     * @var string Access token.
-     */
-    private $clientId;
-
-
-
-
-    /**
-     * Initialises a new instance with the specified params.
-     *
-     * @param string $consumerKey
-     * @param string $consumerSecret
-     * @param string $token
-     * @param string $tokenSecret
-     */
     public function __construct()
     {
-        $this->accessKey = getenv('ADMIRALCLOUD_ACCESS_KEY');
-        $this->accessSecret = getenv('ADMIRALCLOUD_ACCESS_SECRET');
-        $this->clientId = getenv('ADMIRALCLOUD_CLIENT_ID');
+        $this->accessKey = (string)getenv('ADMIRALCLOUD_ACCESS_KEY');
+        $this->accessSecret = (string)getenv('ADMIRALCLOUD_ACCESS_SECRET');
+        $this->clientId = (string)getenv('ADMIRALCLOUD_CLIENT_ID');
     }
 
-    /**
-     * @return string
-     */
     public function getAccessKey(): string
     {
         return $this->accessKey;
     }
 
-    /**
-     * @param string $accessKey
-     */
-    public function setAccessKey(string $accessKey)
+    public function setAccessKey(string $accessKey): void
     {
         $this->accessKey = $accessKey;
     }
 
-    /**
-     * @return string
-     */
     public function getAccessSecret(): string
     {
         return $this->accessSecret;
     }
 
-    /**
-     * @param string $accessSecret
-     */
-    public function setAccessSecret(string $accessSecret)
+    public function setAccessSecret(string $accessSecret): void
     {
         $this->accessSecret = $accessSecret;
     }
 
-    /**
-     * @return string
-     */
     public function getClientId(): string
     {
         return $this->clientId;
     }
 
-    /**
-     * @param string $clientId
-     */
-    public function setClientId(string $clientId)
+    public function setClientId(string $clientId): void
     {
         $this->clientId = $clientId;
     }
