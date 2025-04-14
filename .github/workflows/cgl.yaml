@@ -1,0 +1,49 @@
+name: CGL
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  cgl:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Prepare environment
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.2
+          tools: composer:v2, cs2pr
+
+      # Validation
+      - name: Validate composer.json
+        run: composer validate --strict
+
+      # Install dependencies
+      - name: Install Composer dependencies
+        uses: ramsey/composer-install@v3
+
+      # Analyze
+      - name: Analyze dependencies
+        run: composer analyze:dependencies
+
+      # Linting
+      - name: Lint composer.json
+        run: composer lint:composer
+      - name: Lint Editorconfig
+        run: composer lint:editorconfig
+      - name: Lint PHP
+        run: composer lint:php -- --format checkstyle | cs2pr
+
+      # Migration
+      - name: Run Rector migration
+        run: composer migration:rector -- --dry-run
