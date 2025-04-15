@@ -95,9 +95,6 @@ if (!is_array($GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations
 $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Backend\Controller\AbstractLinkBrowserController::class] = [
     'className' => CPSIT\AdmiralCloudConnector\Controller\Backend\AbstractLinkBrowserController::class
 ];
-$GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Backend\LinkHandler\LinkHandlerInterface::class] = [
-    'className' => CPSIT\AdmiralCloudConnector\Backend\LinkHandlerInterface::class
-];
 $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\CPSIT\AdmiralCloudConnector\LinkHandler\PageLinkHandler::class] = [
     'className' => CPSIT\AdmiralCloudConnector\LinkHandler\PageLinkHandler::class
 ];
