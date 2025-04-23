@@ -12,7 +12,9 @@ use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Core\Imaging\IconFactory;
 use TYPO3\CMS\Core\Imaging\IconSize;
 use TYPO3\CMS\Core\LinkHandling\LinkService;
+use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\CMS\Core\Page\PageRenderer;
+use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\View\ViewInterface;
 
 /**
@@ -24,9 +26,9 @@ class AdmiralCloudConnectorLinkHandler implements LinkHandlerInterface
 {
     protected ViewInterface $view;
 
-    protected array $configuration = [];
-    protected array $linkAttributes = ['target', 'title', 'class', 'params', 'rel'];
     protected array $linkParts = [];
+    protected string $expectedClass = File::class;
+    protected string $mode = 'file';
 
    public function __construct(
        protected readonly IconFactory $iconFactory,
@@ -36,56 +38,37 @@ class AdmiralCloudConnectorLinkHandler implements LinkHandlerInterface
    ) {}
 
     public function initialize(AbstractLinkBrowserController $linkBrowser, $identifier, array $configuration): void
-   {
-      $this->configuration = $configuration;
-   }
+    {
+        // Nothing to do here.
+    }
 
-   /**
-   * Checks if this is the handler for the given link
-   *
-   * Also stores information locally about currently linked issue
-   *
-   * @param array $linkParts Link parts as returned from TypoLinkCodecService
-   */
    public function canHandleLink(array $linkParts): bool
    {
-        if (!$linkParts['url']) {
-            return false;
-        }
+       if (!($linkParts['url'] ?? null)) {
+           return false;
+       }
 
-        if (isset($linkParts['url'][$this->mode]) && $linkParts['url'][$this->mode] instanceof $this->expectedClass) {
-            if(str_starts_with($linkParts['url'][$this->mode]->getMimeType(), 'admiralCloud/')){
-                $this->linkParts = $linkParts;
-                return true;
-            }
-        }
+       if (is_a($linkParts['url'][$this->mode] ?? null, $this->expectedClass, true)
+           && str_starts_with($linkParts['url'][$this->mode]->getMimeType(), 'admiralCloud/')
+       ) {
+           $this->linkParts = $linkParts;
 
-        return false;
+           return true;
+       }
+
+       return false;
    }
 
-   /**
-   * Format the current link for HTML output
-   *
-   * @return string
-   */
    public function formatCurrentUrl(): string
    {
-        return $this->linkParts['url'][$this->mode]->getName();
+       return $this->linkParts['url'][$this->mode]?->getName() ?? '';
    }
 
-
-   /**
-   * Render the link handler
-   *
-   * @param ServerRequestInterface $request
-   *
-   * @return string
-   */
    public function render(ServerRequestInterface $request): string
    {
        $this->pageRenderer->loadJavaScriptModule('@cpsit/admiral-cloud-connector/Browser.js');
 
-       $languageService = $GLOBALS['LANG'];
+       $languageService = $this->getLanguageService();
        $compactViewUrl = (string) $this->uriBuilder->buildUriFromRoute('admiral_cloud_browser_rte_link');
        $rteLinkDownloadLabel = htmlspecialchars((string) $languageService->sL('LLL:EXT:admiral_cloud_connector/Resources/Private/Language/locallang_be.xlf:linkHandler.rteLinkDownload'));
        $buttonText = htmlspecialchars((string) $languageService->sL('LLL:EXT:admiral_cloud_connector/Resources/Private/Language/locallang_be.xlf:browser.button'));
@@ -126,13 +109,9 @@ class AdmiralCloudConnectorLinkHandler implements LinkHandlerInterface
 
    public function getLinkAttributes(): array
    {
-      return $this->linkAttributes;
+      return ['target', 'title', 'class', 'params', 'rel'];
    }
 
-   /**
-   * @param string[] $fieldDefinitions Array of link attribute field definitions
-   * @return string[]
-   */
    public function modifyLinkAttributes(array $fieldDefinitions): array
    {
       return $fieldDefinitions;
@@ -140,8 +119,6 @@ class AdmiralCloudConnectorLinkHandler implements LinkHandlerInterface
 
    /**
    * We don't support updates since there is no difference to simply set the link again.
-   *
-   * @return bool
    */
    public function isUpdateSupported(): bool
    {
@@ -151,5 +128,10 @@ class AdmiralCloudConnectorLinkHandler implements LinkHandlerInterface
     public function setView(ViewInterface $view): void
     {
         $this->view = $view;
+    }
+
+    protected function getLanguageService(): LanguageService
+    {
+        return $GLOBALS['LANG'];
     }
 }
