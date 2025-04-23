@@ -303,7 +303,7 @@ class AdmiralCloudApi
         ;
 
         $sgs = [];
-        $res = $queryBuilder->select('sg.*')
+        $res = $queryBuilder->select('*')
             ->from('tx_admiralcloudconnector_security_groups')
             ->orderBy('ac_security_group_id', 'DESC')
             ->executeQuery()
