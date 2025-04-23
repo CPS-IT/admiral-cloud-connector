@@ -1,85 +1,73 @@
 <?php
 
+declare(strict_types=1);
+
+/*
+ * This file is part of the TYPO3 CMS extension "admiral_cloud_connector".
+ *
+ * It is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License, either version 2
+ * of the License, or any later version.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE.txt file that was distributed with this source code.
+ *
+ * The TYPO3 project - inspiring people to share!
+ */
 
 namespace CPSIT\AdmiralCloudConnector\Backend\ToolbarItems;
 
 use CPSIT\AdmiralCloudConnector\Api\AdmiralCloudApi;
-use CPSIT\AdmiralCloudConnector\Utility\ConfigurationUtility;
 use TYPO3\CMS\Backend\Toolbar\ToolbarItemInterface;
-use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Fluid\View\StandaloneView;
+use TYPO3\CMS\Core\View\ViewFactoryData;
+use TYPO3\CMS\Core\View\ViewFactoryInterface;
 
 /**
  * Class AdmiralCloudToolbarItem
- * @package CPSIT\AdmiralCloudConnector\Backend\ToolbarItems
  */
-class AdmiralCloudToolbarItem implements ToolbarItemInterface
+readonly class AdmiralCloudToolbarItem implements ToolbarItemInterface
 {
+    public function __construct(
+        protected ViewFactoryInterface $viewFactory,
+    ) {}
 
-    /**
-     * @inheritDoc
-     */
-    public function checkAccess()
+    public function checkAccess(): bool
     {
         return true;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getItem()
+    public function getItem(): string
     {
-        $standaloneView = GeneralUtility::makeInstance(StandaloneView::class);
-        $standaloneView->setTemplatePathAndFilename(
-            ExtensionManagementUtility::extPath(ConfigurationUtility::EXTENSION) . 'Resources/Private/Templates/ToolbarMenu/MenuItem.html'
+        $data = new ViewFactoryData(
+            templatePathAndFilename: 'EXT:admiral_cloud_connector/Resources/Private/Templates/ToolbarMenu/MenuItem.html',
         );
 
-        $request = $standaloneView->getRequest();
-        //$request->setControllerExtensionName(ConfigurationUtility::EXTENSION);
-        $standaloneView->assign('ACGroup',AdmiralCloudApi::getSecurityGroup());
+        $view = $this->viewFactory->create($data);
+        $view->assign('ACGroup', AdmiralCloudApi::getSecurityGroup());
 
-        return $standaloneView->render();
+        return $view->render();
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function hasDropDown()
+    public function hasDropDown(): bool
     {
         return true;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getDropDown()
+    public function getDropDown(): string
     {
-        $extensionName = 'admiral_cloud_connector';
-
-        $standaloneView = GeneralUtility::makeInstance(StandaloneView::class);
-        $standaloneView->setTemplatePathAndFilename(
-            ExtensionManagementUtility::extPath($extensionName) . 'Resources/Private/Templates/ToolbarMenu/DropDown.html'
+        $data = new ViewFactoryData(
+            templatePathAndFilename: 'EXT:admiral_cloud_connector/Resources/Private/Templates/ToolbarMenu/DropDown.html',
         );
 
-        $request = $standaloneView->getRequest();
-        //$request->setControllerExtensionName($extensionName);
-
-        return $standaloneView->render();
+        return $this->viewFactory->create($data)->render();
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getAdditionalAttributes()
+    public function getAdditionalAttributes(): array
     {
         return [];
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getIndex()
+    public function getIndex(): int
     {
         return 50;
     }
