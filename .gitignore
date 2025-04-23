@@ -65,7 +65,9 @@ Html/Introduction/Index.html
 Html/Introduction/About/Index.html
 Html/Introduction/Faq/Index.html
 
+/config
 /public
+/var
 /vendor
 /.php-cs-fixer.cache
 /composer.lock
