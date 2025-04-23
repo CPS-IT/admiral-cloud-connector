@@ -2,14 +2,6 @@
 
 defined('TYPO3') || die('Access denied.');
 
-
-\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addPageTSConfig(
-    "@import 'EXT:admiral_cloud_connector/Configuration/TSconfig/LinkHandler.tsconfig'"
-);
-\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addPageTSConfig(
-    "@import 'EXT:admiral_cloud_connector/Configuration/TSconfig/LinkHandler.tsconfig'"
-);
-
 $GLOBALS['TYPO3_CONF_VARS']['SYS']['formEngine']['nodeRegistry'][1433198160] = [
     'nodeName' => 'file',
     'priority' => 50,
