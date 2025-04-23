@@ -2,6 +2,19 @@
 
 declare(strict_types=1);
 
+/*
+ * This file is part of the TYPO3 CMS extension "admiral_cloud_connector".
+ *
+ * It is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License, either version 2
+ * of the License, or any later version.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE.txt file that was distributed with this source code.
+ *
+ * The TYPO3 project - inspiring people to share!
+ */
+
 namespace CPSIT\AdmiralCloudConnector\Backend;
 
 use Psr\Http\Message\ServerRequestInterface;
@@ -17,10 +30,6 @@ use TYPO3\CMS\Core\Page\PageRenderer;
 use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\View\ViewInterface;
 
-/**
- * Class AdmiralCloudLinkHandler
- * @package CPSIT\AdmiralCloudConnector\Backend
- */
 #[Autoconfigure(public: true)]
 class AdmiralCloudConnectorLinkHandler implements LinkHandlerInterface
 {
@@ -30,100 +39,100 @@ class AdmiralCloudConnectorLinkHandler implements LinkHandlerInterface
     protected string $expectedClass = File::class;
     protected string $mode = 'file';
 
-   public function __construct(
-       protected readonly IconFactory $iconFactory,
-       protected readonly LinkService $linkService,
-       protected readonly PageRenderer $pageRenderer,
-       protected readonly UriBuilder $uriBuilder,
-   ) {}
+    public function __construct(
+        protected readonly IconFactory $iconFactory,
+        protected readonly LinkService $linkService,
+        protected readonly PageRenderer $pageRenderer,
+        protected readonly UriBuilder $uriBuilder,
+    ) {}
 
     public function initialize(AbstractLinkBrowserController $linkBrowser, $identifier, array $configuration): void
     {
         // Nothing to do here.
     }
 
-   public function canHandleLink(array $linkParts): bool
-   {
-       if (!($linkParts['url'] ?? null)) {
-           return false;
-       }
+    public function canHandleLink(array $linkParts): bool
+    {
+        if (!($linkParts['url'] ?? null)) {
+            return false;
+        }
 
-       if (is_a($linkParts['url'][$this->mode] ?? null, $this->expectedClass, true)
-           && str_starts_with($linkParts['url'][$this->mode]->getMimeType(), 'admiralCloud/')
-       ) {
-           $this->linkParts = $linkParts;
+        if (is_a($linkParts['url'][$this->mode] ?? null, $this->expectedClass, true)
+            && str_starts_with($linkParts['url'][$this->mode]->getMimeType(), 'admiralCloud/')
+        ) {
+            $this->linkParts = $linkParts;
 
-           return true;
-       }
+            return true;
+        }
 
-       return false;
-   }
+        return false;
+    }
 
-   public function formatCurrentUrl(): string
-   {
-       return $this->linkParts['url'][$this->mode]?->getName() ?? '';
-   }
+    public function formatCurrentUrl(): string
+    {
+        return $this->linkParts['url'][$this->mode]?->getName() ?? '';
+    }
 
-   public function render(ServerRequestInterface $request): string
-   {
-       $this->pageRenderer->loadJavaScriptModule('@cpsit/admiral-cloud-connector/Browser.js');
+    public function render(ServerRequestInterface $request): string
+    {
+        $this->pageRenderer->loadJavaScriptModule('@cpsit/admiral-cloud-connector/Browser.js');
 
-       $languageService = $this->getLanguageService();
-       $compactViewUrl = (string) $this->uriBuilder->buildUriFromRoute('admiral_cloud_browser_rte_link');
-       $rteLinkDownloadLabel = htmlspecialchars((string) $languageService->sL('LLL:EXT:admiral_cloud_connector/Resources/Private/Language/locallang_be.xlf:linkHandler.rteLinkDownload'));
-       $buttonText = htmlspecialchars((string) $languageService->sL('LLL:EXT:admiral_cloud_connector/Resources/Private/Language/locallang_be.xlf:browser.button'));
-       $titleText = htmlspecialchars((string) $languageService->sL('LLL:EXT:admiral_cloud_connector/Resources/Private/Language/locallang_be.xlf:browser.header'));
+        $languageService = $this->getLanguageService();
+        $compactViewUrl = (string)$this->uriBuilder->buildUriFromRoute('admiral_cloud_browser_rte_link');
+        $rteLinkDownloadLabel = htmlspecialchars((string)$languageService->sL('LLL:EXT:admiral_cloud_connector/Resources/Private/Language/locallang_be.xlf:linkHandler.rteLinkDownload'));
+        $buttonText = htmlspecialchars((string)$languageService->sL('LLL:EXT:admiral_cloud_connector/Resources/Private/Language/locallang_be.xlf:browser.button'));
+        $titleText = htmlspecialchars((string)$languageService->sL('LLL:EXT:admiral_cloud_connector/Resources/Private/Language/locallang_be.xlf:browser.header'));
 
-       $buttonHtml = [];
-       $buttonHtml[] = '<div style="text-align: center;margin-top: 1rem;">'
-             . '<span style="display:none"><input id="rteLinkDownload" type="checkbox" style="margin-right: 0.5rem; position: relative; top: 2px;"/>' . $rteLinkDownloadLabel . '</span></div>'
-             . '<a href="#" class="btn btn-default t3js-admiral_cloud-browser-btn rte-link"'
-             . ' style="margin: 2rem auto;"'
-             . ' data-admiral_cloud-browser-url="' . htmlspecialchars($compactViewUrl) . '" '
-             . ' data-title="' . htmlspecialchars($titleText) . '">';
-       $buttonHtml[] = $this->iconFactory->getIcon('actions-admiral_cloud-browser', IconSize::SMALL)->render();
-       $buttonHtml[] = $buttonText;
-       $buttonHtml[] = '</a>';
+        $buttonHtml = [];
+        $buttonHtml[] = '<div style="text-align: center;margin-top: 1rem;">'
+              . '<span style="display:none"><input id="rteLinkDownload" type="checkbox" style="margin-right: 0.5rem; position: relative; top: 2px;"/>' . $rteLinkDownloadLabel . '</span></div>'
+              . '<a href="#" class="btn btn-default t3js-admiral_cloud-browser-btn rte-link"'
+              . ' style="margin: 2rem auto;"'
+              . ' data-admiral_cloud-browser-url="' . htmlspecialchars($compactViewUrl) . '" '
+              . ' data-title="' . htmlspecialchars($titleText) . '">';
+        $buttonHtml[] = $this->iconFactory->getIcon('actions-admiral_cloud-browser', IconSize::SMALL)->render();
+        $buttonHtml[] = $buttonText;
+        $buttonHtml[] = '</a>';
 
-       $this->view->assign('html', LF . implode(LF, $buttonHtml));
+        $this->view->assign('html', LF . implode(LF, $buttonHtml));
 
-       return $this->view->render('LinkBrowser/AdmiralCloud');
-   }
+        return $this->view->render('LinkBrowser/AdmiralCloud');
+    }
 
-   /**
-   * @return string[] Array of body-tag attributes
-   */
-   public function getBodyTagAttributes(): array
-   {
-       if (count($this->linkParts) === 0 || empty($this->linkParts['url']['pageuid'])) {
-           return [];
-       }
+    /**
+    * @return string[] Array of body-tag attributes
+    */
+    public function getBodyTagAttributes(): array
+    {
+        if (count($this->linkParts) === 0 || empty($this->linkParts['url']['pageuid'])) {
+            return [];
+        }
 
-       return [
-           'data-current-link' => $this->linkService->asString([
-               'type' => LinkService::TYPE_FILE,
-               'file' => $this->linkParts['url']['file'],
-           ]),
-       ];
-   }
+        return [
+            'data-current-link' => $this->linkService->asString([
+                'type' => LinkService::TYPE_FILE,
+                'file' => $this->linkParts['url']['file'],
+            ]),
+        ];
+    }
 
-   public function getLinkAttributes(): array
-   {
-      return ['target', 'title', 'class', 'params', 'rel'];
-   }
+    public function getLinkAttributes(): array
+    {
+        return ['target', 'title', 'class', 'params', 'rel'];
+    }
 
-   public function modifyLinkAttributes(array $fieldDefinitions): array
-   {
-      return $fieldDefinitions;
-   }
+    public function modifyLinkAttributes(array $fieldDefinitions): array
+    {
+        return $fieldDefinitions;
+    }
 
-   /**
-   * We don't support updates since there is no difference to simply set the link again.
-   */
-   public function isUpdateSupported(): bool
-   {
-      return false;
-   }
+    /**
+    * We don't support updates since there is no difference to simply set the link again.
+    */
+    public function isUpdateSupported(): bool
+    {
+        return false;
+    }
 
     public function setView(ViewInterface $view): void
     {
