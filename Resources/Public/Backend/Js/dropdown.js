@@ -1,5 +1,6 @@
 'use strict';
 
+import AjaxRequest from '@typo3/core/ajax/ajax-request.js';
 import Notification from '@typo3/backend/notification.js';
 import Viewport from '@typo3/backend/viewport.js';
 
@@ -30,20 +31,23 @@ class Dropdown {
 
     const url = TYPO3.settings.ajaxUrls['admiral_cloud_toolbar_update_changed_metadata'];
 
-    try {
-      const response = await fetch(url, {
-        method: 'POST',
+    new AjaxRequest(url)
+      .post({}, {
         headers: {
           'Content-Type': 'application/json',
         },
-      });
+      })
+      .then(
+        async function (response) {
+          await response.resolve();
 
-      await response.json();
-
-      Notification.success('', TYPO3.lang.acUpdateChangedMetadataSuccessMessage, 5);
-    } catch (error) {
-      Notification.error('', TYPO3.lang.acUpdateChangedMetadataErrorMessage, 5);
-    }
+          Notification.success('', TYPO3.lang.acUpdateChangedMetadataSuccessMessage, 5);
+        },
+        function () {
+          Notification.error('', TYPO3.lang.acUpdateChangedMetadataErrorMessage, 5);
+        },
+      )
+    ;
 
     return false;
   }
