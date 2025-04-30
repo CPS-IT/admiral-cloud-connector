@@ -1,7 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 /*
- * This file is part of the TYPO3 CMS project.
+ * This file is part of the TYPO3 CMS extension "admiral_cloud_connector".
  *
  * It is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License, either version 2
@@ -17,18 +19,23 @@ namespace CPSIT\AdmiralCloudConnector\Controller\Backend;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use TYPO3\CMS\Backend\Attribute\AsController;
 use TYPO3\CMS\Backend\Utility\BackendUtility;
+use TYPO3\CMS\Core\Crypto\HashService;
 use TYPO3\CMS\Core\Http\JsonResponse;
+use TYPO3\CMS\Core\LinkHandling\LinkService;
 use TYPO3\CMS\Core\LinkHandling\TypoLinkCodecService;
 use TYPO3\CMS\Core\Page\JavaScriptModuleInstruction;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 
-
-/**
- * Extended controller for link browser
- */
+#[AsController]
 class LinkBrowserController extends AbstractLinkBrowserController
 {
+    public function __construct(
+        protected readonly HashService $hashService,
+        protected readonly LinkService $linkService,
+        protected readonly TypoLinkCodecService $typoLinkCodecService,
+    ) {}
+
     /**
      * Initialize $this->currentLinkParts
      */
@@ -36,7 +43,7 @@ class LinkBrowserController extends AbstractLinkBrowserController
     {
         $currentLink = isset($this->parameters['currentValue']) ? trim($this->parameters['currentValue']) : '';
         /** @var array<string, string> $currentLinkParts */
-        $currentLinkParts = GeneralUtility::makeInstance(TypoLinkCodecService::class)->decode($currentLink);
+        $currentLinkParts = $this->typoLinkCodecService->decode($currentLink);
         $currentLinkParts['params'] = $currentLinkParts['additionalParams'];
         unset($currentLinkParts['additionalParams']);
 
@@ -65,18 +72,6 @@ class LinkBrowserController extends AbstractLinkBrowserController
                     // @todo use a proper constructor when migrating to TypeScript
                     ->invoke('setOnFieldChangeItems', $this->parameters['fieldChangeFunc'])
             );
-
-        } else {
-            // @deprecated
-            $update = [];
-            foreach ($this->parameters['fieldChangeFunc'] as $v) {
-                // @todo this is very special and only works when JS code invokes global `window` items
-                $update[] = 'form-engine-link-browser-adapter.getParent().' . $v;
-            }
-            $inlineJS = implode(LF, $update);
-            $this->pageRenderer->loadJavaScriptModule('@cpsit/admiral-cloud-connector/Browser.js', 'function(form-engine-link-browser-adapter) {
-    			form-engine-link-browser-adapter.updateFunctions = function() {' . $inlineJS . '};
-    		}');
         }
     }
 
@@ -91,12 +86,14 @@ class LinkBrowserController extends AbstractLinkBrowserController
     public function encodeTypoLink(ServerRequestInterface $request): ResponseInterface
     {
         $typoLinkParts = $request->getQueryParams();
+
         if (isset($typoLinkParts['params'])) {
             $typoLinkParts['additionalParams'] = $typoLinkParts['params'];
             unset($typoLinkParts['params']);
         }
 
-        $typoLink = GeneralUtility::makeInstance(TypoLinkCodecService::class)->encode($typoLinkParts);
+        $typoLink = $this->typoLinkCodecService->encode($typoLinkParts);
+
         return new JsonResponse(['typoLink' => $typoLink]);
     }
 
@@ -107,16 +104,17 @@ class LinkBrowserController extends AbstractLinkBrowserController
      * @param bool $handleFlexformSections Whether to handle flexform sections differently
      * @return bool Whether the submitted field change functions are valid
      */
-    protected function areFieldChangeFunctionsValid($handleFlexformSections = false)
+    protected function areFieldChangeFunctionsValid($handleFlexformSections = false): bool
     {
         $result = false;
-        if (isset($this->parameters['fieldChangeFunc']) && is_array($this->parameters['fieldChangeFunc']) && isset($this->parameters['fieldChangeFuncHash'])) {
+
+        if (isset($this->parameters['fieldChangeFunc'], $this->parameters['fieldChangeFuncHash']) && is_array($this->parameters['fieldChangeFunc'])) {
             $matches = [];
-            $pattern = '#\\[el\\]\\[(([^]-]+-[^]-]+-)(idx\\d+-)([^]]+))\\]#i';
+            $pattern = '#\\[el]\\[(([^]-]+-[^]-]+-)(idx\\d+-)([^]]+))]#i';
             $fieldChangeFunctions = $this->parameters['fieldChangeFunc'];
             // Special handling of flexform sections:
             // Field change functions are modified in JavaScript, thus the hash is always invalid
-            if ($handleFlexformSections && preg_match($pattern, $this->parameters['itemName'], $matches)) {
+            if ($handleFlexformSections && preg_match($pattern, (string)$this->parameters['itemName'], $matches)) {
                 $originalName = $matches[1];
                 $cleanedName = $matches[2] . $matches[4];
                 $fieldChangeFunctions = $this->strReplaceRecursively(
@@ -125,8 +123,12 @@ class LinkBrowserController extends AbstractLinkBrowserController
                     $fieldChangeFunctions
                 );
             }
-            $result = hash_equals(GeneralUtility::hmac(serialize($fieldChangeFunctions), 'backend-link-browser'), $this->parameters['fieldChangeFuncHash']);
+            $result = hash_equals(
+                $this->hashService->hmac(serialize($fieldChangeFunctions), 'backend-link-browser'),
+                $this->parameters['fieldChangeFuncHash'],
+            );
         }
+
         return $result;
     }
 
@@ -139,13 +141,12 @@ class LinkBrowserController extends AbstractLinkBrowserController
                 $item = str_replace($search, $replace, $item);
             }
         }
+
         return $array;
     }
 
     /**
      * Return the ID of current page
-     *
-     * @return int
      */
     protected function getCurrentPageId(): int
     {
@@ -155,7 +156,7 @@ class LinkBrowserController extends AbstractLinkBrowserController
             $pageId = $browserParameters['pid'];
         } elseif (isset($browserParameters['itemName'])) {
             // parse data[<table>][<uid>]
-            if (preg_match('~data\[([^]]*)\]\[([^]]*)\]~', $browserParameters['itemName'], $matches)) {
+            if (preg_match('~data\[([^]]*)]\[([^]]*)]~', $browserParameters['itemName'], $matches)) {
                 $recordArray = BackendUtility::getRecord($matches['1'], $matches['2']);
                 if (is_array($recordArray)) {
                     $pageId = $recordArray['pid'];
@@ -167,11 +168,11 @@ class LinkBrowserController extends AbstractLinkBrowserController
 
     /**
      * Retrieve the configuration
-     * @return array
      */
     public function getConfiguration(): array
     {
         $tsConfig = BackendUtility::getPagesTSconfig($this->getCurrentPageId());
+
         return $tsConfig['TCEMAIN.']['linkHandler.']['page.']['configuration.'] ?? [];
     }
 }
