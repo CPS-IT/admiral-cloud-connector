@@ -84,9 +84,6 @@ if (!is_array($GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations
     $GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['admiral_cloud_connector']['backend'] = \TYPO3\CMS\Core\Cache\Backend\SimpleFileBackend::class;
 }
 
-$GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\CPSIT\AdmiralCloudConnector\LinkHandler\PageLinkHandler::class] = [
-    'className' => CPSIT\AdmiralCloudConnector\LinkHandler\PageLinkHandler::class
-];
 $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Backend\Controller\LinkBrowserController::class] = [
     'className' => \CPSIT\AdmiralCloudConnector\Controller\Backend\LinkBrowserController::class
 ];
