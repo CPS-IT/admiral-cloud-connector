@@ -1,41 +1,49 @@
 <?php
 
+declare(strict_types=1);
+
+/*
+ * This file is part of the TYPO3 CMS extension "admiral_cloud_connector".
+ *
+ * It is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License, either version 2
+ * of the License, or any later version.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE.txt file that was distributed with this source code.
+ *
+ * The TYPO3 project - inspiring people to share!
+ */
 
 namespace CPSIT\AdmiralCloudConnector\Form\Element;
 
+use CPSIT\AdmiralCloudConnector\Resource\File;
 use CPSIT\AdmiralCloudConnector\Traits\AdmiralCloudStorage;
 use TYPO3\CMS\Backend\Form\Element\AbstractFormElement;
-use TYPO3\CMS\Backend\Form\NodeFactory;
 use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Core\Resource\Exception\FileDoesNotExistException;
-use CPSIT\AdmiralCloudConnector\Resource\File;
+use TYPO3\CMS\Core\Resource\FileType;
 use TYPO3\CMS\Core\Resource\ResourceFactory;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\MathUtility;
-use TYPO3\CMS\Extbase\Utility\DebuggerUtility;
-use TYPO3\CMS\Fluid\View\StandaloneView;
+use TYPO3\CMS\Core\Utility\StringUtility;
+use TYPO3\CMS\Core\View\ViewFactoryData;
+use TYPO3\CMS\Core\View\ViewFactoryInterface;
+use TYPO3\CMS\Core\View\ViewInterface;
 
-/**
- * Class AdmiralCloudImageManipulationElement
- * @package CPSIT\AdmiralCloudConnector\Form\Element
- */
 class AdmiralCloudImageManipulationElement extends AbstractFormElement
 {
     use AdmiralCloudStorage;
 
     /**
      * Default element configuration
-     *
-     * @var array
      */
-    protected static $defaultConfig = [
+    protected static array $defaultConfig = [
         'file_field' => 'uid_local',
     ];
 
     /**
      * Default field information enabled for this element.
-     *
-     * @var array
      */
     protected $defaultFieldInformation = [
         'tcaDescription' => [
@@ -45,8 +53,6 @@ class AdmiralCloudImageManipulationElement extends AbstractFormElement
 
     /**
      * Default field wizards enabled for this element.
-     *
-     * @var array
      */
     protected $defaultFieldWizard = [
         'localizationStateSelector' => [
@@ -55,7 +61,7 @@ class AdmiralCloudImageManipulationElement extends AbstractFormElement
         'otherLanguageContent' => [
             'renderType' => 'otherLanguageContent',
             'after' => [
-                'localizationStateSelector'
+                'localizationStateSelector',
             ],
         ],
         'defaultLanguageDifferences' => [
@@ -66,45 +72,35 @@ class AdmiralCloudImageManipulationElement extends AbstractFormElement
         ],
     ];
 
-    /**
-     * @var StandaloneView
-     */
-    protected $templateView;
+    protected ViewInterface $templateView;
 
-    /**
-     * @var UriBuilder
-     */
-    protected $uriBuilder;
+    public function __construct(
+        protected readonly ResourceFactory $resourceFactory,
+        protected readonly UriBuilder $uriBuilder,
+        ViewFactoryInterface $viewFactory,
+    ) {
+        $data = new ViewFactoryData(
+            partialRootPaths: ['EXT:admiral_cloud_connector/Resources/Private/Partials/ImageManipulation/'],
+            layoutRootPaths: ['EXT:admiral_cloud_connector/Resources/Private/Layouts/ImageManipulation/'],
+            templatePathAndFilename: 'EXT:admiral_cloud_connector/Resources/Private/Templates/ImageManipulation/ImageManipulationElement.html',
+        );
 
-    /**
-     * @param NodeFactory $nodeFactory
-     * @param array $data
-     */
-    public function __construct(NodeFactory $nodeFactory, array $data)
-    {
-        parent::__construct($nodeFactory, $data);
-        // Would be great, if we could inject the view here, but since the constructor is in the interface, we can't
-        $this->templateView = GeneralUtility::makeInstance(StandaloneView::class);
-        $this->templateView->setLayoutRootPaths([GeneralUtility::getFileAbsFileName('EXT:admiral_cloud_connector/Resources/Private/Layouts/ImageManipulation/')]);
-        $this->templateView->setPartialRootPaths([GeneralUtility::getFileAbsFileName('EXT:admiral_cloud_connector/Resources/Private/Partials/ImageManipulation/')]);
-        $this->templateView->setTemplatePathAndFilename(GeneralUtility::getFileAbsFileName('EXT:admiral_cloud_connector/Resources/Private/Templates/ImageManipulation/ImageManipulationElement.html'));
-        $this->uriBuilder = GeneralUtility::makeInstance(UriBuilder::class);
+        $this->templateView = $viewFactory->create($data);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function render()
+    public function render(): array
     {
         $resultArray = $this->initializeResultArray();
         $parameterArray = $this->data['parameterArray'];
         $config = $this->populateConfiguration($parameterArray['fieldConf']['config']);
 
         $file = $this->getFile($this->data['databaseRow'], $config['file_field']);
-        if (!$file
-            || $file->getType() !== File::FILETYPE_IMAGE
-            || $file->getStorage()->getUid() !== $this->getAdmiralCloudStorage()->getUid()) {
-            // Early return in case we do not find a file or it isn't an image or does not come from AdmiralCloud
+
+        // Early return in case we do not find a file or it isn't an image or does not come from AdmiralCloud
+        if ($file === null
+            || !$file->isType(FileType::IMAGE)
+            || $file->getStorage()->getUid() !== $this->getAdmiralCloudStorage()->getUid()
+        ) {
             return $resultArray;
         }
 
@@ -133,25 +129,27 @@ class AdmiralCloudImageManipulationElement extends AbstractFormElement
         $cropParams = [
             'mediaContainerId' => $file->getIdentifier(),
             'embedLink' => $file->getTxAdmiralCloudConnectorLinkhash(),
-            'irreObject' => $parameterArray['itemFormElID']
+            'irreObject' => StringUtility::getUniqueId('admiralCloud-image-manipulation-element-'),
         ];
         $arguments = [
             'fieldInformation' => $fieldInformationHtml,
             'fieldControl' => $fieldControlHtml,
             'fieldWizard' => $fieldWizardHtml,
             'isAllowedFileExtension' => in_array(
-                strtolower($file->getExtension()), GeneralUtility::trimExplode(',', strtolower($config['allowedExtensions']), true)
+                strtolower($file->getExtension()),
+                GeneralUtility::trimExplode(',', strtolower((string)$config['allowedExtensions']), true),
+                true,
             ),
             'image' => $file,
             'formEngine' => [
                 'field' => [
                     'value' => $parameterArray['itemFormElValue'],
                     'name' => $parameterArray['itemFormElName'],
-                    'id' => $parameterArray['itemFormElID']
+                    'id' => StringUtility::getUniqueId('admiralCloud-image-manipulation-element-'),
                 ],
-                'validation' => '[]'
+                'validation' => '[]',
             ],
-            'cropUrl' => $this->uriBuilder->buildUriFromRoute('admiral_cloud_browser_crop', $cropParams)
+            'cropUrl' => $this->uriBuilder->buildUriFromRoute('admiral_cloud_browser_crop', $cropParams),
         ];
         $this->templateView->assignMultiple($arguments);
         $resultArray['html'] = $this->templateView->render();
@@ -160,26 +158,25 @@ class AdmiralCloudImageManipulationElement extends AbstractFormElement
     }
 
     /**
-     * Get file object
-     *
-     * @param array $row
-     * @param string $fieldName
-     * @return File|null
+     * @param array<string, mixed> $row
      */
-    protected function getFile(array $row, $fieldName): ?File
+    protected function getFile(array $row, string $fieldName): ?File
     {
         $file = null;
         $fileUid = !empty($row[$fieldName]) ? $row[$fieldName] : null;
+
         if (is_array($fileUid) && isset($fileUid[0]['uid'])) {
             $fileUid = $fileUid[0]['uid'];
         }
+
         if (MathUtility::canBeInterpretedAsInteger($fileUid)) {
             try {
-                $file = GeneralUtility::makeInstance(ResourceFactory::class)->getFileObject($fileUid);
-            } catch (FileDoesNotExistException $e) {
-            } catch (\InvalidArgumentException $e) {
+                /** @var File $file */
+                $file = $this->resourceFactory->getFileObject((int)$fileUid);
+            } catch (FileDoesNotExistException|\InvalidArgumentException) {
             }
         }
+
         return $file;
     }
 
