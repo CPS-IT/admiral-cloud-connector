@@ -30,9 +30,9 @@ use TYPO3\CMS\Core\Resource\Filter\FileExtensionFilter;
 use TYPO3\CMS\Core\Resource\OnlineMedia\Helpers\OnlineMediaHelperRegistry;
 
 /**
- * Class InlineControlContainer
+ * Class FilesControlContainer
  *
- * Override core InlineControlContainer to inject AdmiralCloud button
+ * Override core FilesControlContainer to inject AdmiralCloud button
  */
 class FilesControlContainer extends \TYPO3\CMS\Backend\Form\Container\FilesControlContainer
 {
