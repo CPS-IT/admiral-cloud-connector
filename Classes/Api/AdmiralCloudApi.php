@@ -41,7 +41,7 @@ class AdmiralCloudApi
         $backendUserId = $context->getPropertyFromAspect('backend.user', 'id');
 
         $this->baseUrl = (string)getenv('ADMIRALCLOUD_BASE_URL');
-        $this->device = md5($backendUserId);
+        $this->device = md5((string)$backendUserId);
     }
 
     public static function create(array $settings, string $method = 'POST'): self
