@@ -46,8 +46,7 @@ readonly class ReadableLinkResolver implements MiddlewareInterface
             preg_match('/.*?\/.*?\/([a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12})\/(\d+).*/', $path, $matches);
 
             if (isset($matches[1], $matches[2])) {
-                $value = $request->getParsedBody()['download'] ?? $request->getQueryParams()['download'] ?? null;
-                $url = $this->admiralCloudService->getDirectPublicUrlForHash($matches[1], (bool)$value);
+                $url = $this->admiralCloudService->getDirectPublicUrlForHash($matches[1]);
                 $file = $this->admiralCloudService->getStorage()->getFile($matches[2]);
 
                 if ($file) {

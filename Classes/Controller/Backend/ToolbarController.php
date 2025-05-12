@@ -36,7 +36,7 @@ readonly class ToolbarController
     public function updateChangedMetadataAction(): ResponseInterface
     {
         try {
-            $this->metadataService->updateLastChangedMetadatas();
+            $this->metadataService->updateLastChangedMetadata();
             $jsonArray = ['message' => 'ok'];
             $statusCode = 200;
         } catch (\Throwable $exception) {

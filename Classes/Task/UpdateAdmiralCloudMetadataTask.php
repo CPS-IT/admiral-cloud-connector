@@ -26,7 +26,7 @@ class UpdateAdmiralCloudMetadataTask extends AbstractTask
     {
         switch ($this->actionType) {
             case static::ACTION_TYPE_UPDATE_LAST_CHANGED:
-                $this->getMetadataService()->updateLastChangedMetadatas();
+                $this->getMetadataService()->updateLastChangedMetadata();
                 break;
             case static::ACTION_TYPE_UPDATE_ALL:
                 $this->getMetadataService()->updateAll();

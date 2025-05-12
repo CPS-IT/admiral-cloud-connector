@@ -1,20 +1,33 @@
 <?php
 
+declare(strict_types=1);
+
+/*
+ * This file is part of the TYPO3 CMS extension "admiral_cloud_connector".
+ *
+ * It is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License, either version 2
+ * of the License, or any later version.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE.txt file that was distributed with this source code.
+ *
+ * The TYPO3 project - inspiring people to share!
+ */
+
 namespace CPSIT\AdmiralCloudConnector\Service;
 
 use CPSIT\AdmiralCloudConnector\Exception\InvalidArgumentException;
 use CPSIT\AdmiralCloudConnector\Exception\RuntimeException;
 use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Database\ConnectionPool;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
- * Class ExportSysFileMetadataService
- * @package CPSIT\AdmiralCloudConnector\Service
+ * @todo is this class obsolete? it's currently not used
  */
 class ExportSysFileMetadataService
 {
-    public const MAXIMUM_ITERATION = 50000;
+    protected const MAXIMUM_ITERATION = 50000;
     protected const EXPORT_SYS_FILE_ITERATION_LIMIT = 1000;
     protected const JSON_ENTRIES_PER_FILE = 20000;
 
@@ -23,38 +36,23 @@ class ExportSysFileMetadataService
 
     protected const FILEADMIN_STORAGE_PATH = 'fileadmin';
 
-    /**
-     * @var int
-     */
-    protected $imagePoolStorageUid;
+    protected int $imagePoolStorageUid = 0;
+    protected string $absoluteExportFilePath = '';
+    protected string $logFilePath = '';
+    protected int $currentFileNumber = 0;
+
+    public function __construct(
+        protected readonly ConnectionPool $connectionPool,
+    ) {}
 
     /**
-     * @var string
-     */
-    protected $absoluteExportFilePath = '';
-
-    /**
-     * @var string
-     */
-    protected $logFilePath = '';
-
-    /**
-     * @var int
-     */
-    protected $currentFileNumber = 0;
-
-    /**
-     * @param string $exportFilePath
-     * @param array $securityGroupMapping
      * @throws \Throwable
      */
-    public function generateFileWithSysFileMetadata(
-        string $exportFilePath,
-        array $securityGroupMapping
-    ): void {
-        // Exist if export file path is empty
+    public function generateFileWithSysFileMetadata(string $exportFilePath, array $securityGroupMapping): void
+    {
+        // Exit if export file path is empty
         if (empty($exportFilePath)) {
-            throw new InvalidArgumentException('Export file path cannot be empty.');
+            throw new InvalidArgumentException('Export file path cannot be empty.', 1747033435);
         }
 
         // Set export and log file absolute paths
@@ -63,23 +61,24 @@ class ExportSysFileMetadataService
         // Start JSON array
         if ($this->writeToExportFile('[', true) === false) {
             throw new RuntimeException(
-                'It was not possible to write in the export file: ' . sprintf($this->absoluteExportFilePath, $this->currentFileNumber)
+                'It was not possible to write in the export file: ' . sprintf($this->absoluteExportFilePath, $this->currentFileNumber),
+                1747033444,
             );
         }
 
         // Empty log file
         if ($this->writeToLogFile('uid, storage, identifier', false) === false) {
-            throw new RuntimeException('It was not possible to write in the log file: ' . $this->logFilePath);
+            throw new RuntimeException('It was not possible to write in the log file: ' . $this->logFilePath, 8573198335);
         }
 
         $iteration = 0;
         $exportedFiles = 0;
         $duration = time();
+        $exception = null;
 
         try {
             // Init query to get rows from sys_file with metadata
-            $queryBuilder = $this->getConnectionPool()->getQueryBuilderForTable('sys_file');
-
+            $queryBuilder = $this->connectionPool->getQueryBuilderForTable('sys_file');
             $queryBuilder->select(
                 'sys_file.uid',
                 'sys_file.identifier',
@@ -92,7 +91,7 @@ class ExportSysFileMetadataService
                 'm.alternative',
                 'm.copyright',
                 'm.caption',
-                'm.publisher'
+                'm.publisher',
             )
                 ->from('sys_file')
                 ->join('sys_file', 'sys_file_metadata', 'm', 'sys_file.uid = m.file')
@@ -123,7 +122,7 @@ class ExportSysFileMetadataService
                                 $insertCommaBefore = true;
                             }
 
-                            $parentFolder = $row['storage'] == $this->getImagePoolStorageUid()
+                            $parentFolder = $row['storage'] === $this->getImagePoolStorageUid()
                                 ? static::IMAGE_POOL_STORAGE_PATH : static::FILEADMIN_STORAGE_PATH;
 
                             $file = [
@@ -140,7 +139,7 @@ class ExportSysFileMetadataService
                                     'publisher' => $row['publisher'] ?? '',
                                     'content_creation_date' => $row['crdate'] ?? 0,
                                     'content_modification_date' => $row['tstamp'] ?? 0,
-                                ]
+                                ],
                             ];
 
                             $exportedFiles++;
@@ -152,18 +151,13 @@ class ExportSysFileMetadataService
                                 $this->writeToExportFile('[', true);
                                 $insertCommaBefore = false;
                             }
-                        } else {
+                        } elseif ($row['storage'] !== 0 && $row['storage'] !== 2) {
                             // If security group was not found
                             // and storage is not the default one and is not the deleted "AHK-Sandbox"
                             // write current sys_file entry to log
-                            if ($row['storage'] != 0 && $row['storage'] !== 2) {
-                                $this->writeToLogFile(sprintf(
-                                    '%s, %s, %s',
-                                    $row['uid'],
-                                    $row['storage'],
-                                    $row['identifier']
-                                ));
-                            }
+                            $this->writeToLogFile(
+                                sprintf('%s, %s, %s', $row['uid'], $row['storage'], $row['identifier']),
+                            );
                         }
                     }
                 } else {
@@ -174,7 +168,8 @@ class ExportSysFileMetadataService
 
             if ($iteration === static::MAXIMUM_ITERATION) {
                 throw new RuntimeException(
-                    'Error exporting sys_file metadata for AdmiralCloud. Maximum iteration was reached.'
+                    'Error exporting sys_file metadata for AdmiralCloud. Maximum iteration was reached.',
+                    1747033620,
                 );
             }
         } catch (\Throwable $exception) {
@@ -190,7 +185,7 @@ class ExportSysFileMetadataService
                     . 'Error exporting sys_file with metadata.' . PHP_EOL
                     . 'Exception: ' . $exception->getMessage() . PHP_EOL
                     . 'File: ' . $exception->getFile() . ':' . $exception->getLine() . PHP_EOL
-                    . '************************'
+                    . '************************',
                 );
             }
 
@@ -202,7 +197,7 @@ class ExportSysFileMetadataService
                 . 'Exported sys_file entries: ' . $exportedFiles . PHP_EOL
                 . 'Count of exported files: ' . $this->currentFileNumber . PHP_EOL
                 . 'Time: ' . $duration . PHP_EOL
-                . '############################'
+                . '############################',
             );
         }
     }
@@ -216,20 +211,20 @@ class ExportSysFileMetadataService
      */
     protected function getSecurityGroup(array $row, array $securityGroupMapping): int
     {
-        if ($row['storage'] == $this->getImagePoolStorageUid()) {
+        if ($row['storage'] === $this->getImagePoolStorageUid()) {
             $parentFolder = static::IMAGE_POOL_STORAGE_NAME;
         } else {
             $identifier = $row['identifier'];
 
-            if (strpos($identifier, '/') === 0) {
-                $identifier = substr($identifier, 1);
+            if (str_starts_with((string)$identifier, '/')) {
+                $identifier = substr((string)$identifier, 1);
             }
 
-            $parentFolder = substr($identifier, 0, strpos($identifier, '/') ?: null);
+            $parentFolder = substr((string)$identifier, 0, strpos((string)$identifier, '/') ?: null);
         }
 
         if (isset($securityGroupMapping[$parentFolder])) {
-            return (int) $securityGroupMapping[$parentFolder];
+            return (int)$securityGroupMapping[$parentFolder];
         }
 
         return 0;
@@ -237,8 +232,6 @@ class ExportSysFileMetadataService
 
     /**
      * Get image pool storage uid
-     *
-     * @return int
      */
     protected function getImagePoolStorageUid(): int
     {
@@ -246,29 +239,27 @@ class ExportSysFileMetadataService
             return $this->imagePoolStorageUid;
         }
 
-        $con = $this->getConnectionPool()->getConnectionForTable('sys_file_storage');
-
-        $res = $con->select(['uid'], 'sys_file_storage', ['name' => static::IMAGE_POOL_STORAGE_NAME])->fetch();
+        $res = $this->connectionPool->getConnectionForTable('sys_file_storage')
+            ->select(['uid'], 'sys_file_storage', ['name' => static::IMAGE_POOL_STORAGE_NAME])
+            ->fetchAssociative()
+        ;
 
         if ($res) {
-            $this->imagePoolStorageUid = (int) $res['uid'];
+            $this->imagePoolStorageUid = (int)$res['uid'];
         } else {
-            throw new RuntimeException(sprintf(
-                'Storage with name "%s" was not found.',
-                static::IMAGE_POOL_STORAGE_NAME
-            ));
+            throw new RuntimeException(
+                sprintf('Storage with name "%s" was not found.', static::IMAGE_POOL_STORAGE_NAME),
+                1747033734,
+            );
         }
 
         return $this->imagePoolStorageUid;
     }
 
-    /**
-     * @param string $relativePath
-     */
     protected function setAbsoluteFilesPath(string $relativePath): void
     {
         // Get absolute export file path
-        $preparedAbsoluteExportFilePath = Environment::getProjectPath() . '/' .  $relativePath;
+        $preparedAbsoluteExportFilePath = Environment::getProjectPath() . '/' . $relativePath;
 
         // Get absolute log path
         $this->logFilePath = $preparedAbsoluteExportFilePath . '.log';
@@ -289,12 +280,8 @@ class ExportSysFileMetadataService
 
     /**
      * Write to export file
-     *
-     * @param string $text
-     * @param bool $newFile
-     * @return false|int
      */
-    protected function writeToExportFile(string $text, bool $newFile = false)
+    protected function writeToExportFile(string $text, bool $newFile = false): int|false
     {
         if ($newFile) {
             $this->currentFileNumber++;
@@ -303,27 +290,15 @@ class ExportSysFileMetadataService
         return file_put_contents(
             sprintf($this->absoluteExportFilePath, $this->currentFileNumber),
             $text,
-            $newFile ? 0 : FILE_APPEND
+            $newFile ? 0 : FILE_APPEND,
         );
     }
 
     /**
      * Write message to log file
-     *
-     * @param string $message
-     * @param bool $append
-     * @return false|int
      */
-    protected function writeToLogFile(string $message, bool $append = true)
+    protected function writeToLogFile(string $message, bool $append = true): int|false
     {
         return file_put_contents($this->logFilePath, $message . PHP_EOL, $append ? FILE_APPEND : 0);
-    }
-
-    /**
-     * @return ConnectionPool
-     */
-    protected function getConnectionPool(): ConnectionPool
-    {
-        return GeneralUtility::makeInstance(ConnectionPool::class);
     }
 }
