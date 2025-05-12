@@ -27,14 +27,14 @@ use TYPO3\CMS\Core\Resource\FileInterface;
 use TYPO3\CMS\Core\Resource\Rendering\FileRendererInterface;
 use TYPO3Fluid\Fluid\Core\ViewHelper\TagBuilder;
 
-readonly class AssetRenderer implements FileRendererInterface
+class AssetRenderer implements FileRendererInterface
 {
     use AssetFactory;
 
     public function __construct(
         \CPSIT\AdmiralCloudConnector\Resource\AssetFactory $assetFactory,
-        protected AdmiralCloudService $admiralCloudService,
-        protected TagBuilderService $tagBuilderService,
+        protected readonly AdmiralCloudService $admiralCloudService,
+        protected readonly TagBuilderService $tagBuilderService,
     ) {
         $this->assetFactory = $assetFactory;
     }

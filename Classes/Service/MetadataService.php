@@ -25,7 +25,7 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
 use TYPO3\CMS\Core\Database\Connection;
 
-readonly class MetadataService
+class MetadataService
 {
     use AdmiralCloudStorage;
 
@@ -34,14 +34,14 @@ readonly class MetadataService
     protected const DEFAULT_LAST_CHANGED_DATE = '-7 days';
 
     public function __construct(
-        protected AdmiralCloudService $admiralCloudService,
-        #[Autowire(expression: 'service("TYPO3\\CMS\\Core\\Cache\\CacheManager")->getCache("admiral_cloud_connector")')]
-        protected FrontendInterface $cache,
-        #[Autowire(expression: 'service("TYPO3\\CMS\\Core\\Database\\ConnectionPool")->getConnectionForTable("sys_file")')]
-        protected Connection $conSysFile,
-        #[Autowire(expression: 'service("TYPO3\\CMS\\Core\\Database\\ConnectionPool")->getConnectionForTable("sys_file_metadata")')]
-        protected Connection $conSysFileMetadata,
-        protected LoggerInterface $logger,
+        protected readonly AdmiralCloudService $admiralCloudService,
+        #[Autowire(expression: 'service("TYPO3\\CMS\\Core\\Cache\\CacheManager").getCache("admiral_cloud_connector")')]
+        protected readonly FrontendInterface $cache,
+        #[Autowire(expression: 'service("TYPO3\\CMS\\Core\\Database\\ConnectionPool").getConnectionForTable("sys_file")')]
+        protected readonly Connection $conSysFile,
+        #[Autowire(expression: 'service("TYPO3\\CMS\\Core\\Database\\ConnectionPool").getConnectionForTable("sys_file_metadata")')]
+        protected readonly Connection $conSysFileMetadata,
+        protected readonly LoggerInterface $logger,
     ) {}
 
     /**
