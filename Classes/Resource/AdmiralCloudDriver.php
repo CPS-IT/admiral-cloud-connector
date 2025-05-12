@@ -2,6 +2,19 @@
 
 declare(strict_types=1);
 
+/*
+ * This file is part of the TYPO3 CMS extension "admiral_cloud_connector".
+ *
+ * It is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License, either version 2
+ * of the License, or any later version.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE.txt file that was distributed with this source code.
+ *
+ * The TYPO3 project - inspiring people to share!
+ */
+
 namespace CPSIT\AdmiralCloudConnector\Resource;
 
 use CPSIT\AdmiralCloudConnector\Exception\InvalidArgumentException;
@@ -10,10 +23,6 @@ use CPSIT\AdmiralCloudConnector\Traits\AssetFactory;
 use TYPO3\CMS\Core\Resource\Capabilities;
 use TYPO3\CMS\Core\Resource\Driver\DriverInterface;
 
-/**
- * Class AdmiralCloudDriver
- * @package CPSIT\AdmiralCloudConnector\Resource
- */
 class AdmiralCloudDriver implements DriverInterface
 {
     use AssetFactory;
@@ -30,9 +39,7 @@ class AdmiralCloudDriver implements DriverInterface
         $this->capabilities = new Capabilities();
     }
 
-    public function processConfiguration(): void
-    {
-    }
+    public function processConfiguration(): void {}
 
     public function setStorageUid(int $storageUid): void
     {
@@ -99,17 +106,17 @@ class AdmiralCloudDriver implements DriverInterface
 
     public function createFolder(string $newFolderName, string $parentFolderIdentifier = '', bool $recursive = false): never
     {
-        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', __CLASS__, __METHOD__), 1519045381);
+        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', self::class, __METHOD__), 1519045381);
     }
 
     public function renameFolder(string $folderIdentifier, string $newName): never
     {
-        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', __CLASS__, __METHOD__), 1519045382);
+        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', self::class, __METHOD__), 1519045382);
     }
 
     public function deleteFolder(string $folderIdentifier, bool $deleteRecursively = false): never
     {
-        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', __CLASS__, __METHOD__), 1519045383);
+        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', self::class, __METHOD__), 1519045383);
     }
 
     public function fileExists(string $fileIdentifier): bool
@@ -131,27 +138,27 @@ class AdmiralCloudDriver implements DriverInterface
 
     public function addFile(string $localFilePath, string $targetFolderIdentifier, string $newFileName = '', bool $removeOriginal = true): never
     {
-        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', __CLASS__, __METHOD__), 1519045386);
+        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', self::class, __METHOD__), 1519045386);
     }
 
     public function createFile(string $fileName, string $parentFolderIdentifier): never
     {
-        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', __CLASS__, __METHOD__), 1519045387);
+        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', self::class, __METHOD__), 1519045387);
     }
 
     public function copyFileWithinStorage(string $fileIdentifier, string $targetFolderIdentifier, string $fileName): never
     {
-        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', __CLASS__, __METHOD__), 1519045388);
+        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', self::class, __METHOD__), 1519045388);
     }
 
     public function renameFile(string $fileIdentifier, string $newName): never
     {
-        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', __CLASS__, __METHOD__), 1519045389);
+        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', self::class, __METHOD__), 1519045389);
     }
 
     public function replaceFile(string $fileIdentifier, string $localFilePath): never
     {
-        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', __CLASS__, __METHOD__), 1519045390);
+        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', self::class, __METHOD__), 1519045390);
     }
 
     public function deleteFile(string $fileIdentifier): bool
@@ -162,44 +169,41 @@ class AdmiralCloudDriver implements DriverInterface
             return true;
         }
 
-        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', __CLASS__, __METHOD__), 1519045448);
+        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', self::class, __METHOD__), 1519045448);
     }
 
     public function hash(string $fileIdentifier, string $hashAlgorithm): string
     {
-        switch ($hashAlgorithm) {
-            case 'sha1':
-                return sha1($fileIdentifier);
-            case 'md5':
-                return md5($fileIdentifier);
-            default:
-                throw new InvalidArgumentException('Hash algorithm ' . $hashAlgorithm . ' is not implemented.', 1519131572);
-        }
+        return match ($hashAlgorithm) {
+            'sha1' => sha1($fileIdentifier),
+            'md5' => md5($fileIdentifier),
+            default => throw new InvalidArgumentException('Hash algorithm ' . $hashAlgorithm . ' is not implemented.', 1519131572),
+        };
     }
 
     public function moveFileWithinStorage(string $fileIdentifier, string $targetFolderIdentifier, string $newFileName): never
     {
-        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', __CLASS__, __METHOD__), 1519045392);
+        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', self::class, __METHOD__), 1519045392);
     }
 
     public function moveFolderWithinStorage(string $sourceFolderIdentifier, string $targetFolderIdentifier, string $newFolderName): never
     {
-        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', __CLASS__, __METHOD__), 1519045393);
+        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', self::class, __METHOD__), 1519045393);
     }
 
     public function copyFolderWithinStorage(string $sourceFolderIdentifier, string $targetFolderIdentifier, string $newFolderName): never
     {
-        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', __CLASS__, __METHOD__), 1519045394);
+        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', self::class, __METHOD__), 1519045394);
     }
 
     public function getFileContents(string $fileIdentifier): never
     {
-        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', __CLASS__, __METHOD__), 1530716557);
+        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', self::class, __METHOD__), 1530716557);
     }
 
     public function setFileContents(string $fileIdentifier, string $contents): never
     {
-        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', __CLASS__, __METHOD__), 1519045395);
+        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', self::class, __METHOD__), 1519045395);
     }
 
     public function fileExistsInFolder(string $fileName, string $folderIdentifier): bool
@@ -222,13 +226,13 @@ class AdmiralCloudDriver implements DriverInterface
     {
         return [
             'r' => $identifier === $this->rootFolder || $this->fileExists($identifier),
-            'w' => false
+            'w' => false,
         ];
     }
 
     public function dumpFileContents(string $identifier): never
     {
-        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', __CLASS__, __METHOD__), 1530716441);
+        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', self::class, __METHOD__), 1530716441);
     }
 
     public function isWithin(string $folderIdentifier, string $identifier): bool
@@ -248,7 +252,7 @@ class AdmiralCloudDriver implements DriverInterface
             'name' => 'AdmiralCloud',
             'mtime' => 0,
             'ctime' => 0,
-            'storage' => $this->storageUid
+            'storage' => $this->storageUid,
         ];
     }
 

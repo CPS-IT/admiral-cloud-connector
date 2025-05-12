@@ -1,5 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
+/*
+ * This file is part of the TYPO3 CMS extension "admiral_cloud_connector".
+ *
+ * It is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License, either version 2
+ * of the License, or any later version.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE.txt file that was distributed with this source code.
+ *
+ * The TYPO3 project - inspiring people to share!
+ */
 
 namespace CPSIT\AdmiralCloudConnector\Resource;
 
@@ -7,17 +21,11 @@ use CPSIT\AdmiralCloudConnector\Exception\InvalidAssetException;
 use CPSIT\AdmiralCloudConnector\Exception\InvalidPropertyException;
 use CPSIT\AdmiralCloudConnector\Exception\InvalidThumbnailException;
 use CPSIT\AdmiralCloudConnector\Exception\NotImplementedException;
-use CPSIT\AdmiralCloudConnector\Resource\Index\FileIndexRepository;
 use CPSIT\AdmiralCloudConnector\Service\AdmiralCloudService;
 use CPSIT\AdmiralCloudConnector\Traits\AdmiralCloudStorage;
-use Psr\EventDispatcher\EventDispatcherInterface;
 use TYPO3\CMS\Core\Core\Environment;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
-/**
- * Class Asset
- * @package CPSIT\AdmiralCloudConnector\Resource
- */
 class Asset
 {
     use AdmiralCloudStorage;
@@ -25,10 +33,10 @@ class Asset
     /**
      * Available Types used by AdmiralCloud
      */
-    const TYPE_VIDEO = 'video';
-    const TYPE_IMAGE = 'image';
-    const TYPE_DOCUMENT = 'document';
-    const TYPE_AUDIO = 'audio';
+    public const TYPE_VIDEO = 'video';
+    public const TYPE_IMAGE = 'image';
+    public const TYPE_DOCUMENT = 'document';
+    public const TYPE_AUDIO = 'audio';
 
     protected const ASSET_TYPE_MIME_TYPE = [
         self::TYPE_VIDEO => ['video'],
@@ -37,116 +45,65 @@ class Asset
         self::TYPE_AUDIO => ['audio'],
     ];
 
-    /**
-     * @var int
-     */
-    protected $identifier;
+    protected ?string $type = null;
+    protected ?File $file = null;
 
     /**
-     * API Data
-     * @var array
-     */
-    protected $information;
-
-    /**
-     * @var string
-     */
-    protected $type;
-
-    /**
-     * @var File
-     */
-    protected $file;
-
-    /**
-     * @var EventDispatcherInterface
-     */
-    protected $eventDispatcher;
-
-    public function injectEventDispatcher(EventDispatcherInterface $eventDispatcher): void
-    {
-        $this->eventDispatcher = $eventDispatcher;
-    }
-
-    /**
-     * Asset constructor.
-     * @param string $identifier
-     * @param array $properties
      * @throws InvalidAssetException
      */
-    public function __construct(string $identifier, array $information = [])
-    {
-        if (!static::validateIdentifier($identifier)) {
+    public function __construct(
+        protected string $identifier,
+        protected ?array $information = null,
+    ) {
+        if (!static::validateIdentifier($this->identifier)) {
             throw new InvalidAssetException(
-                'Invalid identifier given: ' . $identifier,
-                1558014684521
+                'Invalid identifier given: ' . $this->identifier,
+                1558014684521,
             );
         }
-
-        $this->identifier = $identifier;
-        if ($information) {
-            $this->information = $information;
-        }
     }
 
     /**
-     * Identifier patern should be bigger than 0
-     * @param int $identifier
-     * @return bool
+     * Identifier pattern should be a numeric string greater than 0
      */
-    public static function validateIdentifier(int $identifier): bool
+    protected static function validateIdentifier(string $identifier): bool
     {
-        return $identifier > 0;
+        if (!is_numeric($identifier)) {
+            return false;
+        }
+
+        return (int)$identifier > 0;
     }
 
-    /**
-     * @return int
-     */
-    public function getIdentifier(): int
+    public function getIdentifier(): string
     {
         return $this->identifier;
     }
 
-    /**
-     * @param int $storageUid
-     * @return bool
-     */
-    public function isImage(int $storageUid = 0): bool
+    public function isImage(): bool
     {
-        return $this->getAssetType($storageUid) === self::TYPE_IMAGE;
+        return $this->getAssetType() === self::TYPE_IMAGE;
     }
 
-    /**
-     * @return bool
-     */
-    public function isVideo(int $storageUid = 0): bool
+    public function isVideo(): bool
     {
-        return $this->getAssetType($storageUid) === self::TYPE_VIDEO;
+        return $this->getAssetType() === self::TYPE_VIDEO;
     }
 
-    /**
-     * @return bool
-     */
-    public function isAudio(int $storageUid = 0): bool
+    public function isAudio(): bool
     {
-        return $this->getAssetType($storageUid) === self::TYPE_AUDIO;
+        return $this->getAssetType() === self::TYPE_AUDIO;
     }
 
-    /**
-     * @return bool
-     */
-    public function isDocument(int $storageUid = 0): bool
+    public function isDocument(): bool
     {
-        return $this->getAssetType($storageUid) === self::TYPE_DOCUMENT;
+        return $this->getAssetType() === self::TYPE_DOCUMENT;
     }
 
     /**
      * Get asset type from mime type of the file
-     *
-     * @param int $storageUid
-     * @return string
      */
-    public function getAssetType(int $storageUid = 0): string
+    public function getAssetType(): string
     {
         if (isset($this->type)) {
             return $this->type;
@@ -154,15 +111,14 @@ class Asset
 
         $this->type = '';
 
-
         $file = $this->getFileIndexRepository()->findOneByStorageAndIdentifier(
             $this->getAdmiralCloudStorage(),
-            $this->identifier
+            $this->identifier,
         );
 
         if ($file) {
             $mimeType = str_replace('admiralCloud/', '', $file['mime_type']);
-            [$fileType, $subType] = explode('/', $mimeType);
+            [$fileType] = explode('/', $mimeType, 2);
 
             // Map mime type with asset type
             foreach (static::ASSET_TYPE_MIME_TYPE as $assetType => $mimeTypes) {
@@ -175,53 +131,36 @@ class Asset
         return $this->type;
     }
 
-    /**
-     * @param int $storageUid
-     * @return string|null
-     */
     public function getThumbnail(int $storageUid = 0): ?string
     {
         return $this->getAdmiralCloudService()->getThumbnailUrl($this->getFile($storageUid));
     }
 
     /**
-     * @param int $storageUid
-     * @return string|null
      * @throws NotImplementedException
      */
     public function getPublicUrl(int $storageUid = 0): ?string
     {
-        $assetType = $this->getAssetType($storageUid);
+        $assetType = $this->getAssetType();
         $file = $this->getFile($storageUid);
-        if(isset($GLOBALS['admiralcloud']['fe_group'][$file->getIdentifier()])){
+
+        if ($file === null) {
+            return null;
+        }
+
+        if (isset($GLOBALS['admiralcloud']['fe_group'][$file->getIdentifier()])) {
             $file->setContentFeGroup($GLOBALS['admiralcloud']['fe_group'][$file->getIdentifier()]);
         }
 
-        switch ($assetType) {
-            case self::TYPE_IMAGE:
-                $publicUrl = $this->getAdmiralCloudService()->getImagePublicUrl($file);
-                break;
-            case self::TYPE_DOCUMENT:
-                $publicUrl = $this->getAdmiralCloudService()->getDocumentPublicUrl($file);
-                break;
-            case self::TYPE_AUDIO:
-                $publicUrl = $this->getAdmiralCloudService()->getAudioPublicUrl($file);
-                break;
-            case self::TYPE_VIDEO:
-                $publicUrl = $this->getAdmiralCloudService()->getVideoPublicUrl($file);
-                break;
-            default:
-                throw new NotImplementedException('No public url for asset type ' . $assetType);
-                break;
-        }
-
-        return $publicUrl;
+        return match ($assetType) {
+            self::TYPE_IMAGE => $this->getAdmiralCloudService()->getImagePublicUrl($file),
+            self::TYPE_DOCUMENT => $this->getAdmiralCloudService()->getDocumentPublicUrl($file),
+            self::TYPE_AUDIO => $this->getAdmiralCloudService()->getAudioPublicUrl($file),
+            self::TYPE_VIDEO => $this->getAdmiralCloudService()->getVideoPublicUrl($file),
+            default => throw new NotImplementedException('No public url for asset type ' . $assetType, 1747029997),
+        };
     }
 
-    /**
-     * @param int $storageUid
-     * @return array
-     */
     public function getInformation(int $storageUid = 0): array
     {
         if ($this->information === null) {
@@ -229,12 +168,13 @@ class Asset
                 // Do API call
                 $this->information = $this->getAdmiralCloudService()->getMediaInfo(
                     [$this->identifier],
-                    ($storageUid?:$this->getAdmiralCloudStorage()->getUid())
+                    $storageUid ?: $this->getAdmiralCloudStorage()->getUid(),
                 )[$this->identifier] ?? [];
-            } catch (\Exception $e) {
+            } catch (\Exception) {
                 $this->information = [];
             }
         }
+
         return $this->information;
     }
 
@@ -242,9 +182,8 @@ class Asset
      * Extracts information about a file from the filesystem
      *
      * @param array $propertiesToExtract array of properties which should be returned, if empty all default keys will be extracted
-     * @return array
      */
-    public function extractProperties($propertiesToExtract = []): array
+    public function extractProperties(array $propertiesToExtract = []): array
     {
         if (empty($propertiesToExtract)) {
             $propertiesToExtract = [
@@ -258,67 +197,46 @@ class Asset
                 'identifier',
                 'identifier_hash',
                 'storage',
-                'folder_hash'
+                'folder_hash',
             ];
         }
         $fileInformation = [];
+
         foreach ($propertiesToExtract as $property) {
             $fileInformation[$property] = $this->getSpecificProperty($property);
         }
+
         return $fileInformation;
     }
 
     /**
      * Extracts a specific FileInformation from the FileSystem
-     *
-     * @param string $property
-     * @return bool|int|string
      */
-    public function getSpecificProperty($property)
+    public function getSpecificProperty(string $property): mixed
     {
         $information = $this->getInformation();
-        switch ($property) {
-            case 'size':
-                return $information['size'] ?? null;
-            case 'atime':
-                return $information['atime'] ?? null;
-            case 'mtime':
-                return $information['mtime'] ?? null;
-            case 'ctime':
-                return $information['ctime'] ?? null;
-            case 'name':
-                return $information['name'] ?? null;
-            case 'mimetype':
-                return $information['mimetype'] ?? null;
-            case 'identifier':
-                return $information['identifier'] ?? null;
-            case 'extension':
-                return $information['extension'] ?? null;
-            case 'identifier_hash':
-                return $information['identifier_hash'] ?? null;
-            case 'storage':
-                return $information['storage'] ?? null;
-            case 'folder_hash':
-                return $information['folder_hash'] ?? null;
 
-            // Metadata
-            case 'alternative':
-                return $information['alternative'] ?? null;
-            case 'title':
-                return $information['title'] ?? null;
-            case 'description':
-                return $information['description'] ?? null;
-            case 'width':
-                return $information['width'] ?? null;
-            case 'height':
-                return $information['height'] ?? null;
-            case 'copyright':
-                return $information['copyright'] ?? null;
-            case 'keywords':
-                return $information['keywords'] ?? null;
-            default:
-                throw new InvalidPropertyException(sprintf('The information "%s" is not available.', $property), 1519130380);
-        }
+        return match ($property) {
+            'size' => $information['size'] ?? null,
+            'atime' => $information['atime'] ?? null,
+            'mtime' => $information['mtime'] ?? null,
+            'ctime' => $information['ctime'] ?? null,
+            'name' => $information['name'] ?? null,
+            'mimetype' => $information['mimetype'] ?? null,
+            'identifier' => $information['identifier'] ?? null,
+            'extension' => $information['extension'] ?? null,
+            'identifier_hash' => $information['identifier_hash'] ?? null,
+            'storage' => $information['storage'] ?? null,
+            'folder_hash' => $information['folder_hash'] ?? null,
+            'alternative' => $information['alternative'] ?? null,
+            'title' => $information['title'] ?? null,
+            'description' => $information['description'] ?? null,
+            'width' => $information['width'] ?? null,
+            'height' => $information['height'] ?? null,
+            'copyright' => $information['copyright'] ?? null,
+            'keywords' => $information['keywords'] ?? null,
+            default => throw new InvalidPropertyException(sprintf('The information "%s" is not available.', $property), 1519130380),
+        };
     }
 
     /**
@@ -336,40 +254,41 @@ class Asset
         }
 
         $url = $this->getThumbnail($storageUid);
-        if (!empty($url)) {
-            $temporaryPath = $this->getTemporaryPathForFile($url, $file);
-            if (!is_file($temporaryPath)) {
-                try {
-                    $data = GeneralUtility::getUrl($url);
-                } catch (\Exception $e) {
-                    throw new InvalidThumbnailException(
-                        sprintf('Requested url "%s" couldn\'t be found', $url),
-                        1558442606611,
-                        $e
-                    );
-                }
-                if (!empty($data)) {
-                    $result = GeneralUtility::writeFile($temporaryPath, $data);
-                    if ($result === false) {
-                        throw new InvalidThumbnailException(
-                            sprintf('Copying file "%s" to temporary path "%s" failed.', $this->getIdentifier(), $temporaryPath),
-                            1558442609629
-                        );
-                    }
-                }
+
+        if (empty($url)) {
+            return null;
+        }
+
+        $temporaryPath = $this->getTemporaryPathForFile($file);
+
+        if (!is_file($temporaryPath)) {
+            try {
+                $data = GeneralUtility::getUrl($url);
+            } catch (\Exception $exception) {
+                throw new InvalidThumbnailException(
+                    sprintf('Requested url "%s" couldn\'t be found', $url),
+                    1558442606611,
+                    $exception,
+                );
             }
 
-            // Return absolute path instead of relative when configured
-            return $temporaryPath;
+            if (!empty($data)) {
+                $result = GeneralUtility::writeFile($temporaryPath, $data);
+                if ($result === false) {
+                    throw new InvalidThumbnailException(
+                        sprintf('Copying file "%s" to temporary path "%s" failed.', $this->getIdentifier(), $temporaryPath),
+                        1558442609629,
+                    );
+                }
+            }
         }
-        return $temporaryPath ?? null;
+
+        // Return absolute path instead of relative when configured
+        return $temporaryPath;
     }
 
     /**
      * Get file from asset identifier
-     *
-     * @param int $storageUid
-     * @return File
      */
     public function getFile(int $storageUid = 0): ?File
     {
@@ -393,14 +312,11 @@ class Asset
 
     /**
      * Returns a temporary path for a given file, including the file extension.
-     *
-     * @param string $url
-     * @param File $file
-     * @return string
      */
-    protected function getTemporaryPathForFile($url, File $file): string
+    protected function getTemporaryPathForFile(File $file): string
     {
         $temporaryPath = Environment::getPublicPath() . '/typo3temp/assets/' . AdmiralCloudDriver::KEY . '/';
+
         if (!is_dir($temporaryPath)) {
             GeneralUtility::mkdir_deep($temporaryPath);
         }
@@ -408,21 +324,8 @@ class Asset
         return $temporaryPath . $this->getIdentifier() . '.' . $file->getExtension();
     }
 
-    /**
-     * @return AdmiralCloudService
-     */
-    protected function getAdmiralCloudService()
+    protected function getAdmiralCloudService(): AdmiralCloudService
     {
         return GeneralUtility::makeInstance(AdmiralCloudService::class);
-    }
-
-    /**
-     * @return FileIndexRepository
-     */
-    protected function getFileIndexRepository()
-    {
-        $this->eventDispatcher ??= GeneralUtility::getContainer()->get(EventDispatcherInterface::class);
-
-        return GeneralUtility::makeInstance(FileIndexRepository::class, $this->eventDispatcher);
     }
 }

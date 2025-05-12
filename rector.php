@@ -12,6 +12,7 @@ use Ssch\TYPO3Rector\CodeQuality\General\InjectMethodToConstructorInjectionRecto
 use Ssch\TYPO3Rector\Configuration\Typo3Option;
 use Ssch\TYPO3Rector\Set\Typo3LevelSetList;
 use Ssch\TYPO3Rector\Set\Typo3SetList;
+use Ssch\TYPO3Rector\TYPO312\v0\RemoveRelativeToCurrentScriptArgumentsRector;
 
 return RectorConfig::configure()
     ->withPaths([
@@ -49,6 +50,9 @@ return RectorConfig::configure()
         InjectMethodToConstructorInjectionRector::class => [
             // Abstract classes should not pollute constructors
             __DIR__ . '/Classes/Controller/Backend/AbstractLinkBrowserController.php',
+        ],
+        RemoveRelativeToCurrentScriptArgumentsRector::class => [
+            __DIR__ . '/Classes/Resource/Rendering/AssetRenderer.php',
         ],
     ])
 ;

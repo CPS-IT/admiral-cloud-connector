@@ -2,17 +2,28 @@
 
 declare(strict_types=1);
 
+/*
+ * This file is part of the TYPO3 CMS extension "admiral_cloud_connector".
+ *
+ * It is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License, either version 2
+ * of the License, or any later version.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE.txt file that was distributed with this source code.
+ *
+ * The TYPO3 project - inspiring people to share!
+ */
+
 namespace CPSIT\AdmiralCloudConnector\Resource;
 
 use CPSIT\AdmiralCloudConnector\Traits\AdmiralCloudStorage;
+use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
+use TYPO3\CMS\Core\Resource\FileType;
 use TYPO3\CMS\Core\Resource\ProcessedFile;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
-/**
- * Class File
- * @package CPSIT\AdmiralCloudConnector\Resource
- */
 class File extends \TYPO3\CMS\Core\Resource\File
 {
     use AdmiralCloudStorage;
@@ -33,18 +44,22 @@ class File extends \TYPO3\CMS\Core\Resource\File
             $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)
                 ->getQueryBuilderForTable('sys_file');
 
-            $row = $queryBuilder
+            $linkHash = $queryBuilder
                 ->select('tx_admiralcloudconnector_linkhash')
                 ->from('sys_file')
                 ->where(
-                    $queryBuilder->expr()->eq('uid', $queryBuilder->createNamedParameter($this->getUid(), \PDO::PARAM_INT))
+                    $queryBuilder->expr()->eq(
+                        'uid',
+                        $queryBuilder->createNamedParameter($this->getUid(), Connection::PARAM_INT),
+                    ),
                 )
-                ->execute()
-                ->fetch();
+                ->executeQuery()
+                ->fetchOne()
+            ;
 
-            if (!empty($row['tx_admiralcloudconnector_linkhash'])) {
-                $this->properties['tx_admiralcloudconnector_linkhash'] = $row['tx_admiralcloudconnector_linkhash'];
-                $this->txAdmiralCloudConnectorLinkhash = $row['tx_admiralcloudconnector_linkhash'];
+            if (!empty($linkHash)) {
+                $this->properties['tx_admiralcloudconnector_linkhash'] = $linkHash;
+                $this->txAdmiralCloudConnectorLinkhash = $linkHash;
             }
         }
 
@@ -89,28 +104,15 @@ class File extends \TYPO3\CMS\Core\Resource\File
         // this basically extracts the mimetype and guess the filetype based
         // on the first part of the mimetype works for 99% of all cases, and
         // we don't need to make an SQL statement like EXT:media does currently
-        list($fileType) = explode('/', $mimeType);
-        switch (strtolower($fileType)) {
-            case 'text':
-                $this->properties['type'] = self::FILETYPE_TEXT;
-                break;
-            case 'image':
-                $this->properties['type'] = self::FILETYPE_IMAGE;
-                break;
-            case 'audio':
-                $this->properties['type'] = self::FILETYPE_AUDIO;
-                break;
-            case 'video':
-                $this->properties['type'] = self::FILETYPE_VIDEO;
-                break;
-            case 'document':
-            case 'application':
-            case 'software':
-                $this->properties['type'] = self::FILETYPE_APPLICATION;
-                break;
-            default:
-                $this->properties['type'] = self::FILETYPE_UNKNOWN;
-        }
+        [$fileType] = explode('/', $mimeType);
+        $this->properties['type'] = match (strtolower($fileType)) {
+            'text' => FileType::TEXT->value,
+            'image' => FileType::IMAGE->value,
+            'audio' => FileType::AUDIO->value,
+            'video' => FileType::VIDEO->value,
+            'document', 'application', 'software' => FileType::APPLICATION->value,
+            default => FileType::UNKNOWN->value,
+        };
 
         $this->updatedProperties[] = 'type';
 
@@ -135,18 +137,14 @@ class File extends \TYPO3\CMS\Core\Resource\File
     public function process(string $taskType, array $configuration): ProcessedFile
     {
         if ($taskType === ProcessedFile::CONTEXT_IMAGEPREVIEW
-            && $this->getStorage()->getUid() === $this->getAdmiralCloudStorage()->getUid()) {
+            && $this->getStorage()->getUid() === $this->getAdmiralCloudStorage()->getUid()
+        ) {
 
             // Return admiral cloud url for previews
             return GeneralUtility::makeInstance(ProcessedFile::class, $this, $taskType, $configuration);
         }
 
         return $this->getStorage()->processFile($this, $taskType, $configuration);
-    }
-
-    protected function getFileIndexRepository(): Index\FileIndexRepository
-    {
-        return GeneralUtility::makeInstance(Index\FileIndexRepository::class);
     }
 
     public function getContentFeGroup(): string
@@ -168,7 +166,7 @@ class File extends \TYPO3\CMS\Core\Resource\File
     {
         $extension = parent::getExtension();
 
-        if (!$extension && (int)$this->getProperty('type') === 2) {
+        if (!$extension && (int)$this->getProperty('type') === FileType::IMAGE->value) {
             return 'jpg';
         }
 
