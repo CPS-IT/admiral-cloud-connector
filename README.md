@@ -75,8 +75,5 @@ Allow cropping tool for AdmiralCloud images:
 check permission for (tx_admiralcloudconnector_crop) on tab „Access Lists“ / „Allowed excludefields” in “File Reference”.
 
 
-# known bugs
-* InstallSlot for Storage SQL isnt working, so the SQL need to run manually
-
 ### TODO documentation
 * add information about authentification / security groups
