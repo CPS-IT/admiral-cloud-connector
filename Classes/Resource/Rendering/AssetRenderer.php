@@ -32,9 +32,12 @@ readonly class AssetRenderer implements FileRendererInterface
     use AssetFactory;
 
     public function __construct(
+        \CPSIT\AdmiralCloudConnector\Resource\AssetFactory $assetFactory,
         protected AdmiralCloudService $admiralCloudService,
         protected TagBuilderService $tagBuilderService,
-    ) {}
+    ) {
+        $this->assetFactory = $assetFactory;
+    }
 
     public function getPriority(): int
     {

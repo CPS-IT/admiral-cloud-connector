@@ -23,6 +23,7 @@ use CPSIT\AdmiralCloudConnector\Api\Oauth\Credentials;
 use CPSIT\AdmiralCloudConnector\Exception\InvalidArgumentException;
 use CPSIT\AdmiralCloudConnector\Exception\InvalidFileConfigurationException;
 use CPSIT\AdmiralCloudConnector\Resource\File;
+use CPSIT\AdmiralCloudConnector\Resource\Index\FileIndexRepository;
 use CPSIT\AdmiralCloudConnector\Traits\AdmiralCloudStorage;
 use CPSIT\AdmiralCloudConnector\Utility\ConfigurationUtility;
 use CPSIT\AdmiralCloudConnector\Utility\ImageUtility;
@@ -73,8 +74,11 @@ class AdmiralCloudService implements SingletonInterface
     ];
 
     public function __construct(
+        FileIndexRepository $fileIndexRepository,
         protected readonly LoggerInterface $logger,
-    ) {}
+    ) {
+        $this->fileIndexRepository = $fileIndexRepository;
+    }
 
     public function getMediaType(string $type): string
     {

@@ -18,6 +18,7 @@ declare(strict_types=1);
 namespace CPSIT\AdmiralCloudConnector\Controller\Backend;
 
 use CPSIT\AdmiralCloudConnector\Api\Oauth\Credentials;
+use CPSIT\AdmiralCloudConnector\Resource\Index\FileIndexRepository;
 use CPSIT\AdmiralCloudConnector\Service\AdmiralCloudService;
 use CPSIT\AdmiralCloudConnector\Service\MetadataService;
 use CPSIT\AdmiralCloudConnector\Traits\AdmiralCloudStorage;
@@ -62,12 +63,15 @@ class BrowserController
     protected array $layoutRootPaths = ['EXT:admiral_cloud_connector/Resources/Private/Layouts/Browser'];
 
     public function __construct(
+        FileIndexRepository $fileIndexRepository,
         protected readonly AdmiralCloudService $admiralCloudService,
         protected readonly LoggerInterface $logger,
         protected readonly MetadataService $metadataService,
         protected readonly ModuleTemplateFactory $moduleTemplateFactory,
         protected readonly UriBuilder $backendUriBuilder,
-    ) {}
+    ) {
+        $this->fileIndexRepository = $fileIndexRepository;
+    }
 
     public function showAction(ServerRequestInterface $request): ResponseInterface
     {

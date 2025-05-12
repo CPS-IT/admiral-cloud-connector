@@ -19,6 +19,7 @@ namespace CPSIT\AdmiralCloudConnector\Resource;
 
 use CPSIT\AdmiralCloudConnector\Exception\InvalidArgumentException;
 use CPSIT\AdmiralCloudConnector\Exception\NotImplementedException;
+use CPSIT\AdmiralCloudConnector\Resource;
 use CPSIT\AdmiralCloudConnector\Traits\AssetFactory;
 use TYPO3\CMS\Core\Resource\Capabilities;
 use TYPO3\CMS\Core\Resource\Driver\DriverInterface;
@@ -34,8 +35,9 @@ class AdmiralCloudDriver implements DriverInterface
     protected int $storageUid = 0;
     protected array $configuration = [];
 
-    public function __construct()
+    public function __construct(Resource\AssetFactory $assetFactory)
     {
+        $this->assetFactory = $assetFactory;
         $this->capabilities = new Capabilities();
     }
 

@@ -25,6 +25,11 @@ class Extractor implements Resource\Index\ExtractorInterface
 {
     use AssetFactory;
 
+    public function __construct(\CPSIT\AdmiralCloudConnector\Resource\AssetFactory $assetFactory)
+    {
+        $this->assetFactory = $assetFactory;
+    }
+
     public function getFileTypeRestrictions(): array
     {
         return [];
