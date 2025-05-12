@@ -29,19 +29,14 @@ final readonly class ImageUtility
      *
      * WARNING: Don't forget to set setTxAdmiralCloudConnectorCrop for the file before if the crop information is wanted
      *
-     * @param FileInterface $file
-     * @param int|string $width
-     * @param int|string $height
-     * @param int|string $maxWidth
-     * @param int|string $maxHeight
      * @return \stdClass [width, height]
      */
     public static function calculateDimensions(
         FileInterface $file,
-        $width = null,
-        $height = null,
-        $maxWidth = null,
-        $maxHeight = null
+        int|string $width = null,
+        int|string $height = null,
+        int|string $maxWidth = null,
+        int|string $maxHeight = null,
     ): \stdClass {
         $width = (int)$width;
         $height = (int)$height;
