@@ -544,8 +544,8 @@ class AdmiralCloudService implements SingletonInterface
         // Find link with flag id and player configuration id for given media container
         foreach ($links as $link) {
             if (isset($link['playerConfigurationId'], $link['flag']) &&
-                $link['playerConfigurationId'] === $playerConfigurationId &&
-                $link['flag'] === $flagId
+                (int)$link['playerConfigurationId'] === $playerConfigurationId &&
+                (int)$link['flag'] === $flagId
             ) {
                 $linkHash = $link['link'];
                 break;
@@ -594,8 +594,8 @@ class AdmiralCloudService implements SingletonInterface
         // Find link with flag id and player configuration id for given media container
         foreach ($links as $link) {
             if (isset($link['playerConfigurationId'], $link['flag']) &&
-                $link['playerConfigurationId'] === $playerConfigurationId &&
-                $link['flag'] === $flagId
+                (int)$link['playerConfigurationId'] === $playerConfigurationId &&
+                (int)$link['flag'] === $flagId
             ) {
                 $linkHash = $link['link'];
                 break;
@@ -785,7 +785,7 @@ class AdmiralCloudService implements SingletonInterface
                 $playerConfigurationId = ConfigurationUtility::getPlayerConfigurationIdByType($data['type']);
 
                 foreach ($embedDatas as $embedData) {
-                    if ($embedData->playerConfigurationId === $playerConfigurationId) {
+                    if ((int)$embedData->playerConfigurationId === $playerConfigurationId) {
                         $return[$id] = $this->addMediaByIdHashAndType($id, $embedData->link, $embedData->type);
                     }
                 }
