@@ -43,10 +43,10 @@ $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Core\Resource\Index\Fil
     'className' => \CPSIT\AdmiralCloudConnector\Resource\Index\FileIndexRepository::class
 ];
 
-$GLOBALS['TYPO3_CONF_VARS']['SYS']['formEngine']['nodeRegistry'][] = [
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['formEngine']['nodeRegistry'][1747210949] = [
     'nodeName' => 'admiralCloudImageManipulation',
     'class' => \CPSIT\AdmiralCloudConnector\Form\Element\AdmiralCloudImageManipulationElement::class,
-    'priority' => 50
+    'priority' => 50,
 ];
 
 // Add task to update metadata of AdmiralCloud files
