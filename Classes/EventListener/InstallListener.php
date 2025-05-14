@@ -54,6 +54,7 @@ final readonly class InstallListener
 
         // Create Admiral cloud storage
         $currentTimestamp = $this->context->getPropertyFromAspect('date', 'timestamp');
+        $defaultStorageUid = $this->storageRepository->getDefaultStorage()?->getUid();
         $field_values = [
             'pid' => 0,
             'tstamp' => $currentTimestamp,
@@ -68,7 +69,7 @@ final readonly class InstallListener
             'is_writable' => 0,
             'is_default' => 0,
             // We use the processed file folder of the default storage as fallback
-            'processingfolder' => '1:/_processed_/',
+            'processingfolder' => sprintf('%d:/_processed_/', $defaultStorageUid),
         ];
 
         $dbConnection = $this->connectionPool->getConnectionForTable('sys_file_storage');
