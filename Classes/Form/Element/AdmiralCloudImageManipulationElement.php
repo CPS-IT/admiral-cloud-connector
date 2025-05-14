@@ -152,7 +152,7 @@ class AdmiralCloudImageManipulationElement extends AbstractFormElement
             'cropUrl' => $this->uriBuilder->buildUriFromRoute('admiral_cloud_browser_crop', $cropParams),
         ];
         $this->templateView->assignMultiple($arguments);
-        $resultArray['html'] = $this->templateView->render();
+        $resultArray['html'] = $this->wrapWithFieldsetAndLegend($this->templateView->render());
 
         return $resultArray;
     }
