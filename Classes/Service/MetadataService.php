@@ -35,11 +35,11 @@ class MetadataService
 
     public function __construct(
         protected readonly AdmiralCloudService $admiralCloudService,
-        #[Autowire(expression: 'service("TYPO3\\CMS\\Core\\Cache\\CacheManager").getCache("admiral_cloud_connector")')]
+        #[Autowire(expression: 'service("TYPO3\\\\CMS\\\\Core\\\\Cache\\\\CacheManager").getCache("admiral_cloud_connector")')]
         protected readonly FrontendInterface $cache,
-        #[Autowire(expression: 'service("TYPO3\\CMS\\Core\\Database\\ConnectionPool").getConnectionForTable("sys_file")')]
+        #[Autowire(expression: 'service("TYPO3\\\\CMS\\\\Core\\\\Database\\\\ConnectionPool").getConnectionForTable("sys_file")')]
         protected readonly Connection $conSysFile,
-        #[Autowire(expression: 'service("TYPO3\\CMS\\Core\\Database\\ConnectionPool").getConnectionForTable("sys_file_metadata")')]
+        #[Autowire(expression: 'service("TYPO3\\\\CMS\\\\Core\\\\Database\\\\ConnectionPool").getConnectionForTable("sys_file_metadata")')]
         protected readonly Connection $conSysFileMetadata,
         protected readonly LoggerInterface $logger,
     ) {}
