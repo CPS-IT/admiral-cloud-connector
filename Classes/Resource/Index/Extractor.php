@@ -19,8 +19,10 @@ namespace CPSIT\AdmiralCloudConnector\Resource\Index;
 
 use CPSIT\AdmiralCloudConnector\Resource\AdmiralCloudDriver;
 use CPSIT\AdmiralCloudConnector\Traits\AssetFactory;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use TYPO3\CMS\Core\Resource;
 
+#[Autoconfigure(public: true)]
 class Extractor implements Resource\Index\ExtractorInterface
 {
     use AssetFactory;
