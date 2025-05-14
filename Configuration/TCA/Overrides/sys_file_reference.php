@@ -26,5 +26,5 @@ $additionalFields = [
 \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addToAllTCAtypes(
     'sys_file_reference',
     'tx_admiralcloudconnector_crop',
-    2
+    \TYPO3\CMS\Core\Resource\FileType::IMAGE->value,
 );
