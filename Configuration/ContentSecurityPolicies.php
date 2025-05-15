@@ -20,6 +20,7 @@ use TYPO3\CMS\Core\Security\ContentSecurityPolicy\Mutation;
 use TYPO3\CMS\Core\Security\ContentSecurityPolicy\MutationCollection;
 use TYPO3\CMS\Core\Security\ContentSecurityPolicy\MutationMode;
 use TYPO3\CMS\Core\Security\ContentSecurityPolicy\Scope;
+use TYPO3\CMS\Core\Security\ContentSecurityPolicy\SourceKeyword;
 use TYPO3\CMS\Core\Security\ContentSecurityPolicy\UriValue;
 use TYPO3\CMS\Core\Type\Map;
 
@@ -30,6 +31,12 @@ return Map::fromEntries([
             MutationMode::Extend,
             Directive::FrameSrc,
             new UriValue('https://*.admiralcloud.com'),
+        ),
+        new Mutation(
+            MutationMode::Extend,
+            Directive::ImgSrc,
+            SourceKeyword::self,
+            new UriValue('https://images.admiralcloud.com'),
         ),
     ),
 ]);
