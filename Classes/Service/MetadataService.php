@@ -24,6 +24,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
 use TYPO3\CMS\Core\Database\Connection;
+use TYPO3\CMS\Core\Resource\StorageRepository;
 
 class MetadataService
 {
@@ -42,7 +43,10 @@ class MetadataService
         #[Autowire(expression: 'service("TYPO3\\\\CMS\\\\Core\\\\Database\\\\ConnectionPool").getConnectionForTable("sys_file_metadata")')]
         protected readonly Connection $conSysFileMetadata,
         protected readonly LoggerInterface $logger,
-    ) {}
+        StorageRepository $storageRepository,
+    ) {
+        $this->storageRepository = $storageRepository;
+    }
 
     /**
      * Update metadata for all files from AdmiralCloud storage

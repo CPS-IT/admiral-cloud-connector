@@ -24,6 +24,7 @@ use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Core\Resource\Exception\FileDoesNotExistException;
 use TYPO3\CMS\Core\Resource\FileType;
 use TYPO3\CMS\Core\Resource\ResourceFactory;
+use TYPO3\CMS\Core\Resource\StorageRepository;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\MathUtility;
 use TYPO3\CMS\Core\Utility\StringUtility;
@@ -77,6 +78,7 @@ class AdmiralCloudImageManipulationElement extends AbstractFormElement
     public function __construct(
         protected readonly ResourceFactory $resourceFactory,
         protected readonly UriBuilder $uriBuilder,
+        StorageRepository $storageRepository,
         ViewFactoryInterface $viewFactory,
     ) {
         $data = new ViewFactoryData(
@@ -85,6 +87,7 @@ class AdmiralCloudImageManipulationElement extends AbstractFormElement
             templatePathAndFilename: 'EXT:admiral_cloud_connector/Resources/Private/Templates/ImageManipulation/ImageManipulationElement.html',
         );
 
+        $this->storageRepository = $storageRepository;
         $this->templateView = $viewFactory->create($data);
     }
 

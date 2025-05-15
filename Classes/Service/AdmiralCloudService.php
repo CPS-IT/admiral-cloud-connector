@@ -33,6 +33,7 @@ use TYPO3\CMS\Core\Resource\FileInterface;
 use TYPO3\CMS\Core\Resource\FileReference;
 use TYPO3\CMS\Core\Resource\FileType;
 use TYPO3\CMS\Core\Resource\ResourceStorage;
+use TYPO3\CMS\Core\Resource\StorageRepository;
 use TYPO3\CMS\Core\SingletonInterface;
 
 /***************************************************************
@@ -75,9 +76,11 @@ class AdmiralCloudService implements SingletonInterface
 
     public function __construct(
         FileIndexRepository $fileIndexRepository,
+        StorageRepository $storageRepository,
         protected readonly LoggerInterface $logger,
     ) {
         $this->fileIndexRepository = $fileIndexRepository;
+        $this->storageRepository = $storageRepository;
     }
 
     public function getMediaType(string $type): string

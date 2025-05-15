@@ -35,6 +35,7 @@ use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Http\JsonResponse;
 use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Resource\FileInterface;
+use TYPO3\CMS\Core\Resource\StorageRepository;
 
 #[AsController]
 class BrowserController
@@ -64,6 +65,7 @@ class BrowserController
 
     public function __construct(
         FileIndexRepository $fileIndexRepository,
+        StorageRepository $storageRepository,
         protected readonly AdmiralCloudService $admiralCloudService,
         protected readonly LoggerInterface $logger,
         protected readonly MetadataService $metadataService,
@@ -71,6 +73,7 @@ class BrowserController
         protected readonly UriBuilder $backendUriBuilder,
     ) {
         $this->fileIndexRepository = $fileIndexRepository;
+        $this->storageRepository = $storageRepository;
     }
 
     public function showAction(ServerRequestInterface $request): ResponseInterface

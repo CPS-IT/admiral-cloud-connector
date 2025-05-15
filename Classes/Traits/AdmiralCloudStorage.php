@@ -28,11 +28,13 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 trait AdmiralCloudStorage
 {
     protected ?FileIndexRepository $fileIndexRepository = null;
+    protected ?StorageRepository $storageRepository = null;
 
     protected function getAdmiralCloudStorage(int $storageUid = 0): ResourceStorage
     {
-        $storageRepository = GeneralUtility::makeInstance(StorageRepository::class);
-        $allStorages = $storageRepository->findAll();
+        $this->storageRepository ??= GeneralUtility::makeInstance(StorageRepository::class);
+
+        $allStorages = $this->storageRepository->findAll();
 
         if ($storageUid > 0) {
             foreach ($allStorages as $storage) {
