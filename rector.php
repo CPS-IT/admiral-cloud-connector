@@ -53,6 +53,7 @@ return RectorConfig::configure()
         ],
         RemoveRelativeToCurrentScriptArgumentsRector::class => [
             __DIR__ . '/Classes/Resource/Rendering/AssetRenderer.php',
+            __DIR__ . '/Classes/ViewHelpers/ImageViewHelper.php',
         ],
     ])
 ;
