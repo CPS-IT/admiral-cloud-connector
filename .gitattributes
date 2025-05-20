@@ -5,4 +5,5 @@
 /.gitignore export-ignore
 /.php-cs-fixer.php export-ignore
 /ChangeLog export-ignore
+/composer-dependency-analyser.php export-ignore
 /rector.php export-ignore
