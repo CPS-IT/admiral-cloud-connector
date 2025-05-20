@@ -29,5 +29,5 @@ return [
     'permissions-admiral_cloud-browser' => [
         'provider' => SvgIconProvider::class,
         'source' => 'EXT:admiral_cloud_connector/Resources/Public/Icons/permissions-admiral_cloud-browser.svg',
-    ]
+    ],
 ];
