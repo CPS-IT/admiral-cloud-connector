@@ -1,93 +1,99 @@
 <?php
 
+/*
+ * This file is part of the TYPO3 CMS extension "admiral_cloud_connector".
+ *
+ * It is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License, either version 2
+ * of the License, or any later version.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE.txt file that was distributed with this source code.
+ *
+ * The TYPO3 project - inspiring people to share!
+ */
+
+use CPSIT\AdmiralCloudConnector\Backend\FilesControlContainer;
+use CPSIT\AdmiralCloudConnector\Controller\Backend\BrowseLinksController;
+use CPSIT\AdmiralCloudConnector\Controller\Backend\LinkBrowserController;
+use CPSIT\AdmiralCloudConnector\Form\Element\AdmiralCloudImageManipulationElement;
+use CPSIT\AdmiralCloudConnector\Resource\AdmiralCloudDriver;
+use CPSIT\AdmiralCloudConnector\Resource\File;
+use CPSIT\AdmiralCloudConnector\Resource\FileReference;
+use CPSIT\AdmiralCloudConnector\Resource\Index\Extractor;
+use CPSIT\AdmiralCloudConnector\Resource\Index\FileIndexRepository;
+use CPSIT\AdmiralCloudConnector\Resource\ProcessedFile;
+use CPSIT\AdmiralCloudConnector\Resource\Rendering\AssetRenderer;
+use CPSIT\AdmiralCloudConnector\Task\UpdateAdmiralCloudMetadataAdditionalFieldProvider;
+use CPSIT\AdmiralCloudConnector\Task\UpdateAdmiralCloudMetadataTask;
+use TYPO3\CMS\Core\Cache\Backend\SimpleFileBackend;
+use TYPO3\CMS\Core\Cache\Frontend\VariableFrontend;
+use TYPO3\CMS\Core\Resource\Index\ExtractorRegistry;
+use TYPO3\CMS\Core\Resource\Rendering\RendererRegistry;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+
 defined('TYPO3') || die('Access denied.');
 
+// Override files control container to inject AdmiralCloud buttons
 $GLOBALS['TYPO3_CONF_VARS']['SYS']['formEngine']['nodeRegistry'][1433198160] = [
     'nodeName' => 'file',
     'priority' => 50,
-    'class' => \CPSIT\AdmiralCloudConnector\Backend\FilesControlContainer::class,
+    'class' => FilesControlContainer::class,
 ];
 
-// Register the FAL driver for AdmiralCloud
-$GLOBALS['TYPO3_CONF_VARS']['SYS']['fal']['registeredDrivers'][\CPSIT\AdmiralCloudConnector\Resource\AdmiralCloudDriver::KEY] = [
-    'class' => \CPSIT\AdmiralCloudConnector\Resource\AdmiralCloudDriver::class,
-    'label' => 'Admiral Cloud',
-// @todo: is currently needed to not break the backend. Needs to be fixed in TYPO3
-    'flexFormDS' => 'FILE:EXT:admiral_cloud_connector/Configuration/FlexForms/AdmiralCloudDriverFlexForm.xml'
-];
-
-\TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Resource\Rendering\RendererRegistry::class)
-    ->registerRendererClass(\CPSIT\AdmiralCloudConnector\Resource\Rendering\AssetRenderer::class);
-
-// Register the extractor to fetch metadata from AdmiralCloud
-\TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Resource\Index\ExtractorRegistry::class)
-    ->registerExtractionService(\CPSIT\AdmiralCloudConnector\Resource\Index\Extractor::class);
-
-// Override TYPO3 File class
-$GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Core\Resource\File::class] = [
-    'className' => \CPSIT\AdmiralCloudConnector\Resource\File::class
-];
-
-// Override TYPO3 File class
-$GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Core\Resource\FileReference::class] = [
-    'className' => \CPSIT\AdmiralCloudConnector\Resource\FileReference::class
-];
-
-// Override TYPO3 File class
-$GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Core\Resource\ProcessedFile::class] = [
-    'className' => \CPSIT\AdmiralCloudConnector\Resource\ProcessedFile::class
-];
-
-// Override TYPO3 FileIndexRepository class
-$GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Core\Resource\Index\FileIndexRepository::class] = [
-    'className' => \CPSIT\AdmiralCloudConnector\Resource\Index\FileIndexRepository::class
-];
-
+// Register image manipulation element for AdmiralCloud files
 $GLOBALS['TYPO3_CONF_VARS']['SYS']['formEngine']['nodeRegistry'][1747210949] = [
     'nodeName' => 'admiralCloudImageManipulation',
-    'class' => \CPSIT\AdmiralCloudConnector\Form\Element\AdmiralCloudImageManipulationElement::class,
+    'class' => AdmiralCloudImageManipulationElement::class,
     'priority' => 50,
 ];
 
+// Register the FAL driver for AdmiralCloud
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['fal']['registeredDrivers'][AdmiralCloudDriver::KEY] = [
+    'class' => AdmiralCloudDriver::class,
+    'label' => 'Admiral Cloud',
+    // @todo: is currently needed to not break the backend. Needs to be fixed in TYPO3
+    'flexFormDS' => 'FILE:EXT:admiral_cloud_connector/Configuration/FlexForms/AdmiralCloudDriverFlexForm.xml',
+];
+
+// Register the renderer for AdmiralCloud files
+GeneralUtility::makeInstance(RendererRegistry::class)->registerRendererClass(AssetRenderer::class);
+
+// Register the extractor to fetch metadata from AdmiralCloud
+GeneralUtility::makeInstance(ExtractorRegistry::class)->registerExtractionService(Extractor::class);
+
+// XClasses
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Core\Resource\File::class] = [
+    'className' => File::class,
+];
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Core\Resource\FileReference::class] = [
+    'className' => FileReference::class,
+];
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Core\Resource\ProcessedFile::class] = [
+    'className' => ProcessedFile::class,
+];
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Core\Resource\Index\FileIndexRepository::class] = [
+    'className' => FileIndexRepository::class,
+];
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Backend\Controller\LinkBrowserController::class] = [
+    'className' => LinkBrowserController::class,
+];
+$GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\RteCKEditor\Controller\BrowseLinksController::class] = [
+    'className' => BrowseLinksController::class,
+];
+
 // Add task to update metadata of AdmiralCloud files
-$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['scheduler']['tasks'][\CPSIT\AdmiralCloudConnector\Task\UpdateAdmiralCloudMetadataTask::class] = [
+$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['scheduler']['tasks'][UpdateAdmiralCloudMetadataTask::class] = [
     'extension' => 'admiral_cloud_connector',
     'title' => 'LLL:EXT:admiral_cloud_connector/Resources/Private/Language/locallang_be.xlf:task.update_admiral_cloud_metadata.name',
     'description' => 'LLL:EXT:admiral_cloud_connector/Resources/Private/Language/locallang_be.xlf:task.update_admiral_cloud_metadata.description',
-    'additionalFields' => \CPSIT\AdmiralCloudConnector\Task\UpdateAdmiralCloudMetadataAdditionalFieldProvider::class
+    'additionalFields' => UpdateAdmiralCloudMetadataAdditionalFieldProvider::class,
 ];
 
-$iconRegistry = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Imaging\IconRegistry::class);
-$iconRegistry->registerIcon(
-    'actions-admiral_cloud-browser',
-    \TYPO3\CMS\Core\Imaging\IconProvider\SvgIconProvider::class,
-    ['source' => 'EXT:admiral_cloud_connector/Resources/Public/Icons/actions-admiral_cloud-browser.svg']
-);
-$iconRegistry->registerIcon(
-    'actions-admiral_cloud-browser_invert',
-    \TYPO3\CMS\Core\Imaging\IconProvider\SvgIconProvider::class,
-    ['source' => 'EXT:admiral_cloud_connector/Resources/Public/Icons/actions-admiral_cloud-browser_invert.svg']
-);
-$iconRegistry->registerIcon(
-    'permissions-admiral_cloud-browser',
-    \TYPO3\CMS\Core\Imaging\IconProvider\SvgIconProvider::class,
-    ['source' => 'EXT:admiral_cloud_connector/Resources/Public/Icons/permissions-admiral_cloud-browser.svg']
-);
-unset($iconRegistry);
-
-/**
- * register cache for extension
- */
+// Register cache for extension
 if (!is_array($GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['admiral_cloud_connector'] ?? null)) {
-    $GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['admiral_cloud_connector'] = array();
-    $GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['admiral_cloud_connector']['frontend'] = \TYPO3\CMS\Core\Cache\Frontend\VariableFrontend::class;
-    $GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['admiral_cloud_connector']['backend'] = \TYPO3\CMS\Core\Cache\Backend\SimpleFileBackend::class;
+    $GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['admiral_cloud_connector'] = [
+        'frontend' => VariableFrontend::class,
+        'backend' => SimpleFileBackend::class,
+    ];
 }
-
-$GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Backend\Controller\LinkBrowserController::class] = [
-    'className' => \CPSIT\AdmiralCloudConnector\Controller\Backend\LinkBrowserController::class
-];
-$GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\RteCKEditor\Controller\BrowseLinksController::class] = [
-    'className' => CPSIT\AdmiralCloudConnector\Controller\Backend\BrowseLinksController::class
-];
-

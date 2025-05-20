@@ -20,6 +20,7 @@ namespace CPSIT\AdmiralCloudConnector\Backend;
 use CPSIT\AdmiralCloudConnector\Resource\AdmiralCloudDriver;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use TYPO3\CMS\Backend\Form\InlineStackProcessor;
+use TYPO3\CMS\Backend\Routing\Exception\RouteNotFoundException;
 use TYPO3\CMS\Backend\Routing\UriBuilder;
 use TYPO3\CMS\Core\Crypto\HashService;
 use TYPO3\CMS\Core\Imaging\IconFactory;
@@ -65,13 +66,13 @@ class FilesControlContainer extends \TYPO3\CMS\Backend\Form\Container\FilesContr
     }
 
     /**
-     * @throws \TYPO3\CMS\Backend\Routing\Exception\RouteNotFoundException
+     * @throws RouteNotFoundException
      */
     protected function renderAdmiralCloudOverviewButton(): string
     {
         $languageService = $this->getLanguageService();
 
-        if (!$this->admiralCloudStorageAvailable()) {
+        if (!$this->isAdmiralCloudStorageAvailable()) {
             $errorTextHtml = [];
             $errorTextHtml[] = '<div class="alert alert-danger" style="display: inline-block">';
             $errorTextHtml[] = $this->iconFactory->getIcon('actions-admiral_cloud-browser', IconSize::SMALL)->render();
@@ -107,13 +108,13 @@ class FilesControlContainer extends \TYPO3\CMS\Backend\Form\Container\FilesContr
     }
 
     /**
-     * @throws \TYPO3\CMS\Backend\Routing\Exception\RouteNotFoundException
+     * @throws RouteNotFoundException
      */
     protected function renderAdmiralCloudUploadButton(): string
     {
         $languageService = $this->getLanguageService();
 
-        if (!$this->admiralCloudStorageAvailable()) {
+        if (!$this->isAdmiralCloudStorageAvailable()) {
             $errorTextHtml = [];
             $errorTextHtml[] = '<div class="alert alert-danger" style="display: inline-block">';
             $errorTextHtml[] = $this->iconFactory->getIcon('actions-admiral_cloud-browser', IconSize::SMALL)->render();
@@ -148,13 +149,14 @@ class FilesControlContainer extends \TYPO3\CMS\Backend\Form\Container\FilesContr
         return LF . implode(LF, $buttonHtml);
     }
 
-    protected function admiralCloudStorageAvailable(): bool
+    protected function isAdmiralCloudStorageAvailable(): bool
     {
         foreach ($this->getBackendUserAuthentication()->getFileStorages() as $fileStorage) {
             if ($fileStorage->getDriverType() === AdmiralCloudDriver::KEY) {
                 return true;
             }
         }
+
         return false;
     }
 }
