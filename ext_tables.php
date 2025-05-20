@@ -13,23 +13,11 @@
  * The TYPO3 project - inspiring people to share!
  */
 
+use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
+
 if (!defined('TYPO3')) {
     die('Access denied.');
 }
-
-$pathEventIcon = 'EXT:admiral_cloud_connector/Resources/Public/Icons/ac.svg';
-\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addModule(
-    'AdmiralCloud',
-    '',
-    '',
-    [
-        'routeTarget' => '',
-        'access' => 'group,user',
-        'name' => 'events',
-        'icon' => 'EXT:t3events/Resources/Public/Icons/event-calendar.svg',
-        'labels' => 'LLL:EXT:admiral_cloud_connector/Resources/Private/Language/locallang_mod_main.xlf',
-    ]
-);
 
 $GLOBALS['TYPO3_USER_SETTINGS']['columns']['first_name'] = [
     'label' => 'LLL:EXT:admiral_cloud_connector/Resources/Private/Language/locallang_be.xlf:usersettings.first_name',
@@ -49,4 +37,7 @@ $GLOBALS['TYPO3_USER_SETTINGS']['columns']['security_group'] = [
     'max' => 80,
     'table' => 'be_users',
 ];
-\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addFieldsToUserSettings('--div--;LLL:EXT:admiral_cloud_connector/Resources/Private/Language/locallang_be.xlf:admiral_cloud_connector_title,first_name,last_name,security_group');
+
+ExtensionManagementUtility::addFieldsToUserSettings(
+    '--div--;LLL:EXT:admiral_cloud_connector/Resources/Private/Language/locallang_be.xlf:admiral_cloud_connector_title,first_name,last_name,security_group',
+);
