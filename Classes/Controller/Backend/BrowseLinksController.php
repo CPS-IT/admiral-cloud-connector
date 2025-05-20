@@ -384,28 +384,28 @@ class BrowseLinksController extends AbstractLinkBrowserController
         $disabled = $targetSelectorConfig['disabled'] ?? false;
         if (!$disabled) {
             $targetSelector = '
-						<select name="ltarget_type" class="t3js-targetPreselect form-select">
-							<option value=""></option>
-							<option value="_top">' . htmlspecialchars($lang->sL('top')) . '</option>
-							<option value="_blank">' . htmlspecialchars($lang->sL('newWindow')) . '</option>
-						</select>
-			';
+                        <select name="ltarget_type" class="t3js-targetPreselect form-select">
+                            <option value=""></option>
+                            <option value="_top">' . htmlspecialchars($lang->sL('top')) . '</option>
+                            <option value="_blank">' . htmlspecialchars($lang->sL('newWindow')) . '</option>
+                        </select>
+            ';
         }
 
         return '
-				<form action="" name="ltargetform" id="ltargetform" class="t3js-dummyform">
+                <form action="" name="ltargetform" id="ltargetform" class="t3js-dummyform">
                     <div class="row mb-3" ' . ($disabled ? ' style="display: none;"' : '') . '>
                         <label class="col-sm-3 col-form-label">' . htmlspecialchars($lang->sL('target')) . '</label>
-						<div class="col-sm-4">
-							<input type="text" name="ltarget" class="t3js-linkTarget form-control"
-							    value="' . htmlspecialchars($target) . '" />
-						</div>
-						<div class="col-sm-5">
-							' . $targetSelector . '
-						</div>
-					</div>
-				</form>
-				';
+                        <div class="col-sm-4">
+                            <input type="text" name="ltarget" class="t3js-linkTarget form-control"
+                                value="' . htmlspecialchars($target) . '" />
+                        </div>
+                        <div class="col-sm-5">
+                            ' . $targetSelector . '
+                        </div>
+                    </div>
+                </form>
+                ';
     }
 
     protected function getTitleField(): string

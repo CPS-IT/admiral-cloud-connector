@@ -19,5 +19,3 @@ Create a new record and choose "AC Security Group"
 Now enter the ID of the AC Security Group into the field "AC Security Group Id" and choose the matching usergroup.
 
 .. image:: ../Images/ac-assign.png
-
-

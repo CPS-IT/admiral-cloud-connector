@@ -21,5 +21,3 @@ No. The free version does not have support the AdmiralCloud API. Support of the 
 Close the connection manually by clicking on "Close connection to AdmiralCloud". This will re-establish the connection next time you use it:
 
 .. image:: ../../Images/close.png
-
-

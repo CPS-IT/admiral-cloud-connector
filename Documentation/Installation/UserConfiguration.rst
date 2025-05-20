@@ -30,6 +30,3 @@ AC Cropping
 _____________
 
 Allow cropping tool for AdmiralCloud images: check the usergroup permission for "Image crop for AdmiralCloud (tx_admiralcloudconnector_crop)" in "File Reference" on tab "Access Lists" in section "Allowed excludefields".
-
-
-
