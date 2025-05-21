@@ -21,10 +21,13 @@ use CPSIT\AdmiralCloudConnector\Api\Oauth\Credentials;
 use CPSIT\AdmiralCloudConnector\Exception\InvalidPropertyException;
 use CPSIT\AdmiralCloudConnector\Exception\RuntimeException;
 use CPSIT\AdmiralCloudConnector\Utility\ConfigurationUtility;
+use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\RequestOptions;
 use TYPO3\CMS\Core\Context\Context;
 use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\QueryBuilder;
 use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
+use TYPO3\CMS\Core\Http\RequestFactory;
 use TYPO3\CMS\Core\Log\LogManager;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
@@ -53,7 +56,6 @@ class AdmiralCloudApi
             throw new \InvalidArgumentException('Settings passed for AdmiralCloudApi service creation are not valid.', 1744626269);
         }
 
-        $curl = curl_init();
         $params = [
             'accessSecret' => $credentials->getAccessSecret(),
             'controller' => $settings['controller'],
@@ -64,51 +66,44 @@ class AdmiralCloudApi
         $signedValues = self::acSignatureSign($params);
         $routeUrl = ConfigurationUtility::getApiUrl() . 'v5/' . $settings['route'];
 
-        $curlOptArray = [
-            CURLOPT_URL => $routeUrl,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING => '',
-            CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 30,
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_HTTPHEADER => [
-                'Content-Type: application/json',
-                'x-admiralcloud-accesskey: ' . $credentials->getAccessKey(),
-                'x-admiralcloud-rts: ' . $signedValues['timestamp'],
-                'x-admiralcloud-hash: ' . $signedValues['hash'],
+        $requestOptions = [
+            RequestOptions::HEADERS => [
+                'Content-Type' => 'application/json',
+                'X-Admiralcloud-Accesskey' => $credentials->getAccessKey(),
+                'X-Admiralcloud-Rts' => $signedValues['timestamp'],
+                'X-Admiralcloud-Hash' => $signedValues['hash'],
             ],
         ];
 
         if ($method === 'POST') {
-            $curlOptArray[CURLOPT_POST] = 1;
-            $curlOptArray[CURLOPT_POSTFIELDS] = json_encode($params['payload']);
+            $requestOptions[RequestOptions::JSON] = $params['payload'];
         }
 
-        curl_setopt_array($curl, $curlOptArray);
+        try {
+            $requestFactory = GeneralUtility::makeInstance(RequestFactory::class);
+            $response = $requestFactory->request($routeUrl, $method, $requestOptions);
+            $content = $response->getBody()->getContents();
+            $statusCode = $response->getStatusCode();
+            $isFailedSearch = ($settings['action'] ?? null) === 'search' && $content === '{"message":"error_search_search_failed"}';
 
-        $response = curl_exec($curl);
-        $err = curl_error($curl);
-        $httpCode = (int)curl_getinfo($curl, CURLINFO_HTTP_CODE);
-        $isFailedSearch = ($settings['action'] ?? null) === 'search' && $response === '{"message":"error_search_search_failed"}';
+            if ($statusCode >= 400 && !$isFailedSearch) {
+                $logger = GeneralUtility::makeInstance(LogManager::class)->getLogger(self::class);
+                $logger->error(
+                    'Error in AdmiralCloud route process. URL: {url}. HTTP code: {httpCode}. Error message: {error}',
+                    [
+                        'url' => $routeUrl,
+                        'httpCode' => $statusCode,
+                        'error' => $content,
+                    ],
+                );
 
-        // Log error
-        if (!$httpCode || ($httpCode >= 400 && !$isFailedSearch)) {
-            $logger = GeneralUtility::makeInstance(LogManager::class)->getLogger(self::class);
-            $logger->error(
-                'Error in AdmiralCloud route process. URL: {url}. HTTP code: {httpCode}. Error message: {error}',
-                [
-                    'url' => $routeUrl,
-                    'httpCode' => $httpCode,
-                    'error' => $response ?: $err,
-                ],
-            );
-
-            throw new RuntimeException('Error in AdmiralCloud route process. HTTP Code: ' . $httpCode, 1744626526);
+                throw new RuntimeException('Error in AdmiralCloud route process. HTTP Code: ' . $statusCode, 1744626526);
+            }
+        } catch (GuzzleException $exception) {
+            throw new RuntimeException('Error in AdmiralCloud route process: ' . $exception->getMessage(), 1747820476);
         }
 
-        curl_close($curl);
-
-        return new AdmiralCloudApi($response);
+        return new AdmiralCloudApi($content);
     }
 
     /**
@@ -116,12 +111,11 @@ class AdmiralCloudApi
      */
     public static function auth(array $settings): string
     {
+        $requestFactory = GeneralUtility::makeInstance(RequestFactory::class);
         $credentials = new Credentials();
         $device = $settings['device'] ?? md5((string)$GLOBALS['BE_USER']->user['uid']);
 
         static::validateAuthData($credentials);
-
-        $curl = curl_init();
 
         $state = '0.' . base_convert(random_int(0, mt_getrandmax()) . '00', 10, 36);
         $params = [
@@ -145,46 +139,42 @@ class AdmiralCloudApi
 
         $loginUrl = ConfigurationUtility::getAuthUrl() . 'v4/login/app?poc=true';
 
-        curl_setopt_array($curl, [
-            CURLOPT_URL => $loginUrl,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING => '',
-            CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 30,
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_POST => 1,
-            CURLOPT_POSTFIELDS => json_encode($params['payload']),
-            CURLOPT_HTTPHEADER => [
-                'Content-Type: application/json',
-                'x-admiralcloud-accesskey: ' . $credentials->getAccessKey(),
-                'x-admiralcloud-rts: ' . $signedValues['timestamp'],
-                'x-admiralcloud-hash: ' . $signedValues['hash'],
-                'x-admiralcloud-debugsignature: 1',
-                'x-admiralcloud-clientid: ' . $credentials->getClientId(),
-                'x-admiralcloud-device: ' . $device,
-            ],
-        ]);
-
-        $response = curl_exec($curl);
-        $err = curl_error($curl);
-        $httpCode = (int)curl_getinfo($curl, CURLINFO_HTTP_CODE);
-
-        // Log error
-        if (!$httpCode || $httpCode >= 400) {
-            $logger = GeneralUtility::makeInstance(LogManager::class)->getLogger(self::class);
-            $logger->error(
-                'Error in AdmiralCloud login process. URL: {url}. HTTP Code: {httpCode}. Error message: {error}',
+        try {
+            $response = $requestFactory->request(
+                $loginUrl,
+                'POST',
                 [
-                    'url' => $loginUrl,
-                    'httpCode' => $httpCode,
-                    'error' => $response ?: $err,
+                    RequestOptions::HEADERS => [
+                        'X-Admiralcloud-Accesskey' => $credentials->getAccessKey(),
+                        'X-Admiralcloud-Rts' => $signedValues['timestamp'],
+                        'X-Admiralcloud-Hash' => $signedValues['hash'],
+                        'X-Admiralcloud-Debugsignature' => '1',
+                        'X-Admiralcloud-Clientid' => $credentials->getClientId(),
+                        'X-Admiralcloud-Device' => $device,
+                    ],
+                    RequestOptions::JSON => $params['payload'],
                 ],
             );
 
-            throw new RuntimeException('Error in AdmiralCloud login process. HTTP Code: ' . $httpCode, 1744626689);
-        }
+            $content = $response->getBody()->getContents();
+            $statusCode = $response->getStatusCode();
 
-        curl_close($curl);
+            if ($statusCode >= 400) {
+                $logger = GeneralUtility::makeInstance(LogManager::class)->getLogger(self::class);
+                $logger->error(
+                    'Error in AdmiralCloud login process. URL: {url}. HTTP Code: {httpCode}. Error message: {error}',
+                    [
+                        'url' => $loginUrl,
+                        'httpCode' => $statusCode,
+                        'error' => $content,
+                    ],
+                );
+
+                throw new RuntimeException('Error in AdmiralCloud login process. HTTP Code: ' . $statusCode, 1744626689);
+            }
+        } catch (GuzzleException $exception) {
+            throw new RuntimeException('Error in AdmiralCloud login process: ' . $exception->getMessage(), 1747820790);
+        }
 
         $codeParams = [
             'state' => $params['payload']['state'],
@@ -194,43 +184,40 @@ class AdmiralCloudApi
 
         $authUrl = ConfigurationUtility::getAuthUrl() . 'v4/requestCode?' . http_build_query($codeParams);
 
-        $curl = curl_init();
-        curl_setopt_array($curl, [
-            CURLOPT_URL => $authUrl,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING => '',
-            CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 30,
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_HTTPHEADER => [
-                'Content-Type: application/json',
-            ],
-        ]);
-
-        $response = curl_exec($curl);
-        $err = curl_error($curl);
-        $httpCode = (int)curl_getinfo($curl, CURLINFO_HTTP_CODE);
-
-        // Log error
-        if (!$httpCode || $httpCode >= 400) {
-            $logger = GeneralUtility::makeInstance(LogManager::class)->getLogger(self::class);
-            $logger->error(
-                'Error in AdmiralCloud auth process. URL: {url}. HTTP Code: {httpCode}. Error message: {error}',
+        try {
+            $response = $requestFactory->request(
+                $authUrl,
+                'GET',
                 [
-                    'url' => $authUrl,
-                    'httpCode' => $httpCode,
-                    'error' => $response ?: $err,
+                    RequestOptions::HEADERS => [
+                        'Content-Type' => 'application/json',
+                    ],
                 ],
             );
 
-            throw new RuntimeException('Error in AdmiralCloud auth process. HTTP Code: ' . $httpCode, 1744626753);
+            $content = $response->getBody()->getContents();
+            $statusCode = $response->getStatusCode();
+
+            if ($statusCode >= 400) {
+                $logger = GeneralUtility::makeInstance(LogManager::class)->getLogger(self::class);
+                $logger->error(
+                    'Error in AdmiralCloud auth process. URL: {url}. HTTP Code: {httpCode}. Error message: {error}',
+                    [
+                        'url' => $authUrl,
+                        'httpCode' => $statusCode,
+                        'error' => $content,
+                    ],
+                );
+
+                throw new RuntimeException('Error in AdmiralCloud auth process. HTTP Code: ' . $statusCode, 1744626753);
+            }
+
+            $code = json_decode($content, false);
+        } catch (GuzzleException $exception) {
+            throw new RuntimeException('Error in AdmiralCloud auth process: ' . $exception->getMessage(), 1747820467);
         }
 
-        curl_close($curl);
-
-        $code = json_decode($response);
-
-        if ($response && !$code) {
+        if ($content && !$code) {
             $logger = GeneralUtility::makeInstance(LogManager::class)->getLogger(self::class);
             $logger->error('Error decoding JSON from auth response. JSON: ' . $response);
 
