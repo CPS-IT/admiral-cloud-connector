@@ -52,7 +52,7 @@ $GLOBALS['TYPO3_CONF_VARS']['SYS']['formEngine']['nodeRegistry'][1747210949] = [
 $GLOBALS['TYPO3_CONF_VARS']['SYS']['fal']['registeredDrivers'][AdmiralCloudDriver::KEY] = [
     'class' => AdmiralCloudDriver::class,
     'label' => 'Admiral Cloud',
-    // @todo: is currently needed to not break the backend. Needs to be fixed in TYPO3
+    // Provide dummy flex form since the sys_file_storage.configuration requires one to be configured
     'flexFormDS' => 'FILE:EXT:admiral_cloud_connector/Configuration/FlexForms/AdmiralCloudDriverFlexForm.xml',
 ];
 

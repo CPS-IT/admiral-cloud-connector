@@ -7,9 +7,7 @@
         <type>array</type>
         <el>
             <configurationKey>
-                <TCEforms>
-                    <label>Dummy</label>
-                </TCEforms>
+                <label>Dummy</label>
             </configurationKey>
         </el>
     </ROOT>
