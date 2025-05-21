@@ -13,16 +13,16 @@
  * The TYPO3 project - inspiring people to share!
  */
 
-call_user_func(function ($extension, $table) {
-    \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addTcaSelectItem(
-        $table,
-        'file_permissions',
-        [
-            'LLL:EXT:' . $extension . '/Resources/Private/Language/locallang_be.xlf:be_groups.file_permissions.folder_add_via_admiral_cloud',
-            'addFileViaAdmiralCloud',
-            'permissions-admiral_cloud-browser',
-        ],
-        'addFile',
-        'after'
-    );
-}, 'admiral_cloud_connector', 'be_groups');
+use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
+
+ExtensionManagementUtility::addTcaSelectItem(
+    'be_groups',
+    'file_permissions',
+    [
+        'LLL:EXT:admiral_cloud_connector/Resources/Private/Language/locallang_be.xlf:be_groups.file_permissions.folder_add_via_admiral_cloud',
+        'addFileViaAdmiralCloud',
+        'permissions-admiral_cloud-browser',
+    ],
+    'addFile',
+    'after',
+);
