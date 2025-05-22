@@ -46,6 +46,7 @@ abstract class AbstractLinkBrowserController extends \TYPO3\CMS\Backend\Controll
     public function mainAction(ServerRequestInterface $request): ResponseInterface
     {
         $this->setUpBasicPageRendererForBackend($this->pageRenderer, $this->extensionConfiguration, $request, $this->getLanguageService());
+
         $this->pageRenderer->addInlineLanguageLabelFile('EXT:core/Resources/Private/Language/locallang_misc.xlf');
         $this->pageRenderer->addInlineLanguageLabelFile('EXT:core/Resources/Private/Language/locallang_core.xlf');
 
@@ -54,31 +55,40 @@ abstract class AbstractLinkBrowserController extends \TYPO3\CMS\Backend\Controll
         $this->initCurrentUrl();
 
         $menuData = $this->buildMenuArray($request);
+
         if ($this->displayedLinkHandler instanceof LinkHandlerViewProviderInterface) {
             $view = $this->displayedLinkHandler->createView($this->backendViewFactory, $request);
         } elseif (($request->getQueryParams()['act'] ?? null) === 'admiralCloud') {
             $view = $this->backendViewFactory->create($request, ['cpsit/admiral-cloud-connector']);
+
             $this->pageRenderer->loadJavaScriptModule('@cpsit/admiral-cloud-connector/Browser.js');
         } else {
             $view = $this->backendViewFactory->create($request, ['typo3/cms-backend']);
         }
+
         if ($this->displayedLinkHandler instanceof LinkHandlerVariableProviderInterface) {
             $this->displayedLinkHandler->initializeVariables($request);
         }
+
         $renderLinkAttributeFields = $this->renderLinkAttributeFields($view);
+
         if (!empty($this->currentLinkParts)) {
             $this->renderCurrentUrl($view);
         }
+
         if (method_exists($this->displayedLinkHandler, 'setView')) {
             $this->displayedLinkHandler->setView($view);
         }
+
         $view->assignMultiple([
             'initialNavigationWidth' => $this->getBackendUser()->uc['selector']['navigation']['width'] ?? 250,
             'menuItems' => $menuData,
             'linkAttributes' => $renderLinkAttributeFields,
             'contentOnly' => $request->getQueryParams()['contentOnly'] ?? false,
         ]);
+
         $content = $this->displayedLinkHandler->render($request);
+
         if (empty($content)) {
             // @todo: b/w compat layer for link handler that don't render full view but return empty
             //        string instead. This case is unfortunate and should be removed if it gives
@@ -87,12 +97,16 @@ abstract class AbstractLinkBrowserController extends \TYPO3\CMS\Backend\Controll
             //        construct should be refactored a bit.
             $content = $view->render();
         }
+
         $this->initDocumentTemplate();
         $this->pageRenderer->setTitle('Link Browser');
+
         if ($request->getQueryParams()['contentOnly'] ?? false) {
             return new HtmlResponse($content);
         }
+
         $this->pageRenderer->setBodyContent('<body ' . GeneralUtility::implodeAttributes($this->getBodyTagAttributes(), true, true) . '>' . $content);
+
         return $this->pageRenderer->renderResponse();
     }
 }

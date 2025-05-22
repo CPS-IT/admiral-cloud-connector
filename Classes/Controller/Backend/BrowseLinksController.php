@@ -108,6 +108,7 @@ class BrowseLinksController extends AbstractLinkBrowserController
         $this->moduleTemplate = $this->moduleTemplateFactory->create($request);
 
         $tcaFieldConf = ['enableRichtext' => true];
+
         if (!empty($queryParameters['P']['richtextConfigurationName'])) {
             $tcaFieldConf['richtextConfiguration'] = $queryParameters['P']['richtextConfigurationName'];
         }
@@ -141,9 +142,11 @@ class BrowseLinksController extends AbstractLinkBrowserController
 
         if (!empty($this->currentLinkParts['url'])) {
             $data = $this->linkService->resolve($this->currentLinkParts['url']);
+
             $this->currentLinkParts['type'] = $data['type'];
             unset($data['type']);
             $this->currentLinkParts['url'] = $data;
+
             if (!empty($this->currentLinkParts['url']['parameters'])) {
                 $this->currentLinkParts['params'] = '&' . $this->currentLinkParts['url']['parameters'];
             }
@@ -171,27 +174,34 @@ class BrowseLinksController extends AbstractLinkBrowserController
 
             if (is_array($this->thisConfig['classesAnchor'] ?? null)) {
                 $readOnlyTitle = $this->isReadonlyTitle();
+
                 foreach ($this->thisConfig['classesAnchor'] as $label => $conf) {
                     if (in_array($conf['class'] ?? null, $classesAnchorArray, true)) {
                         $classesAnchor['all'][] = $conf['class'];
+
                         if ($conf['type'] === $this->displayedLinkHandlerId) {
                             $classesAnchor[$conf['type']][] = $conf['class'];
+
                             if (($this->buttonConfig[$conf['type']]['properties']['class']['default'] ?? null) === $conf['class']) {
                                 $this->classesAnchorDefault[$conf['type']] = $conf['class'];
+
                                 if (isset($conf['titleText'])) {
                                     $this->classesAnchorDefaultTitle[$conf['type']] = $this->contentLanguageService->sL(trim((string)$conf['titleText']));
                                 }
+
                                 if (isset($conf['target'])) {
                                     $this->classesAnchorDefaultTarget[$conf['type']] = trim((string)$conf['target']);
                                 }
                             }
                         }
+
                         if ($readOnlyTitle && $conf['titleText']) {
-                            $this->classesAnchorClassTitle[$conf['class']] = ($this->classesAnchorDefaultTitle[$conf['type']] = $this->contentLanguageService->sL(trim((string)$conf['titleText'])));
+                            $this->classesAnchorClassTitle[$conf['class']] = $this->classesAnchorDefaultTitle[$conf['type']] = $this->contentLanguageService->sL(trim((string)$conf['titleText']));
                         }
                     }
                 }
             }
+
             if (isset($this->linkAttributeValues['class'], $classesAnchor[$this->displayedLinkHandlerId])
                 && !in_array($this->linkAttributeValues['class'], $classesAnchor[$this->displayedLinkHandlerId], true)
             ) {
@@ -210,12 +220,14 @@ class BrowseLinksController extends AbstractLinkBrowserController
                     )
                 ) {
                     $selected = '';
+
                     if (
                         (($this->linkAttributeValues['class'] ?? false) === $class)
                         || ($this->classesAnchorDefault[$this->displayedLinkHandlerId] ?? false) === $class
                     ) {
                         $selected = 'selected="selected"';
                     }
+
                     $classLabel = !empty($this->thisConfig['classes'][$class]['name'])
                         ? $this->getPageConfigLabel($this->thisConfig['classes'][$class]['name'], false)
                         : $class;
@@ -233,19 +245,22 @@ class BrowseLinksController extends AbstractLinkBrowserController
                 }
             }
             if (
-                ($this->classesAnchorJSOptions[$this->displayedLinkHandlerId] ?? false)
+                ($this->classesAnchorJSOptions[$this->displayedLinkHandlerId] ?? '')
                 && !(
                     ($this->buttonConfig['properties']['class']['required'] ?? false)
                     || ($this->buttonConfig[$this->displayedLinkHandlerId]['properties']['class']['required'] ?? false)
                 )
             ) {
                 $selected = '';
+
                 if (!($this->linkAttributeValues['class'] ?? false) && !($this->classesAnchorDefault[$this->displayedLinkHandlerId] ?? false)) {
                     $selected = 'selected="selected"';
                 }
+
                 $this->classesAnchorJSOptions[$this->displayedLinkHandlerId] = '<option ' . $selected . ' value=""></option>' . $this->classesAnchorJSOptions[$this->displayedLinkHandlerId];
             }
         }
+
         // Default target
         $this->defaultLinkTarget = ($this->classesAnchorDefault[$this->displayedLinkHandlerId] ?? false) && ($this->classesAnchorDefaultTarget[$this->displayedLinkHandlerId] ?? false)
             ? $this->classesAnchorDefaultTarget[$this->displayedLinkHandlerId]
@@ -255,10 +270,12 @@ class BrowseLinksController extends AbstractLinkBrowserController
         // Initializing additional attributes
         if ($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['rte_ckeditor']['plugins']['TYPO3Link']['additionalAttributes'] ?? false) {
             $addAttributes = GeneralUtility::trimExplode(',', $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['rte_ckeditor']['plugins']['TYPO3Link']['additionalAttributes'], true);
+
             foreach ($addAttributes as $attribute) {
                 $this->additionalAttributes[$attribute] = $this->linkAttributeValues[$attribute] ?? '';
             }
         }
+
         return parent::renderLinkAttributeFields($view);
     }
 
@@ -276,7 +293,9 @@ class BrowseLinksController extends AbstractLinkBrowserController
         } else {
             $label = $this->getLanguageService()->sL(trim($string));
         }
+
         $label = str_replace(['\\\'', '"'], ['\'', '\\"'], $label);
+
         return $JScharCode ? GeneralUtility::quoteJSvalue($label) : $label;
     }
 
@@ -336,9 +355,11 @@ class BrowseLinksController extends AbstractLinkBrowserController
         $fieldRenderingDefinitions['class'] = $this->getClassField();
         $fieldRenderingDefinitions['target'] = $this->getTargetField();
         $fieldRenderingDefinitions['rel'] = $this->getRelField();
+
         if (empty($this->buttonConfig['queryParametersSelector']['enabled'])) {
             unset($fieldRenderingDefinitions['params']);
         }
+
         return $fieldRenderingDefinitions;
     }
 
@@ -374,38 +395,40 @@ class BrowseLinksController extends AbstractLinkBrowserController
     protected function getTargetField(): string
     {
         $targetSelectorConfig = [];
+
         if (is_array($this->buttonConfig['targetSelector'] ?? null)) {
             $targetSelectorConfig = $this->buttonConfig['targetSelector'];
         }
+
         $target = !empty($this->linkAttributeValues['target']) ? $this->linkAttributeValues['target'] : $this->defaultLinkTarget;
         $lang = $this->getLanguageService();
         $targetSelector = '';
-
         $disabled = $targetSelectorConfig['disabled'] ?? false;
+
         if (!$disabled) {
             $targetSelector = '
-                        <select name="ltarget_type" class="t3js-targetPreselect form-select">
-                            <option value=""></option>
-                            <option value="_top">' . htmlspecialchars($lang->sL('top')) . '</option>
-                            <option value="_blank">' . htmlspecialchars($lang->sL('newWindow')) . '</option>
-                        </select>
+                <select name="ltarget_type" class="t3js-targetPreselect form-select">
+                    <option value=""></option>
+                    <option value="_top">' . htmlspecialchars($lang->sL('top')) . '</option>
+                    <option value="_blank">' . htmlspecialchars($lang->sL('newWindow')) . '</option>
+                </select>
             ';
         }
 
         return '
-                <form action="" name="ltargetform" id="ltargetform" class="t3js-dummyform">
-                    <div class="row mb-3" ' . ($disabled ? ' style="display: none;"' : '') . '>
-                        <label class="col-sm-3 col-form-label">' . htmlspecialchars($lang->sL('target')) . '</label>
-                        <div class="col-sm-4">
-                            <input type="text" name="ltarget" class="t3js-linkTarget form-control"
-                                value="' . htmlspecialchars($target) . '" />
-                        </div>
-                        <div class="col-sm-5">
-                            ' . $targetSelector . '
-                        </div>
+            <form action="" name="ltargetform" id="ltargetform" class="t3js-dummyform">
+                <div class="row mb-3" ' . ($disabled ? ' style="display: none;"' : '') . '>
+                    <label class="col-sm-3 col-form-label">' . htmlspecialchars($lang->sL('target')) . '</label>
+                    <div class="col-sm-4">
+                        <input type="text" name="ltarget" class="t3js-linkTarget form-control"
+                            value="' . htmlspecialchars($target) . '" />
                     </div>
-                </form>
-                ';
+                    <div class="col-sm-5">
+                        ' . $targetSelector . '
+                    </div>
+                </div>
+            </form>
+        ';
     }
 
     protected function getTitleField(): string
@@ -415,28 +438,32 @@ class BrowseLinksController extends AbstractLinkBrowserController
         } else {
             $title = ($this->classesAnchorDefaultTitle[$this->displayedLinkHandlerId] ?? false) ?: '';
         }
+
         $readOnlyTitle = $this->isReadonlyTitle();
 
         if ($readOnlyTitle) {
             $currentClass = $this->linkAttributeFields['class'] ?? '';
+
             if (!$currentClass) {
                 $currentClass = empty($this->classesAnchorDefault[$this->displayedLinkHandlerId]) ? '' : $this->classesAnchorDefault[$this->displayedLinkHandlerId];
             }
+
             $title = $this->classesAnchorClassTitle[$currentClass] ?? $this->classesAnchorDefaultTitle[$this->displayedLinkHandlerId] ?? '';
         }
+
         return '
-                <form action="" name="ltitleform" id="ltitleform" class="t3js-dummyform">
-                    <div class="row mb-3">
-                        <label class="col-sm-3 col-form-label">
-                            ' . htmlspecialchars($this->getLanguageService()->sL('title')) . '
-                         </label>
-                         <div class="col-sm-9">
-                                <input ' . ($readOnlyTitle ? 'disabled' : '') . ' type="text" name="ltitle" class="form-control t3js-linkTitle"
-                                        value="' . htmlspecialchars($title) . '" />
-                        </div>
+            <form action="" name="ltitleform" id="ltitleform" class="t3js-dummyform">
+                <div class="row mb-3">
+                    <label class="col-sm-3 col-form-label">
+                        ' . htmlspecialchars($this->getLanguageService()->sL('title')) . '
+                     </label>
+                     <div class="col-sm-9">
+                            <input ' . ($readOnlyTitle ? 'disabled' : '') . ' type="text" name="ltitle" class="form-control t3js-linkTitle"
+                                    value="' . htmlspecialchars($title) . '" />
                     </div>
-                </form>
-                ';
+                </div>
+            </form>
+        ';
     }
 
     /**
@@ -446,9 +473,8 @@ class BrowseLinksController extends AbstractLinkBrowserController
      */
     protected function getClassField(): string
     {
-        $selectClass = '';
         if (isset($this->classesAnchorJSOptions[$this->displayedLinkHandlerId])) {
-            $selectClass = '
+            return '
                 <form action="" name="lclassform" id="lclassform" class="t3js-dummyform">
                     <div class="row mb-3">
                         <label class="col-sm-3 col-form-label">
@@ -463,7 +489,8 @@ class BrowseLinksController extends AbstractLinkBrowserController
                 </form>
             ';
         }
-        return $selectClass;
+
+        return '';
     }
 
     protected function getCurrentPageId(): int

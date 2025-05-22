@@ -45,6 +45,7 @@ class LinkBrowserController extends AbstractLinkBrowserController
         /** @var array<string, string> $currentLinkParts */
         $currentLinkParts = $this->typoLinkCodecService->decode($currentLink);
         $currentLinkParts['params'] = $currentLinkParts['additionalParams'];
+
         unset($currentLinkParts['additionalParams']);
 
         if (!empty($currentLinkParts['url'])) {
@@ -64,6 +65,7 @@ class LinkBrowserController extends AbstractLinkBrowserController
         if (!$this->areFieldChangeFunctionsValid() && !$this->areFieldChangeFunctionsValid(true)) {
             $this->parameters['fieldChangeFunc'] = [];
         }
+
         unset($this->parameters['fieldChangeFunc']['alert']);
 
         if (($this->parameters['fieldChangeFuncType'] ?? null) === 'items') {
@@ -76,12 +78,7 @@ class LinkBrowserController extends AbstractLinkBrowserController
     }
 
     /**
-     * Encode a typolink via ajax
-     *
-     * This avoids to implement the encoding functionality again in JS for the browser.
-     *
-     * @param ServerRequestInterface $request
-     * @return ResponseInterface
+     * @see \TYPO3\CMS\Backend\Controller\LinkBrowserController::encodeTypoLink()
      */
     public function encodeTypoLink(ServerRequestInterface $request): ResponseInterface
     {
@@ -104,14 +101,13 @@ class LinkBrowserController extends AbstractLinkBrowserController
      * @param bool $handleFlexformSections Whether to handle flexform sections differently
      * @return bool Whether the submitted field change functions are valid
      */
-    protected function areFieldChangeFunctionsValid($handleFlexformSections = false): bool
+    protected function areFieldChangeFunctionsValid(bool $handleFlexformSections = false): bool
     {
-        $result = false;
-
         if (isset($this->parameters['fieldChangeFunc'], $this->parameters['fieldChangeFuncHash']) && is_array($this->parameters['fieldChangeFunc'])) {
             $matches = [];
             $pattern = '#\\[el]\\[(([^]-]+-[^]-]+-)(idx\\d+-)([^]]+))]#i';
             $fieldChangeFunctions = $this->parameters['fieldChangeFunc'];
+
             // Special handling of flexform sections:
             // Field change functions are modified in JavaScript, thus the hash is always invalid
             if ($handleFlexformSections && preg_match($pattern, (string)$this->parameters['itemName'], $matches)) {
@@ -123,13 +119,14 @@ class LinkBrowserController extends AbstractLinkBrowserController
                     $fieldChangeFunctions
                 );
             }
-            $result = hash_equals(
+
+            return hash_equals(
                 $this->hashService->hmac(serialize($fieldChangeFunctions), 'backend-link-browser'),
                 $this->parameters['fieldChangeFuncHash'],
             );
         }
 
-        return $result;
+        return false;
     }
 
     protected function strReplaceRecursively(string $search, string $replace, array $array): array
@@ -145,30 +142,27 @@ class LinkBrowserController extends AbstractLinkBrowserController
         return $array;
     }
 
-    /**
-     * Return the ID of current page
-     */
     protected function getCurrentPageId(): int
     {
         $pageId = 0;
         $browserParameters = $this->parameters;
+
         if (isset($browserParameters['pid'])) {
             $pageId = $browserParameters['pid'];
         } elseif (isset($browserParameters['itemName'])) {
             // parse data[<table>][<uid>]
-            if (preg_match('~data\[([^]]*)]\[([^]]*)]~', $browserParameters['itemName'], $matches)) {
-                $recordArray = BackendUtility::getRecord($matches['1'], $matches['2']);
+            if (preg_match('~data\[([^]]*)]\[([^]]*)]~', $browserParameters['itemName'], $matches) === 1) {
+                $recordArray = BackendUtility::getRecord($matches[1], $matches[2]);
+
                 if (is_array($recordArray)) {
                     $pageId = $recordArray['pid'];
                 }
             }
         }
+
         return (int)BackendUtility::getTSCpidCached($browserParameters['table'], $browserParameters['uid'], $pageId)[0];
     }
 
-    /**
-     * Retrieve the configuration
-     */
     public function getConfiguration(): array
     {
         $tsConfig = BackendUtility::getPagesTSconfig($this->getCurrentPageId());

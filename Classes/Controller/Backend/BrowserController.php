@@ -131,8 +131,8 @@ class BrowserController
     ): ResponseInterface {
         $parameters = $request->getQueryParams();
         $moduleTemplate ??= $this->moduleTemplateFactory->create($request);
-
         $protocol = 'http';
+
         if ((isset($_SERVER['HTTP_HTTPS']) && $_SERVER['HTTP_HTTPS'] === 'on')
             || (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on')
         ) {
@@ -224,6 +224,7 @@ class BrowserController
                         'extension' => $mediaContainer['fileExtension'],
                     ]);
                 }
+
                 $this->getFileIndexRepository()->add($file);
 
                 // (Re)Fetch metadata
@@ -367,9 +368,6 @@ class BrowserController
         );
     }
 
-    /**
-     * Returns the current BE user.
-     */
     protected function getBackendUser(): BackendUserAuthentication
     {
         return $GLOBALS['BE_USER'];
