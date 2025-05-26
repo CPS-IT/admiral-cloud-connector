@@ -21,8 +21,8 @@
     </div>
 
     <f:if condition="{image}">
-        <ac:image image="{image}" txAdmiralCloudCrop="{formEngine.field.value -> f:format.raw()}" maxHeight="150"
-                  id="{formEngine.field.id}_image" class="thumbnail thumbnail-status" alt="Foo" />
+        <img id="{formEngine.field.id}_image" src="{ac:uri.image(image: image, txAdmiralCloudCrop: '{formEngine.field.value -> f:format.raw()}', maxHeight: '150')}"
+             class="thumbnail thumbnail-status" alt="" title="" />
     </f:if>
 
     <f:comment><!--
