@@ -18,8 +18,6 @@ declare(strict_types=1);
 namespace CPSIT\AdmiralCloudConnector\Resource;
 
 use CPSIT\AdmiralCloudConnector\Traits\AdmiralCloudStorage;
-use TYPO3\CMS\Core\Database\Connection;
-use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Resource\FileType;
 use TYPO3\CMS\Core\Resource\ProcessedFile;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
@@ -28,59 +26,34 @@ class File extends \TYPO3\CMS\Core\Resource\File
 {
     use AdmiralCloudStorage;
 
-    /**
-     * Link hash to generate AdmiralCloud public url
-     */
-    protected string $txAdmiralCloudConnectorLinkhash = '';
-    protected string $txAdmiralCloudConnectorCrop = '';
     protected string $contentFeGroup = '';
 
     public function getTxAdmiralCloudConnectorLinkhash(): string
     {
-        if (!$this->txAdmiralCloudConnectorLinkhash && !empty($this->properties['tx_admiralcloudconnector_linkhash'])) {
-            $this->txAdmiralCloudConnectorLinkhash = $this->properties['tx_admiralcloudconnector_linkhash'];
-        } else {
-            // Load field "tx_admiralcloudconnector_linkhash" from DB
-            $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)
-                ->getQueryBuilderForTable('sys_file');
-
-            $linkHash = $queryBuilder
-                ->select('tx_admiralcloudconnector_linkhash')
-                ->from('sys_file')
-                ->where(
-                    $queryBuilder->expr()->eq(
-                        'uid',
-                        $queryBuilder->createNamedParameter($this->getUid(), Connection::PARAM_INT),
-                    ),
-                )
-                ->executeQuery()
-                ->fetchOne()
-            ;
-
-            if (!empty($linkHash)) {
-                $this->properties['tx_admiralcloudconnector_linkhash'] = $linkHash;
-                $this->txAdmiralCloudConnectorLinkhash = $linkHash;
-            }
-        }
-
-        return $this->txAdmiralCloudConnectorLinkhash;
+        return $this->properties['tx_admiralcloudconnector_linkhash'] ?? '';
     }
 
     public function setTxAdmiralCloudConnectorLinkhash(string $txAdmiralCloudConnectorLinkhash): void
     {
-        $this->txAdmiralCloudConnectorLinkhash = $txAdmiralCloudConnectorLinkhash;
         $this->properties['tx_admiralcloudconnector_linkhash'] = $txAdmiralCloudConnectorLinkhash;
 
-        $this->updatedProperties[] = 'tx_admiralcloudconnector_linkhash';
+        if (!in_array('tx_admiralcloudconnector_linkhash', $this->updatedProperties, true)) {
+            $this->updatedProperties[] = 'tx_admiralcloudconnector_linkhash';
+        }
     }
 
     public function getTxAdmiralCloudConnectorCrop(): string
     {
-        if (!$this->txAdmiralCloudConnectorCrop && !empty($this->properties['tx_admiralcloudconnector_crop'])) {
-            $this->txAdmiralCloudConnectorCrop = $this->properties['tx_admiralcloudconnector_crop'];
-        }
+        return $this->properties['tx_admiralcloudconnector_crop'] ?? '';
+    }
 
-        return $this->txAdmiralCloudConnectorCrop ?? '';
+    public function setTxAdmiralCloudConnectorCrop(?string $txAdmiralCloudConnectorCrop): void
+    {
+        $this->properties['tx_admiralcloudconnector_crop'] = $txAdmiralCloudConnectorCrop;
+
+        if (!in_array('tx_admiralcloudconnector_crop', $this->updatedProperties, true)) {
+            $this->updatedProperties[] = 'tx_admiralcloudconnector_crop';
+        }
     }
 
     public function getTxAdmiralCloudConnectorCropUrlPath(): string
@@ -92,11 +65,6 @@ class File extends \TYPO3\CMS\Core\Resource\File
         }
 
         return implode(',', $cropArray['cropData']) . '/' . implode(',', $cropArray['focusPoint']);
-    }
-
-    public function setTxAdmiralCloudConnectorCrop(?string $txAdmiralCloudconnectorLinkhashCrop): void
-    {
-        $this->txAdmiralCloudConnectorCrop = $txAdmiralCloudconnectorLinkhashCrop;
     }
 
     public function setTypeFromMimeType(string $mimeType): int
@@ -136,11 +104,10 @@ class File extends \TYPO3\CMS\Core\Resource\File
      */
     public function process(string $taskType, array $configuration): ProcessedFile
     {
+        // Return admiral cloud url for previews
         if ($taskType === ProcessedFile::CONTEXT_IMAGEPREVIEW
             && $this->getStorage()->getUid() === $this->getAdmiralCloudStorage()->getUid()
         ) {
-
-            // Return admiral cloud url for previews
             return GeneralUtility::makeInstance(ProcessedFile::class, $this, $taskType, $configuration);
         }
 
