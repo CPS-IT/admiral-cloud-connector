@@ -87,20 +87,28 @@ class AssetRenderer implements FileRendererInterface
         };
     }
 
-    protected function renderVideoTag(FileInterface $file, int|string $width, int|string $height, array $options = []): string
-    {
+    protected function renderVideoTag(
+        FileInterface $file,
+        int|float|string $width,
+        int|float|string $height,
+        array $options = [],
+    ): string {
         return $this->getPlayerHtml($file, $width, $height, $options);
     }
 
-    protected function renderAudioTag(FileInterface $file, int|string $width, int|string $height, array $options = []): string
-    {
+    protected function renderAudioTag(
+        FileInterface $file,
+        int|float|string $width,
+        int|float|string $height,
+        array $options = [],
+    ): string {
         return $this->getPlayerHtml($file, $width, $height, $options);
     }
 
     protected function renderImageTag(
         FileInterface $file,
-        int|string $width,
-        int|string $height,
+        int|float|string $width,
+        int|float|string $height,
         array $options = [],
         ?TagBuilder $imageTag = null,
     ): string {
