@@ -49,7 +49,6 @@ class AssetRenderer implements FileRendererInterface
         try {
             if (str_starts_with($file->getMimeType(), 'admiralCloud/')) {
                 $asset = $this->getAsset($file->getIdentifier());
-                $storageUid = $file->getStorage()->getUid();
 
                 return $asset->isImage() || $asset->isDocument() || $asset->isAudio() || $asset->isVideo();
             }
@@ -79,7 +78,6 @@ class AssetRenderer implements FileRendererInterface
         }
 
         $asset = $this->getAsset($originalFile->getIdentifier());
-        $storageUid = $originalFile->getStorage()->getUid();
 
         return match (true) {
             $asset->isImage(), $asset->isDocument() => $this->renderImageTag($file, $width, $height, $options, $tag),
@@ -174,6 +172,7 @@ class AssetRenderer implements FileRendererInterface
     protected function getTagBuilder(string $type, array $options): TagBuilder
     {
         $tag = $this->tagBuilderService->getTagBuilder($type);
+
         $this->tagBuilderService->initializeAbstractTagBasedAttributes($tag, $options);
 
         return $tag;
