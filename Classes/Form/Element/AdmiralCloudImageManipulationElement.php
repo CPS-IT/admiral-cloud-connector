@@ -129,10 +129,11 @@ class AdmiralCloudImageManipulationElement extends AbstractFormElement
         $fieldWizardResult = $this->renderFieldWizard();
         $fieldWizardHtml = $fieldWizardResult['html'];
         $resultArray = $this->mergeChildReturnIntoExistingResult($resultArray, $fieldWizardResult, false);
+        $elementIdentifier = StringUtility::getUniqueId('admiralCloud-image-manipulation-element-');
         $cropParams = [
             'mediaContainerId' => $file->getIdentifier(),
             'embedLink' => $file->getTxAdmiralCloudConnectorLinkhash(),
-            'irreObject' => StringUtility::getUniqueId('admiralCloud-image-manipulation-element-'),
+            'irreObject' => $elementIdentifier,
         ];
         $arguments = [
             'fieldInformation' => $fieldInformationHtml,
@@ -148,7 +149,7 @@ class AdmiralCloudImageManipulationElement extends AbstractFormElement
                 'field' => [
                     'value' => $parameterArray['itemFormElValue'],
                     'name' => $parameterArray['itemFormElName'],
-                    'id' => StringUtility::getUniqueId('admiralCloud-image-manipulation-element-'),
+                    'id' => $elementIdentifier,
                 ],
                 'validation' => '[]',
             ],
