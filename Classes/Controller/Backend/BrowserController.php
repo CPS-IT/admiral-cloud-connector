@@ -194,7 +194,6 @@ class BrowserController
     public function getFilesAction(ServerRequestInterface $request): ResponseInterface
     {
         $media = $request->getParsedBody()['media'];
-        $target = $request->getParsedBody()['target'];
 
         try {
             $files = [];
