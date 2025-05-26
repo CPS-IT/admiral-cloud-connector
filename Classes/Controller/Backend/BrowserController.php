@@ -33,6 +33,7 @@ use TYPO3\CMS\Backend\Template\ModuleTemplate;
 use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Http\JsonResponse;
+use TYPO3\CMS\Core\Http\NormalizedParams;
 use TYPO3\CMS\Core\Resource\File;
 use TYPO3\CMS\Core\Resource\FileInterface;
 use TYPO3\CMS\Core\Resource\StorageRepository;
@@ -131,13 +132,9 @@ class BrowserController
     ): ResponseInterface {
         $parameters = $request->getQueryParams();
         $moduleTemplate ??= $this->moduleTemplateFactory->create($request);
-        $protocol = 'http';
-
-        if ((isset($_SERVER['HTTP_HTTPS']) && $_SERVER['HTTP_HTTPS'] === 'on')
-            || (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on')
-        ) {
-            $protocol = 'https';
-        }
+        /** @var NormalizedParams $normalizedParams */
+        $normalizedParams = $request->getAttribute('normalizedParams');
+        $protocol = $normalizedParams->isHttps() ? 'https' : 'http';
 
         $moduleTemplate->assignMultiple([
             'iframeHost' => rtrim(ConfigurationUtility::getIframeUrl(), '/'),
