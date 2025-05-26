@@ -432,8 +432,8 @@ class AdmiralCloudService implements SingletonInterface
     {
         $credentials = new Credentials();
 
+        // Save crop information from FileReference and set it in the File object
         if ($file instanceof FileReference) {
-            // Save crop information from FileReference and set it in the File object
             $crop = $file->getProperty('tx_admiralcloudconnector_crop');
             $file = $file->getOriginalFile();
             $file->setTxAdmiralCloudConnectorCrop($crop);
