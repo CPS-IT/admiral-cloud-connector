@@ -20,7 +20,13 @@ use ShipMonk\ComposerDependencyAnalyser\Config\ErrorType;
 
 $configuration = new Configuration();
 $configuration
-    ->ignoreErrorsOnPackage('typo3/cms-redirects', [ErrorType::UNUSED_DEPENDENCY])
+    ->ignoreErrorsOnPackages(
+        [
+            'typo3/cms-filemetadata',
+            'typo3/cms-redirects',
+        ],
+        [ErrorType::UNUSED_DEPENDENCY],
+    )
 ;
 
 return $configuration;
