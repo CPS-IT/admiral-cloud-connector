@@ -74,6 +74,8 @@ To enable editors for AdmiralCloud functions, please add at least the following 
 Allow cropping tool for AdmiralCloud images:
 check permission for (tx_admiralcloudconnector_crop) on tab „Access Lists“ / „Allowed excludefields” in “File Reference”.
 
+# Known bugs
+* Using Admiral Cloud may need to increase some apache values like `post_max_size=128M` and `max_input_vars=2500`
 
 ### TODO documentation
 * add information about authentification / security groups
