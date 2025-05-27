@@ -1,69 +1,78 @@
-.. include:: /Includes.txt
+..  include:: /Includes.rst.txt
 
-.. _quickStart:
+..  _quickStart:
 
-==============
+============
 Installation
-==============
+============
 
-#. Install the extension:
+..  rst-class:: bignums
 
-Install the extension with composer:
+#.  Install the extension
 
-    .. code-block:: bash
+    Install the extension with composer:
+
+    ..  code-block:: bash
 
         composer require cpsit/admiral-cloud-connector
 
-Afterwards run the following SQL statement:
+    Afterwards run the following SQL statement:
 
-    .. code-block:: bash
+    ..  code-block:: sql
 
         INSERT INTO `sys_file_storage` (`pid`, `cruser_id`, `deleted`, `description`, `name`, `driver`, `configuration`, `is_default`, `is_browsable`, `is_public`, `is_writable`, `is_online`, `auto_extract_metadata`, `processingfolder`) VALUES
         (0, 0, 0, 'Automatically created during the installation of EXT:admiral_cloud_connector', 'AdmiralCloud', 'AdmiralCloud', '', 0, 1, 1, 0, 1, 1, '1:/_processed_/');
 
-    Alternatively you can create the storage manually via list plugin on the root page. Choose *AdmiralCloud* from the Driver's list and set "Folder for manipulated and temporary images etc." to *1:/_processed_/*
+    Alternatively you can create the storage manually via list plugin on the root page. Choose *AdmiralCloud*
+    from the Driver's list and set "Folder for manipulated and temporary images etc." to *1:/_processed_/*.
 
-#. LocalConfiguration.php:
+#.  :file:`config/settings/system.php`
 
-   - Once you have setup a contract with AdmiralCloud you will receive your login credential by mail and SMS
-   - Add the required configuration to LocalConfiguration.php
+    Once you have setup a contract with AdmiralCloud you will receive your login credential by mail and SMS.
+    Add the required configuration to :file:`config/settings/system.php`.
 
-    :ref:`Learn more about how configure the <LocalConfiguration>`
+    ..  seealso::
 
-#. Intitial setup of user groups
+        :ref:`Learn more about how configure AdmiralCloud credentials. <SystemSettings>`
 
-    - send a list of your user groups to AdmiralCloud
-    - setup AC SecurityGroups in the backend
+#.  Initial setup of user groups
 
-    :ref:`Learn more about how to setup the <AcSecGroup>`
+    Send a list of your user groups to AdmiralCloud and set up AC SecurityGroups in the backend.
 
-#. Setting up a file mount:
+    ..  seealso::
 
-    - You have to create fileMount "AdmiralCloud" for the storage.
+        :ref:`Learn more about how to set up user groups. <AcSecGroup>`
 
-    :ref:`Learn more about how to setup the <FileStorage>`
+#.  Setting up a file mount
 
-#. User configuration:
+    You have to create fileMount "AdmiralCloud" for the storage.
 
-   - No configuration needed for editors
-   - Administrators need the Security Group for confirmation
+    ..  seealso::
 
-   :ref:`Learn more about the user management <UserConfiguration>`
+        :ref:`Learn more about how to setup the file storage. <FileMount>`
 
-#. LinkHandler Configuration:
+#.  User configuration
 
-   -  A LinkHandler configuration is included automatically
-   -  no manual configuration steps
+    No configuration is needed for editors. Administrators need the Security Group for confirmation.
 
-   You can find the LinkHandler Configuration here: EXT:admiral_cloud_connector/Configuration/TSconfig/LinkHandler.ts
+    ..  seealso::
 
+        :ref:`Learn more about user management. <UserConfiguration>`
 
+#.  LinkHandler Configuration
 
-.. toctree::
-   :maxdepth: 2
-   :titlesonly:
+    A LinkHandler configuration is included automatically. No manual configuration steps are necessary.
 
-   LocalConfiguration
-   AcSecGroup
-   FileStorage
-   UserConfiguration
+    You can find the LinkHandler Configuration here: :file:`EXT:admiral_cloud_connector/Configuration/TSconfig/LinkHandler.tsconfig`
+
+Read more
+=========
+
+..  toctree::
+    :maxdepth: 2
+    :titlesonly:
+
+    SystemSettings
+    AcSecGroup
+    FileMount
+    UserConfiguration

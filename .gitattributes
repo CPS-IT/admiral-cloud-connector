@@ -6,4 +6,5 @@
 /.php-cs-fixer.php export-ignore
 /ChangeLog export-ignore
 /composer-dependency-analyser.php export-ignore
+/docker-compose.yaml export-ignore
 /rector.php export-ignore
