@@ -26,10 +26,10 @@ Installation
     Alternatively you can create the storage manually via list plugin on the root page. Choose *AdmiralCloud*
     from the Driver's list and set "Folder for manipulated and temporary images etc." to *1:/_processed_/*.
 
-#.  :file:`config/settings/system.php`
+#.  System configuration
 
-    Once you have setup a contract with AdmiralCloud you will receive your login credential by mail and SMS.
-    Add the required configuration to :file:`config/settings/system.php`.
+    Once you have set up a contract with AdmiralCloud, you will receive your login credential by mail and SMS.
+    Add the required configuration to :file:`config/system/settings.php` or :file:`config/system/additional.php`.
 
     ..  seealso::
 

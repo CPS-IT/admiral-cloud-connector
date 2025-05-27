@@ -6,17 +6,17 @@
 Setting up the settings for your system
 =======================================
 
-We suggest to put the code into a :file:`CustomConfiguration.php` file.
+We suggest to put the code into a :file:`config/system/custom.php` file.
 
-First add the following lines to :file:`config/system/settings.php`.
+First add the following lines to :file:`config/system/additional.php`.
 
 ..  code-block:: php
 
-    if (is_file(__DIR__ . '/CustomConfiguration.php')) {
-        require_once __DIR__ . '/CustomConfiguration.php';
+    if (is_file(__DIR__ . '/custom.php')) {
+        require_once __DIR__ . '/custom.php';
     }
 
-Then create a file :file:`config/system/CustomConfiguration.php` with following content:
+Then create a file :file:`config/system/custom.php` with following content:
 
 ..  code-block:: php
 

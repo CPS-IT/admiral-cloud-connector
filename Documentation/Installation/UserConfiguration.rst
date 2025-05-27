@@ -12,7 +12,7 @@ Backend users
 The authorization between AdmiralCloud and TYPO3 is done by the e-mail address. The field e-mail address
 is  **obligatory** for every user.
 
-If the :ref:`settings.php <SystemSettings>`, :ref:`AC Security Groups <AcSecGroup>`,
+If the :ref:`additional.php <SystemSettings>`, :ref:`AC Security Groups <AcSecGroup>`,
 :ref:`AdmiralCloud filemount <FileMount>` and e-mail address are properly setup, each time a newly created editor
 connects to AdmiralCloud from the TYPO3 backend, his or hers access rights are automatically matched to the AC
 Security Groups in AdmiralCloud.
