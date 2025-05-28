@@ -134,12 +134,11 @@ class BrowserController
         $moduleTemplate ??= $this->moduleTemplateFactory->create($request);
         /** @var NormalizedParams $normalizedParams */
         $normalizedParams = $request->getAttribute('normalizedParams');
-        $protocol = $normalizedParams->isHttps() ? 'https' : 'http';
 
         $moduleTemplate->assignMultiple([
             'iframeHost' => rtrim(ConfigurationUtility::getIframeUrl(), '/'),
             'ajaxUrl' => (string)$this->backendUriBuilder->buildUriFromRoute('ajax_admiral_cloud_browser_auth'),
-            'iframeUrl' => $callbackUrl . base64_encode($protocol . '://' . $_SERVER['HTTP_HOST']),
+            'iframeUrl' => $callbackUrl . base64_encode($normalizedParams->getRequestHost()),
             'parameters' => [
                 'element' => $parameters['element'] ?? null,
                 'irreObject' => $parameters['irreObject'] ?? null,
