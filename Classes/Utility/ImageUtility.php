@@ -33,10 +33,10 @@ final readonly class ImageUtility
      */
     public static function calculateDimensions(
         FileInterface $file,
-        int|string $width = null,
-        int|string $height = null,
-        int|string $maxWidth = null,
-        int|string $maxHeight = null,
+        int|string|null $width = null,
+        int|string|null $height = null,
+        int|string|null $maxWidth = null,
+        int|string|null $maxHeight = null,
     ): \stdClass {
         $width = (int)$width;
         $height = (int)$height;

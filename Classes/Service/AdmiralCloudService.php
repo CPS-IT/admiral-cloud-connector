@@ -428,8 +428,13 @@ class AdmiralCloudService implements SingletonInterface
     /**
      * Get public url for admiral cloud image
      */
-    public function getImagePublicUrl(FileInterface $file, int $width = 0, int $height = 0): string
-    {
+    public function getImagePublicUrl(
+        FileInterface $file,
+        int|string|null $width = null,
+        int|string|null $height = null,
+        int|string|null $maxWidth = null,
+        int|string|null $maxHeight = null,
+    ): string {
         $credentials = new Credentials();
 
         // Save crop information from FileReference and set it in the File object
@@ -444,7 +449,8 @@ class AdmiralCloudService implements SingletonInterface
             $file,
             $width,
             $height,
-            !$width ? ConfigurationUtility::getDefaultImageWidth() : null,
+            $maxWidth ?? (!$width ? ConfigurationUtility::getDefaultImageWidth() : null),
+            $maxHeight,
         );
 
         $isSvgMimeType = ConfigurationUtility::isSvgMimeType($file->getMimeType());
