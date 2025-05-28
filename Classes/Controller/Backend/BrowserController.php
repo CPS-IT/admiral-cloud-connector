@@ -312,7 +312,7 @@ class BrowserController
             /** @var \CPSIT\AdmiralCloudConnector\Resource\File $file */
             $file = $storage->getFile($mediaContainer['id']);
             $file->setTxAdmiralCloudConnectorCrop($cropperData);
-            $link = $this->admiralCloudService->getImagePublicUrl($file, 226, 150);
+            $link = $this->admiralCloudService->getImagePublicUrl($file, height: 150);
 
             return $this->createJsonResponse(
                 [
