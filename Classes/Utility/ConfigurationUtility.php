@@ -85,7 +85,7 @@ final readonly class ConfigurationUtility
             $add = 'dev';
         }
 
-        return 'https://images' . $add . '.admiralcloud.com';
+        return 'https://images' . $add . '.admiralcloud.com/';
     }
 
     public static function getIframeUrl(): string

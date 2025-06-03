@@ -478,8 +478,8 @@ class AdmiralCloudService implements SingletonInterface
             // With crop information
             $cropData = json_decode((string)$file->getTxAdmiralCloudConnectorCrop()) or $cropData = json_decode('{"usePNG": "false"}');
 
-            return sprintf(
-                '%sv3/deliverEmbed/%s/image%s/cropperjsfocus/%s/%s/%s?poc=true%s%s',
+            return \sprintf(
+                '%sv5/deliverEmbed/%s/image%s/cropperjsfocus/%s/%s/%s?poc=true%s%s',
                 ConfigurationUtility::getSmartcropUrl(),
                 $token ? $token['hash'] : $file->getTxAdmiralCloudConnectorLinkhash(),
                 property_exists($cropData, 'usePNG') && $cropData->usePNG === 'true' ? '_png' : '',
@@ -492,15 +492,25 @@ class AdmiralCloudService implements SingletonInterface
         }
 
         if ($isSvgMimeType) {
-            return ConfigurationUtility::getImageUrl() . ($token ? 'v5/deliverFile/' : 'v3/deliverEmbed/')
-                . ($token ? $token['hash'] : $file->getTxAdmiralCloudConnectorLinkhash())
-                . ($token ? '/' : '/image/')
-                . ($token ? '?' . $auth : '');
+            if ($token) {
+                return \sprintf(
+                    '%sv5/deliverFile/%s/?%s',
+                    ConfigurationUtility::getImageUrl(),
+                    $token['hash'],
+                    $auth,
+                );
+            }
+
+            return \sprintf(
+                '%sv5/deliverEmbed/%s/image/',
+                ConfigurationUtility::getImageUrl(),
+                $file->getTxAdmiralCloudConnectorLinkhash(),
+            );
         }
 
         // Without crop information
-        return sprintf(
-            '%sv3/deliverEmbed/%s/image/autocrop/%s/%s/1?poc=true%s',
+        return \sprintf(
+            '%sv5/deliverEmbed/%s/image/autocrop/%s/%s/1?poc=true%s',
             ConfigurationUtility::getSmartcropUrl(),
             $token ? $token['hash'] : $file->getTxAdmiralCloudConnectorLinkhash(),
             $dimensions->width,
@@ -518,8 +528,8 @@ class AdmiralCloudService implements SingletonInterface
             $file = $file->getOriginalFile();
         }
 
-        return sprintf(
-            '%s/v5/deliverEmbed/%s/image/144',
+        return \sprintf(
+            '%sv5/deliverEmbed/%s/image/144',
             ConfigurationUtility::getThumbnailUrl(),
             $file->getTxAdmiralCloudConnectorLinkhash(),
         );
@@ -632,7 +642,7 @@ class AdmiralCloudService implements SingletonInterface
         $feGroup = ($GLOBALS['admiralcloud']['fe_group'][$file->getIdentifier()] ?? null) || PermissionUtility::getPageFeGroup();
 
         if ($enableAcReadableLinks && !$feGroup) {
-            return sprintf(
+            return \sprintf(
                 '%s%s/%s/%s',
                 ConfigurationUtility::getLocalFileUrl(),
                 $file->getTxAdmiralCloudConnectorLinkhash(),
@@ -645,7 +655,7 @@ class AdmiralCloudService implements SingletonInterface
             $token = $this->getSecuredToken($file, $this->getMediaType($file->getProperty('type')), 'player');
 
             if ($token) {
-                return sprintf(
+                return \sprintf(
                     '%s%s?auth=%s',
                     ConfigurationUtility::getDirectFileUrl(),
                     $token['hash'],
@@ -670,7 +680,7 @@ class AdmiralCloudService implements SingletonInterface
                 if ($mediaType === 'document') {
                     $credentials = new Credentials();
 
-                    return sprintf(
+                    return \sprintf(
                         '%s%s%s?auth=%s',
                         ConfigurationUtility::getDirectFileUrl(),
                         $token['hash'],
@@ -679,7 +689,7 @@ class AdmiralCloudService implements SingletonInterface
                     );
                 }
 
-                return sprintf(
+                return \sprintf(
                     '%s%s%s&token=%s',
                     ConfigurationUtility::getDirectFileUrl(),
                     $token['hash'],
@@ -703,7 +713,7 @@ class AdmiralCloudService implements SingletonInterface
             $token = $this->getSecuredToken($file, $this->getMediaType($file->getProperty('type')), 'player');
 
             if ($token) {
-                return sprintf(
+                return \sprintf(
                     '%s%s&token=%s',
                     ConfigurationUtility::getPlayerFileUrl(),
                     $token['hash'],
