@@ -56,8 +56,8 @@ readonly class ReadableLinkResolver implements MiddlewareInterface
                             'file' => $file,
                             'requestUri' => $request->getUri(),
                             'url' => $url,
-                            'image' => ConfigurationUtility::getImageUrl() . 'v3/deliverEmbed/' . $matches[1] . '/image/',
-                        ]
+                            'image' => ConfigurationUtility::getImageUrl() . 'v5/deliverEmbed/' . $matches[1] . '/image/',
+                        ],
                     );
 
                     return new HtmlResponse($content);
