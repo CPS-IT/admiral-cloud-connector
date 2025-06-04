@@ -4,7 +4,6 @@
 /.gitattributes export-ignore
 /.gitignore export-ignore
 /.php-cs-fixer.php export-ignore
-/ChangeLog export-ignore
 /composer-dependency-analyser.php export-ignore
 /docker-compose.yaml export-ignore
 /ext_emconf.php export-ignore
