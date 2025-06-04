@@ -21,6 +21,7 @@ use CPSIT\AdmiralCloudConnector\Resource\Rendering\AssetRenderer;
 use CPSIT\AdmiralCloudConnector\Traits\AdmiralCloudStorage;
 use CPSIT\AdmiralCloudConnector\Utility\ImageUtility;
 use TYPO3\CMS\Core\Resource\File;
+use TYPO3\CMS\Core\Resource\FileReference;
 use TYPO3\CMS\Core\Resource\StorageRepository;
 use TYPO3\CMS\Extbase\Service\ImageService;
 use TYPO3Fluid\Fluid\Core\ViewHelper\AbstractTagBasedViewHelper;
@@ -57,6 +58,7 @@ final class ImageViewHelper extends AbstractTagBasedViewHelper
         $this->registerArgument('height', 'string', 'height of the image. This can be a numeric value representing the fixed height of the image in pixels. But you can also perform simple calculations by adding "m" or "c" to the value. See imgResource.width for possible options.');
         $this->registerArgument('maxWidth', 'int', 'maximum width of the image');
         $this->registerArgument('maxHeight', 'int', 'maximum height of the image');
+        $this->registerArgument('showFocus', 'bool', 'Render focus coordinates', false, false);
     }
 
     public function prepareArguments(): array
@@ -90,6 +92,7 @@ final class ImageViewHelper extends AbstractTagBasedViewHelper
 
         $image = $this->imageService->getImage($src, $imageArgument, $treatIdAsReference);
 
+        // Resolve original file of file references
         if (!($image instanceof File) && is_callable([$image, 'getOriginalFile'])) {
             $originalFile = $image->getOriginalFile();
         } else {
@@ -102,6 +105,20 @@ final class ImageViewHelper extends AbstractTagBasedViewHelper
 
             if ($crop) {
                 $originalFile->setTxAdmiralCloudConnectorCrop($this->arguments['txAdmiralCloudCrop']);
+            } elseif ($image instanceof FileReference) {
+                $crop = $image->getProperty('tx_admiralcloudconnector_crop');
+            } else {
+                $crop = $originalFile->getTxAdmiralCloudConnectorCrop();
+            }
+
+            // Inject focus point values as data attributes
+            if ($this->arguments['showFocus'] && $crop !== '') {
+                $cropConfiguration = json_decode($crop, true);
+
+                if (isset($cropConfiguration['focusPoint']['x'], $cropConfiguration['focusPoint']['y'])) {
+                    $this->tag->addAttribute('data-focus-x', $cropConfiguration['focusPoint']['x']);
+                    $this->tag->addAttribute('data-focus-y', $cropConfiguration['focusPoint']['y']);
+                }
             }
 
             $dimensions = ImageUtility::calculateDimensions(
