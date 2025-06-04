@@ -21,6 +21,12 @@ use TYPO3\CMS\Core\Resource\FileInterface;
 
 final readonly class ImageUtility
 {
+    private const SUPPORTED_FORMATS = [
+        'webp',
+        'jpeg',
+        'png',
+    ];
+
     /**
      * Calculate dimension based on image ratio and cropped data
      *
@@ -138,5 +144,17 @@ final readonly class ImageUtility
         }
 
         return json_decode($crop) ?: null;
+    }
+
+    public static function getDefaultImageOutputFormat(): string
+    {
+        $envFormat = getenv('ADMIRALCLOUD_DEFAULT_IMAGE_OUTPUT_FORMAT');
+
+        if (in_array($envFormat, self::SUPPORTED_FORMATS, true)) {
+            return $envFormat;
+        }
+
+        // Use PNG as default (this may change in the future)
+        return 'png';
     }
 }

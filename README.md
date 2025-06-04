@@ -46,6 +46,7 @@ putenv('ADMIRALCLOUD_DOCUMENT_CONFIG_ID=240');
 putenv('ADMIRALCLOUD_AUDIO_CONFIG_ID=241');
 putenv('ADMIRALCLOUD_FLAG_CONFIG_ID=10');
 putenv('ADMIRALCLOUD_IFRAMEURL=https://t3intpoc.admiralcloud.com/');
+putenv('ADMIRALCLOUD_DEFAULT_IMAGE_OUTPUT_FORMAT=webp'); // webp | jpeg | png
 
 $GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['admiral_cloud_connector'] = [
     'frontend' => \TYPO3\CMS\Core\Cache\Frontend\PhpFrontend::class,
