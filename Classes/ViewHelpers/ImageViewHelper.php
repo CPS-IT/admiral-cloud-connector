@@ -113,7 +113,7 @@ final class ImageViewHelper extends AbstractTagBasedViewHelper
 
             // Inject focus point values as data attributes
             if ($this->arguments['showFocus'] && $crop !== '') {
-                $cropConfiguration = json_decode($crop, true);
+                $cropConfiguration = json_decode((string)$crop, true);
 
                 if (isset($cropConfiguration['focusPoint']['x'], $cropConfiguration['focusPoint']['y'])) {
                     $this->tag->addAttribute('data-focus-x', $cropConfiguration['focusPoint']['x']);

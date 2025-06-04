@@ -478,11 +478,17 @@ class AdmiralCloudService implements SingletonInterface
             // With crop information
             $cropData = json_decode((string)$file->getTxAdmiralCloudConnectorCrop()) or $cropData = json_decode('{"usePNG": "false"}');
 
+            if (property_exists($cropData, 'usePNG') && $cropData->usePNG === 'true') {
+                $imageOutputFormat = 'png';
+            } else {
+                $imageOutputFormat = ImageUtility::getDefaultImageOutputFormat();
+            }
+
             return \sprintf(
                 '%sv5/deliverEmbed/%s/image%s/cropperjsfocus/%s/%s/%s?poc=true%s%s',
                 ConfigurationUtility::getSmartcropUrl(),
                 $token ? $token['hash'] : $file->getTxAdmiralCloudConnectorLinkhash(),
-                property_exists($cropData, 'usePNG') && $cropData->usePNG === 'true' ? '_png' : '',
+                $imageOutputFormat !== '' ? '_' . $imageOutputFormat : '',
                 $dimensions->width,
                 $dimensions->height,
                 $file->getTxAdmiralCloudConnectorCropUrlPath(),
@@ -575,7 +581,7 @@ class AdmiralCloudService implements SingletonInterface
         // Link is required for AdmiralCloud field
         if (!$linkHash) {
             throw new InvalidFileConfigurationException(
-                'Any valid hash was found for file in mediaContainer given configuration: ' . json_encode($mediaContainer),
+                'No valid hash was found for file in mediaContainer given configuration: ' . json_encode($mediaContainer),
                 111222444578,
             );
         }
