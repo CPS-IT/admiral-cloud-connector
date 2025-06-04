@@ -38,5 +38,6 @@ return [
         'packaging_exclude.php',
         'php-cs-fixer.php',
         'rector.php',
+        'version-bumper.yaml',
     ],
 ];
