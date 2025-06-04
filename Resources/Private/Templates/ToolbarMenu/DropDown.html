@@ -1,74 +1,32 @@
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en"
-	  xmlns:core="http://typo3.org/ns/TYPO3/CMS/Core/ViewHelpers"
-	  xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers">
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+      data-namespace-typo3-fluid="true">
 
-<script>
-	const acUpdateChangedMetadataInfoMessage = "{f:translate(key:'LLL:EXT:admiral_cloud_connector/Resources/Private/Language/locallang_be.xlf:toolbarItem.updateChangedMetadata.info')}";
-	const acUpdateChangedMetadataSuccessMessage = "{f:translate(key:'LLL:EXT:admiral_cloud_connector/Resources/Private/Language/locallang_be.xlf:toolbarItem.updateChangedMetadata.success')}";
-	const acUpdateChangedMetadataErrorMessage = "{f:translate(key:'LLL:EXT:admiral_cloud_connector/Resources/Private/Language/locallang_be.xlf:toolbarItem.updateChangedMetadata.error')}";
-	const acSuccessMessage = "{f:translate(key:'LLL:EXT:admiral_cloud_connector/Resources/Private/Language/locallang_be.xlf:toolbarItem.closeConnection.success')}";
+<f:be.pageRenderer addJsInlineLabels="{
+    acUpdateChangedMetadataInfoMessage: '{f:translate(key: \'LLL:EXT:admiral_cloud_connector/Resources/Private/Language/locallang_be.xlf:toolbarItem.updateChangedMetadata.info\')}',
+    acUpdateChangedMetadataSuccessMessage: '{f:translate(key: \'LLL:EXT:admiral_cloud_connector/Resources/Private/Language/locallang_be.xlf:toolbarItem.updateChangedMetadata.success\')}',
+    acUpdateChangedMetadataErrorMessage: '{f:translate(key: \'LLL:EXT:admiral_cloud_connector/Resources/Private/Language/locallang_be.xlf:toolbarItem.updateChangedMetadata.error\')}',
+    acSuccessMessage: '{f:translate(key: \'LLL:EXT:admiral_cloud_connector/Resources/Private/Language/locallang_be.xlf:toolbarItem.closeConnection.success\')}'
+}" />
 
-	function closeConnectionAdmiralCloud() {
-		const modalParent = top.document.getElementById('acModalParent');
-		modalParent && modalParent.remove();
-		TYPO3.Notification.success('', acSuccessMessage, 5);
-		return false;
-	}
-</script>
+<f:be.pageRenderer includeJavaScriptModules="{
+    0: '@cpsit/admiral-cloud-connector-backend/dropdown.js'
+}" />
 
-<h3 class="dropdown-headline">
-	<f:translate key="LLL:EXT:admiral_cloud_connector/Resources/Private/Language/locallang_be.xlf:toolbarItem.title" />
-</h3>
+<p class="dropdown-headline">
+    <f:translate key="LLL:EXT:admiral_cloud_connector/Resources/Private/Language/locallang_be.xlf:toolbarItem.title" />
+</p>
 
 <ul class="dropdown-list">
-	<li class="divider"></li>
-	<li>
-		<script>
-			async function acUpdateChangedMetadata() {
-				TYPO3.Notification.info('', acUpdateChangedMetadataInfoMessage, 5);
-
-				const url = TYPO3.settings.ajaxUrls['admiral_cloud_toolbar_update_changed_metadata'];
-
-				try {
-					const response = await fetch(url, {
-						method: "POST", 
-						headers: {
-							"Content-Type": "application/json",
-						}
-					});
-
-					const result = await response.json();
-					//console.log("Success:", result);
-					TYPO3.Notification.success('', acUpdateChangedMetadataSuccessMessage, 5);
-
-				} catch (error) {
-					//console.error("Error:", error);
-					TYPO3.Notification.error('', acUpdateChangedMetadataErrorMessage, 5);
-				}
-
-				return false;
-			}
-		</script>
-		<a href="#"
-		   class="dropdown-item"
-		   onclick="return acUpdateChangedMetadata();"
-		>
-			<f:translate key="LLL:EXT:admiral_cloud_connector/Resources/Private/Language/locallang_be.xlf:toolbarItem.updateChangedMetadata.title" />
-		</a>
-	</li>
-	<li class="divider"></li>
-	<li>
-
-		<a href="#"
-		   class="dropdown-item"
-		   onclick="return closeConnectionAdmiralCloud();"
-		   title="(AC Group: {ACGroup})"
-		>
-			<f:translate key="LLL:EXT:admiral_cloud_connector/Resources/Private/Language/locallang_be.xlf:toolbarItem.closeConnection.title" />
-		</a>
-	</li>
+    <li>
+        <a href="#" id="js-admiral-cloud-toolbar-dropdown-update-changed-metadata" class="dropdown-item">
+            <f:translate key="LLL:EXT:admiral_cloud_connector/Resources/Private/Language/locallang_be.xlf:toolbarItem.updateChangedMetadata.title" />
+        </a>
+    </li>
+    <li>
+        <a href="#" id="js-admiral-cloud-toolbar-dropdown-close-connection" class="dropdown-item" title="(AC Group: {ACGroup})">
+            <f:translate key="LLL:EXT:admiral_cloud_connector/Resources/Private/Language/locallang_be.xlf:toolbarItem.closeConnection.title" />
+        </a>
+    </li>
 </ul>
 
 </html>
-
-

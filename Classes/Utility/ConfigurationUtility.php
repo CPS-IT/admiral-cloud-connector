@@ -1,110 +1,106 @@
 <?php
 
+declare(strict_types=1);
+
+/*
+ * This file is part of the TYPO3 CMS extension "admiral_cloud_connector".
+ *
+ * It is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License, either version 2
+ * of the License, or any later version.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE.txt file that was distributed with this source code.
+ *
+ * The TYPO3 project - inspiring people to share!
+ */
+
 namespace CPSIT\AdmiralCloudConnector\Utility;
 
-/**
- * Utility: Configuration
- * @package CPSIT\AdmiralCloudConnector\Utility
- */
-class ConfigurationUtility
+final readonly class ConfigurationUtility
 {
-    const EXTENSION = 'admiral_cloud_connector';
+    public const EXTENSION = 'admiral_cloud_connector';
 
-    /**
-     * @return int
-     */
     public static function getDefaultImageWidth(): int
     {
         return 2000;
     }
 
-    /**
-     * @return bool
-     */
     public static function isProduction(): bool
     {
         if (getenv('ADMIRALCLOUD_IS_PRODUCTION')) {
             return true;
         }
+
         return false;
     }
 
-    /**
-     * @return string
-     */
     public static function getApiUrl(): string
     {
         $add = '';
+
         if (!self::isProduction()) {
             $add = 'dev';
         }
+
         return 'https://api' . $add . '.admiralcloud.com/';
     }
 
-    /**
-     * @return string
-     */
     public static function getAuthUrl(): string
     {
         $add = '';
+
         if (!self::isProduction()) {
             $add = 'dev';
         }
+
         return 'https://auth' . $add . '.admiralcloud.com/';
     }
 
-    /**
-     * @return string
-     */
     public static function getSmartcropUrl(): string
     {
         if (!self::isProduction()) {
             return 'https://smartcropdev.admiralcloud.com/';
         }
+
         return 'https://images.admiralcloud.com/';
     }
 
-    /**
-     * @return string
-     */
     public static function getImageUrl(): string
     {
         $add = '';
+
         if (!self::isProduction()) {
             $add = 'dev';
         }
+
         return 'https://images' . $add . '.admiralcloud.com/';
     }
 
-    /**
-     * @return string
-     */
     public static function getThumbnailUrl(): string
     {
         $add = '';
+
         if (!self::isProduction()) {
             $add = 'dev';
         }
+
         return 'https://images' . $add . '.admiralcloud.com';
     }
 
-    /**
-     * @return string
-     */
     public static function getIframeUrl(): string
     {
         if (!self::isProduction()) {
             return 'https://t3intpoc.admiralcloud.com/';
         }
+
         return getenv('ADMIRALCLOUD_IFRAMEURL') ?: 'https://t3prod.admiralcloud.com/';
     }
 
-    /**
-     * @return string
-     */
     public static function getDirectFileUrl(): string
     {
         $add = '';
+
         if (!self::isProduction()) {
             $add = 'dev';
         }
@@ -112,12 +108,10 @@ class ConfigurationUtility
         return 'https://filehub' . $add . '.admiralcloud.com/v5/deliverFile/';
     }
 
-    /**
-     * @return string
-     */
     public static function getPlayerFileUrl(): string
     {
         $add = '';
+
         if (!self::isProduction()) {
             $add = 'dev';
         }
@@ -125,113 +119,71 @@ class ConfigurationUtility
         return 'https://player' . $add . '.admiralcloud.com/?v=';
     }
 
-    /**
-     * @return string
-     */
-    public static function getImagePlayerConfigId(): string
+    public static function getImagePlayerConfigId(): int
     {
-        return getenv('ADMIRALCLOUD_IMAGE_CONFIG_ID') ?: 3;
+        return (int)(getenv('ADMIRALCLOUD_IMAGE_CONFIG_ID') ?: 3);
     }
 
-    /**
-     * @return string
-     */
-    public static function getImagePNGPlayerConfigId(): string
+    public static function getImagePNGPlayerConfigId(): int
     {
-        return getenv('ADMIRALCLOUD_IMAGE_PNG_CONFIG_ID') ?: 3;
+        return (int)(getenv('ADMIRALCLOUD_IMAGE_PNG_CONFIG_ID') ?: 3);
     }
 
-    /**
-     * @return string
-     */
-    public static function getVideoPlayerConfigId(): string
+    public static function getVideoPlayerConfigId(): int
     {
-        return getenv('ADMIRALCLOUD_VIDEO_CONFIG_ID') ?: 2;
+        return (int)(getenv('ADMIRALCLOUD_VIDEO_CONFIG_ID') ?: 2);
     }
 
-    /**
-     * @return string
-     */
-    public static function getDocumentPlayerConfigId(): string
+    public static function getDocumentPlayerConfigId(): int
     {
-        return getenv('ADMIRALCLOUD_DOCUMENT_CONFIG_ID') ?: 5;
+        return (int)(getenv('ADMIRALCLOUD_DOCUMENT_CONFIG_ID') ?: 5);
     }
 
-    /**
-     * @return string
-     */
-    public static function getAudioPlayerConfigId(): string
+    public static function getAudioPlayerConfigId(): int
     {
-        return getenv('ADMIRALCLOUD_AUDIO_CONFIG_ID') ?: 4;
+        return (int)(getenv('ADMIRALCLOUD_AUDIO_CONFIG_ID') ?: 4);
     }
 
-    /**
-     * @return string
-     */
-    public static function getAuthImagePlayerConfigId(): string
+    public static function getAuthImagePlayerConfigId(): int
     {
-        return getenv('ADMIRALCLOUD_IMAGE_AUTH_CONFIG_ID');
+        return (int)getenv('ADMIRALCLOUD_IMAGE_AUTH_CONFIG_ID');
     }
 
-    /**
-     * @return string
-     */
-    public static function getAuthVideoPlayerConfigId(): string
+    public static function getAuthVideoPlayerConfigId(): int
     {
-        return getenv('ADMIRALCLOUD_VIDEO_AUTH_CONFIG_ID');
+        return (int)getenv('ADMIRALCLOUD_VIDEO_AUTH_CONFIG_ID');
     }
 
-    /**
-     * @return string
-     */
-    public static function getAuthDocumentPlayerConfigId(): string
+    public static function getAuthDocumentPlayerConfigId(): int
     {
-        return getenv('ADMIRALCLOUD_DOCUMENT_AUTH_CONFIG_ID');
+        return (int)getenv('ADMIRALCLOUD_DOCUMENT_AUTH_CONFIG_ID');
     }
 
-    /**
-     * @return string
-     */
-    public static function getAuthAudioPlayerConfigId(): string
+    public static function getAuthAudioPlayerConfigId(): int
     {
-        return getenv('ADMIRALCLOUD_AUDIO_AUTH_CONFIG_ID');
+        return (int)getenv('ADMIRALCLOUD_AUDIO_AUTH_CONFIG_ID');
     }
 
-    /**
-     * @return string
-     */
-    public static function getFlagPlayerConfigId(): string
+    public static function getFlagPlayerConfigId(): int
     {
-        return getenv('ADMIRALCLOUD_FLAG_CONFIG_ID') ?: 0;
+        return (int)getenv('ADMIRALCLOUD_FLAG_CONFIG_ID');
     }
 
-    /**
-     * @return string
-     */
     public static function getMetaTitleField(): string
     {
         return getenv('ADMIRALCLOUD_METADATA_FIELD_OVERRIDE_title') ?: 'container_name';
     }
 
-    /**
-     * @return string
-     */
     public static function getMetaAlternativeField(): string
     {
         return getenv('ADMIRALCLOUD_METADATA_FIELD_OVERRIDE_alternative') ?: 'meta_alttag';
     }
 
-    /**
-     * @return string
-     */
     public static function getMetaDescriptionField(): string
     {
         return getenv('ADMIRALCLOUD_METADATA_FIELD_OVERRIDE_description') ?: 'container_description';
     }
 
-    /**
-     * @return string
-     */
     public static function getMetaCopyrightField(): string
     {
         return getenv('ADMIRALCLOUD_METADATA_FIELD_OVERRIDE_copyright') ?: 'meta_iptc_copyrightNotice';
@@ -245,31 +197,21 @@ class ConfigurationUtility
      */
     public static function isSvgMimeType(string $mimeType): bool
     {
-        return (bool) preg_match('/^admiralCloud\/image\/svg(\+xml)?$/', $mimeType);
+        return (bool)preg_match('/^admiralCloud\/image\/svg(\+xml)?$/', $mimeType);
     }
 
-    /**
-     * @param string $type
-     * @return string
-     */
-    public static function getPlayerConfigurationIdByType(string $type): string
+    public static function getPlayerConfigurationIdByType(string $type): int
     {
-        $pCId = self::getImagePlayerConfigId();
-        switch ($type) {
-            case 'audio':
-                $pCId = self::getAudioPlayerConfigId();
-                break;
-            case 'video':
-                $pCId = self::getVideoPlayerConfigId();
-                break;
-            case 'document':
-                $pCId = self::getDocumentPlayerConfigId();
-                break;
-        }
-        return $pCId;
+        return match ($type) {
+            'audio' => self::getAudioPlayerConfigId(),
+            'video' => self::getVideoPlayerConfigId(),
+            'document' => self::getDocumentPlayerConfigId(),
+            default => self::getImagePlayerConfigId(),
+        };
     }
 
-    public static  function getLocalFileUrl(){
+    public static function getLocalFileUrl(): string
+    {
         return '/filehub/deliverFile/';
     }
 }

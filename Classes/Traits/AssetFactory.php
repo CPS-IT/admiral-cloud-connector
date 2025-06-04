@@ -1,31 +1,33 @@
 <?php
 
+declare(strict_types=1);
+
+/*
+ * This file is part of the TYPO3 CMS extension "admiral_cloud_connector".
+ *
+ * It is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License, either version 2
+ * of the License, or any later version.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE.txt file that was distributed with this source code.
+ *
+ * The TYPO3 project - inspiring people to share!
+ */
+
 namespace CPSIT\AdmiralCloudConnector\Traits;
 
 use CPSIT\AdmiralCloudConnector\Resource;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
-/**
- * Trait AssetFactory
- * @package CPSIT\AdmiralCloudConnector\Traits
- */
 trait AssetFactory
 {
+    protected ?Resource\AssetFactory $assetFactory = null;
 
-    /**
-     * @return Resource\AssetFactory
-     */
-    protected function getAssetFactory(): Resource\AssetFactory
+    protected function getAsset(string $identifier): Resource\Asset
     {
-        return GeneralUtility::makeInstance(Resource\AssetFactory::class);
-    }
+        $this->assetFactory ??= GeneralUtility::makeInstance(Resource\AssetFactory::class);
 
-    /**
-     * @param string $identifier
-     * @return Resource\Asset
-     */
-    protected function getAsset($identifier): Resource\Asset
-    {
-        return $this->getAssetFactory()->getOrCreate($identifier);
+        return $this->assetFactory->getOrCreate($identifier);
     }
 }

@@ -127,7 +127,7 @@ export class Acc {
 
     editImage() {
         const elAdmiralCloud = this.elAdmiralCloud,
-            mediaContainerId = this.mediaContainerId, 
+            mediaContainerId = this.mediaContainerId,
             embedLink = this.embedLink,
             iframeURL_HOST = this.iframeURL_HOST;
 

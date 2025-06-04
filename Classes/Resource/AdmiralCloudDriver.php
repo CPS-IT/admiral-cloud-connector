@@ -1,252 +1,166 @@
 <?php
 
+declare(strict_types=1);
+
+/*
+ * This file is part of the TYPO3 CMS extension "admiral_cloud_connector".
+ *
+ * It is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License, either version 2
+ * of the License, or any later version.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE.txt file that was distributed with this source code.
+ *
+ * The TYPO3 project - inspiring people to share!
+ */
 
 namespace CPSIT\AdmiralCloudConnector\Resource;
 
 use CPSIT\AdmiralCloudConnector\Exception\InvalidArgumentException;
 use CPSIT\AdmiralCloudConnector\Exception\NotImplementedException;
 use CPSIT\AdmiralCloudConnector\Traits\AssetFactory;
+use TYPO3\CMS\Core\Resource\Capabilities;
 use TYPO3\CMS\Core\Resource\Driver\DriverInterface;
-use TYPO3\CMS\Core\Resource\ResourceStorage;
 
-/**
- * Class AdmiralCloudDriver
- * @package CPSIT\AdmiralCloudConnector\Resource
- */
 class AdmiralCloudDriver implements DriverInterface
 {
     use AssetFactory;
 
     public const KEY = 'AdmiralCloud';
 
-    /**
-     * @var string
-     */
-    protected $rootFolder = '';
+    protected string $rootFolder = '';
+    protected Capabilities $capabilities;
+    protected int $storageUid = 0;
 
-    /**
-     * The capabilities of this driver. See Storage::CAPABILITY_* constants for possible values.
-     *
-     * @var int
-     */
-    protected $capabilities = 0;
-
-    /**
-     * The storage uid the driver was instantiated for
-     *
-     * @var int
-     */
-    protected $storageUid;
-
-    /**
-     * The configuration of this driver
-     *
-     * @var array
-     */
-    protected $configuration = [];
-
-    /**
-     * @inheritDoc
-     */
-    public function processConfiguration()
+    public function __construct()
     {
+        $this->capabilities = new Capabilities();
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function setStorageUid($storageUid)
+    public function processConfiguration(): void {}
+
+    public function setStorageUid(int $storageUid): void
     {
         $this->storageUid = $storageUid;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function initialize()
+    public function initialize(): void
     {
-        $this->capabilities =
-            ResourceStorage::CAPABILITY_BROWSABLE
-            | ResourceStorage::CAPABILITY_PUBLIC
-            | ResourceStorage::CAPABILITY_WRITABLE;
+        $this->capabilities->set(Capabilities::CAPABILITY_BROWSABLE | Capabilities::CAPABILITY_PUBLIC | Capabilities::CAPABILITY_WRITABLE);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getCapabilities(): int
+    public function getCapabilities(): Capabilities
     {
         return $this->capabilities;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function mergeConfigurationCapabilities($capabilities): int
+    public function mergeConfigurationCapabilities(Capabilities $capabilities): Capabilities
     {
-        $this->capabilities &= $capabilities;
+        $this->capabilities->and($capabilities);
+
         return $this->capabilities;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function hasCapability($capability)
+    public function hasCapability(int $capability): bool
     {
-        return (bool)($this->capabilities & $capability === (int)$capability);
+        return $this->capabilities->hasCapability($capability);
     }
 
-    /**
-     * @inheritDoc
-     */
     public function isCaseSensitiveFileSystem(): bool
     {
         return true;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function sanitizeFileName($fileName, $charset = ''): string
+    public function sanitizeFileName(string $fileName, string $charset = ''): string
     {
         // Admiral cloud allows all
         return $fileName;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function hashIdentifier($identifier): string
+    public function hashIdentifier(string $identifier): string
     {
         return $this->hash($identifier, 'sha1');
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getRootLevelFolder(): string
     {
         return $this->rootFolder;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getDefaultFolder(): string
     {
         return $this->rootFolder;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getParentFolderIdentifierOfIdentifier($fileIdentifier): string
+    public function getParentFolderIdentifierOfIdentifier(string $fileIdentifier): string
     {
         return $this->rootFolder;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getPublicUrl($identifier): string
+    public function getPublicUrl(string $identifier): ?string
     {
         return $this->getAsset($identifier)->getPublicUrl($this->storageUid);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function createFolder($newFolderName, $parentFolderIdentifier = '', $recursive = false)
+    public function createFolder(string $newFolderName, string $parentFolderIdentifier = '', bool $recursive = false): never
     {
-        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', __CLASS__, __METHOD__), 1519045381);
+        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', self::class, __METHOD__), 1519045381);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function renameFolder($folderIdentifier, $newName)
+    public function renameFolder(string $folderIdentifier, string $newName): never
     {
-        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', __CLASS__, __METHOD__), 1519045382);
+        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', self::class, __METHOD__), 1519045382);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function deleteFolder($folderIdentifier, $deleteRecursively = false)
+    public function deleteFolder(string $folderIdentifier, bool $deleteRecursively = false): never
     {
-        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', __CLASS__, __METHOD__), 1519045383);
+        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', self::class, __METHOD__), 1519045383);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function fileExists($fileIdentifier)
+    public function fileExists(string $fileIdentifier): bool
     {
         // We just assume that the processed file exists as this is just a CDN link
         return !empty($fileIdentifier);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function folderExists($folderIdentifier): bool
+    public function folderExists(string $folderIdentifier): bool
     {
         // We only know the root folder
         return $folderIdentifier === $this->rootFolder;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function isFolderEmpty($folderIdentifier): bool
+    public function isFolderEmpty(string $folderIdentifier): bool
     {
         return !$this->folderExists($folderIdentifier);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function addFile($localFilePath, $targetFolderIdentifier, $newFileName = '', $removeOriginal = true)
+    public function addFile(string $localFilePath, string $targetFolderIdentifier, string $newFileName = '', bool $removeOriginal = true): never
     {
-        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', __CLASS__, __METHOD__), 1519045386);
+        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', self::class, __METHOD__), 1519045386);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function createFile($fileName, $parentFolderIdentifier)
+    public function createFile(string $fileName, string $parentFolderIdentifier): never
     {
-        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', __CLASS__, __METHOD__), 1519045387);
+        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', self::class, __METHOD__), 1519045387);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function copyFileWithinStorage($fileIdentifier, $targetFolderIdentifier, $fileName)
+    public function copyFileWithinStorage(string $fileIdentifier, string $targetFolderIdentifier, string $fileName): never
     {
-        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', __CLASS__, __METHOD__), 1519045388);
+        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', self::class, __METHOD__), 1519045388);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function renameFile($fileIdentifier, $newName)
+    public function renameFile(string $fileIdentifier, string $newName): never
     {
-        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', __CLASS__, __METHOD__), 1519045389);
+        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', self::class, __METHOD__), 1519045389);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function replaceFile($fileIdentifier, $localFilePath)
+    public function replaceFile(string $fileIdentifier, string $localFilePath): never
     {
-        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', __CLASS__, __METHOD__), 1519045390);
+        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', self::class, __METHOD__), 1519045390);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function deleteFile($fileIdentifier)
+    public function deleteFile(string $fileIdentifier): bool
     {
         // Deleting processed files isn't needed as this is just a link to a file in the CDN
         // to prevent false errors for the user we just tell the API that deleting was successful
@@ -254,204 +168,137 @@ class AdmiralCloudDriver implements DriverInterface
             return true;
         }
 
-        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', __CLASS__, __METHOD__), 1519045448);
+        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', self::class, __METHOD__), 1519045448);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function hash($fileIdentifier, $hashAlgorithm)
+    public function hash(string $fileIdentifier, string $hashAlgorithm): string
     {
-        switch ($hashAlgorithm) {
-            case 'sha1':
-                return sha1($fileIdentifier);
-            case 'md5':
-                return md5($fileIdentifier);
-            default:
-                throw new InvalidArgumentException('Hash algorithm ' . $hashAlgorithm . ' is not implemented.', 1519131572);
-        }
+        return match ($hashAlgorithm) {
+            'sha1' => sha1($fileIdentifier),
+            'md5' => md5($fileIdentifier),
+            default => throw new InvalidArgumentException('Hash algorithm ' . $hashAlgorithm . ' is not implemented.', 1519131572),
+        };
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function moveFileWithinStorage($fileIdentifier, $targetFolderIdentifier, $newFileName)
+    public function moveFileWithinStorage(string $fileIdentifier, string $targetFolderIdentifier, string $newFileName): never
     {
-        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', __CLASS__, __METHOD__), 1519045392);
+        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', self::class, __METHOD__), 1519045392);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function moveFolderWithinStorage($sourceFolderIdentifier, $targetFolderIdentifier, $newFolderName)
+    public function moveFolderWithinStorage(string $sourceFolderIdentifier, string $targetFolderIdentifier, string $newFolderName): never
     {
-        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', __CLASS__, __METHOD__), 1519045393);
+        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', self::class, __METHOD__), 1519045393);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function copyFolderWithinStorage($sourceFolderIdentifier, $targetFolderIdentifier, $newFolderName)
+    public function copyFolderWithinStorage(string $sourceFolderIdentifier, string $targetFolderIdentifier, string $newFolderName): never
     {
-        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', __CLASS__, __METHOD__), 1519045394);
+        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', self::class, __METHOD__), 1519045394);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getFileContents($fileIdentifier)
+    public function getFileContents(string $fileIdentifier): never
     {
-        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', __CLASS__, __METHOD__), 1530716557);
+        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', self::class, __METHOD__), 1530716557);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function setFileContents($fileIdentifier, $contents)
+    public function setFileContents(string $fileIdentifier, string $contents): never
     {
-        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', __CLASS__, __METHOD__), 1519045395);
+        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', self::class, __METHOD__), 1519045395);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function fileExistsInFolder($fileName, $folderIdentifier)
+    public function fileExistsInFolder(string $fileName, string $folderIdentifier): bool
     {
         return !empty($fileName) && ($this->rootFolder === $folderIdentifier);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function folderExistsInFolder($folderName, $folderIdentifier)
+    public function folderExistsInFolder(string $folderName, string $folderIdentifier): bool
     {
         // Currently we don't know the concept of folders within Admiral cloud and for now always return false
         return false;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getFileForLocalProcessing($fileIdentifier, $writable = true)
+    public function getFileForLocalProcessing(string $fileIdentifier, bool $writable = true): string
     {
         return $this->getAsset($fileIdentifier)->getLocalThumbnail($this->storageUid);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getPermissions($identifier)
+    public function getPermissions(string $identifier): array
     {
         return [
             'r' => $identifier === $this->rootFolder || $this->fileExists($identifier),
-            'w' => false
+            'w' => false,
         ];
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function dumpFileContents($identifier)
+    public function dumpFileContents(string $identifier): never
     {
-        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', __CLASS__, __METHOD__), 1530716441);
+        throw new NotImplementedException(sprintf('Method %s::%s() is not implemented', self::class, __METHOD__), 1530716441);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function isWithin($folderIdentifier, $identifier)
+    public function isWithin(string $folderIdentifier, string $identifier): bool
     {
-        return ($folderIdentifier === $this->rootFolder);
+        return $folderIdentifier === $this->rootFolder;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getFileInfoByIdentifier($fileIdentifier, array $propertiesToExtract = []): array
+    public function getFileInfoByIdentifier(string $fileIdentifier, array $propertiesToExtract = []): array
     {
         return $this->getAsset($fileIdentifier)->extractProperties($propertiesToExtract);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getFolderInfoByIdentifier($folderIdentifier): array
+    public function getFolderInfoByIdentifier(string $folderIdentifier): array
     {
         return [
             'identifier' => $folderIdentifier,
             'name' => 'AdmiralCloud',
             'mtime' => 0,
             'ctime' => 0,
-            'storage' => $this->storageUid
+            'storage' => $this->storageUid,
         ];
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getFileInFolder($fileName, $folderIdentifier): string
+    public function getFileInFolder(string $fileName, string $folderIdentifier): string
     {
         return '';
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getFilesInFolder(
-        $folderIdentifier,
-        $start = 0,
-        $numberOfItems = 0,
-        $recursive = false,
+        string $folderIdentifier,
+        int $start = 0,
+        int $numberOfItems = 0,
+        bool $recursive = false,
         array $filenameFilterCallbacks = [],
-        $sort = '',
-        $sortRev = false
-    ) {
+        string $sort = '',
+        bool $sortRev = false,
+    ): array {
         return [];
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getFolderInFolder($folderName, $folderIdentifier): string
+    public function getFolderInFolder(string $folderName, string $folderIdentifier): string
     {
         return '';
     }
 
-    /**
-     * @inheritDoc
-     */
     public function getFoldersInFolder(
-        $folderIdentifier,
-        $start = 0,
-        $numberOfItems = 0,
-        $recursive = false,
+        string $folderIdentifier,
+        int $start = 0,
+        int $numberOfItems = 0,
+        bool $recursive = false,
         array $folderNameFilterCallbacks = [],
-        $sort = '',
-        $sortRev = false
-    ) {
+        string $sort = '',
+        bool $sortRev = false,
+    ): array {
         return [];
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function countFilesInFolder($folderIdentifier, $recursive = false, array $filenameFilterCallbacks = []): int
+    public function countFilesInFolder(string $folderIdentifier, bool $recursive = false, array $filenameFilterCallbacks = []): int
     {
         return 0;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function countFoldersInFolder($folderIdentifier, $recursive = false, array $folderNameFilterCallbacks = []): int
+    public function countFoldersInFolder(string $folderIdentifier, bool $recursive = false, array $folderNameFilterCallbacks = []): int
     {
         return 0;
     }
 
-    /**
-     * @param string $fileIdentifier
-     * @return bool
-     */
     protected function isProcessedFile(string $fileIdentifier): bool
     {
         return (bool)preg_match('/^processed_([0-9A-Z\-]{35})_([a-z]+)/', $fileIdentifier);

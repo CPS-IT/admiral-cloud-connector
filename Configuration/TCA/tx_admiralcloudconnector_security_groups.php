@@ -1,4 +1,18 @@
 <?php
+
+/*
+ * This file is part of the TYPO3 CMS extension "admiral_cloud_connector".
+ *
+ * It is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License, either version 2
+ * of the License, or any later version.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE.txt file that was distributed with this source code.
+ *
+ * The TYPO3 project - inspiring people to share!
+ */
+
 if (!defined('TYPO3')) {
     die('Access denied.');
 }
@@ -10,8 +24,6 @@ return [
         'tstamp' => 'tstamp',
         'crdate' => 'crdate',
         'rootLevel' => 1,
-        'cruser_id' => 'cruser_id',
-        'dividers2tabs' => true,
         'versioningWS' => true,
         'sortby' => 'sorting',
         'default_sortby' => 'ORDER BY ac_security_group_id',
@@ -22,11 +34,7 @@ return [
             'endtime' => 'endtime',
         ],
         'searchFields' => 'uid, ac_security_group_id',
-        'iconfile' => 'EXT:ahk_contacts/Resources/Public/Icons/tx_ahkcontacts_domain_model_contact.gif',
-    ],
-
-    'interface' => [
-        'showRecordFieldList' => 'ac_security_group_id, be_groups',
+        'iconfile' => 'EXT:admiral_cloud_connector/Resources/Public/Icons/ac.svg',
     ],
     'types' => [
         '1' => [
@@ -36,57 +44,11 @@ return [
     'palettes' => [
     ],
     'columns' => [
-        'hidden' => [
-            'exclude' => 1,
-            'label' => 'LLL:EXT:lang/Resources/Private/Language/locallang_general.xlf:LGL.hidden',
-            'config' => [
-                'type' => 'check',
-            ],
-        ],
-        'starttime' => [
-            'exclude' => 1,
-            'label' => 'LLL:EXT:lang/Resources/Private/Language/locallang_general.xlf:LGL.starttime',
-            'config' => [
-                'type' => 'input',
-                'renderType' => 'inputDateTime',
-                'size' => 13,
-                'max' => 20,
-                'eval' => 'datetime',
-                'checkbox' => 0,
-                'default' => 0,
-                'range' => [
-                    'lower' => mktime(0, 0, 0, date('m'), date('d'), date('Y')),
-                ],
-                'behaviour' => [
-                    'allowLanguageSynchronization' => true,
-                ],
-            ],
-        ],
-        'endtime' => [
-            'exclude' => 1,
-            'label' => 'LLL:EXT:lang/Resources/Private/Language/locallang_general.xlf:LGL.endtime',
-            'config' => [
-                'type' => 'input',
-                'renderType' => 'inputDateTime',
-                'size' => 13,
-                'max' => 20,
-                'eval' => 'datetime',
-                'checkbox' => 0,
-                'default' => 0,
-                'range' => [
-                    'lower' => mktime(0, 0, 0, date('m'), date('d'), date('Y')),
-                ],
-                'behaviour' => [
-                    'allowLanguageSynchronization' => true,
-                ],
-            ],
-        ],
         'ac_security_group_id' => [
             'exclude' => 1,
             'label' => 'AC Security Group Id',
             'config' => [
-                'type' => 'input',
-                'eval' => 'int'
+                'type' => 'number',
             ],
         ],
         'be_groups' => [
@@ -97,12 +59,10 @@ return [
                 'type' => 'select',
                 'renderType' => 'selectMultipleSideBySide',
                 'foreign_table' => 'be_groups',
-                'foreign_table_where' => 'AND true',
                 'size' => 10,
                 'autoSizeMax' => 30,
                 'maxitems' => 9999,
                 'multiple' => 1,
-                'enableMultiSelectFilterTextfield' => true,
             ],
         ],
     ],

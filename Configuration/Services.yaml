@@ -6,9 +6,3 @@ services:
 
   CPSIT\AdmiralCloudConnector\:
     resource: '../Classes/*'
-
-  CPSIT\AdmiralCloudConnector\EventListener\InstallListener:
-    tags:
-      - name: event.listener
-        method: createAdmiralCloudFileStorage
-        identifier: 'admiral-cloud-connector/install-listener'

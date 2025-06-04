@@ -1,56 +1,56 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xliff version="1.0">
-    <file source-language="en" target-language="de" datatype="plaintext" original="messages" date="2018-02-20T11:13:11Z" product-name="admiral_cloud_connector">
-        <header/>
-        <body>
-            <trans-unit id="browser.button">
-                <source>AdmiralCloud</source>
-                <target>AdmiralCloud</target>
-            </trans-unit>
-            <trans-unit id="browser.uploadbutton">
-                <source>AdmiralCloud Upload</source>
-                <target>AdmiralCloud Hochladen</target>
-            </trans-unit>
-            <trans-unit id="browser.header">
-                <source>AdmiralCloud</source>
-                <target>AdmiralCloud</target>
-            </trans-unit>
-            <trans-unit id="browser.error-no-storage-access">
-                <source>Please make sure you have access to the AdmiralCloud file mount. This is needed to use the AdmiralCloud file picker</source>
-                <target>Bitte Zugriff auf AdmiralCloud Filemount prüfen.</target>
-            </trans-unit>
-            <trans-unit id="be_groups.file_permissions.folder_add_via_admiral_cloud">
-                <source>Files: Add via AdmiralCloud</source>
-                <target>Dateien: Hinzufügen via Admiracloud</target>
-            </trans-unit>
-            <trans-unit id="be_users.file_permissions.folder_add_via_admiral_cloud">
-                <source>Files: Add via AdmiralCloud</source>
-                <target>Dateien: Hinzufügen via Admiracloud</target>
-            </trans-unit>
-            <trans-unit id="sys_file.tx_admiralcloudconnector_linkhash">
-                <source>Link hash for AdmiralCloud</source>
-                <target>Link hash für AdmiralCloud</target>
-            </trans-unit>
-            <trans-unit id="sys_file_reference.tx_admiralcloudconnector_crop">
-                <source>Image crop for AdmiralCloud</source>
-                <target>Bildcropping für Admiracloud</target>
-            </trans-unit>
-            <trans-unit id="be_users.first_name">
-                <source>Firstname</source>
-                <target>Vorname</target>
-            </trans-unit>
-            <trans-unit id="be_users.last_name">
-                <source>Lastname</source>
-                <target>Nachname</target>
-            </trans-unit>
-            <trans-unit id="be_users.security_group">
-                <source>AC Security Group</source>
-                <target>AC Security Group</target>
-            </trans-unit>
-            <trans-unit id="linkHandler.rteLinkDownload">
-                <source>Enable browser preview (no download)</source>
-                <target>Browservorschau aktivieren (kein download)</target>
-            </trans-unit>
-        </body>
-    </file>
+	<file source-language="en" target-language="de" datatype="plaintext" original="messages" date="2018-02-20T11:13:11Z" product-name="admiral_cloud_connector">
+		<header/>
+		<body>
+			<trans-unit id="browser.button">
+				<source>AdmiralCloud</source>
+				<target>AdmiralCloud</target>
+			</trans-unit>
+			<trans-unit id="browser.uploadbutton">
+				<source>AdmiralCloud Upload</source>
+				<target>AdmiralCloud Hochladen</target>
+			</trans-unit>
+			<trans-unit id="browser.header">
+				<source>AdmiralCloud</source>
+				<target>AdmiralCloud</target>
+			</trans-unit>
+			<trans-unit id="browser.error-no-storage-access">
+				<source>Please make sure you have access to the AdmiralCloud file mount. This is needed to use the AdmiralCloud file picker</source>
+				<target>Bitte Zugriff auf AdmiralCloud Filemount prüfen.</target>
+			</trans-unit>
+			<trans-unit id="be_groups.file_permissions.folder_add_via_admiral_cloud">
+				<source>Files: Add via AdmiralCloud</source>
+				<target>Dateien: Hinzufügen via Admiracloud</target>
+			</trans-unit>
+			<trans-unit id="be_users.file_permissions.folder_add_via_admiral_cloud">
+				<source>Files: Add via AdmiralCloud</source>
+				<target>Dateien: Hinzufügen via Admiracloud</target>
+			</trans-unit>
+			<trans-unit id="sys_file.tx_admiralcloudconnector_linkhash">
+				<source>Link hash for AdmiralCloud</source>
+				<target>Link hash für AdmiralCloud</target>
+			</trans-unit>
+			<trans-unit id="sys_file_reference.tx_admiralcloudconnector_crop">
+				<source>Image crop for AdmiralCloud</source>
+				<target>Bildcropping für Admiracloud</target>
+			</trans-unit>
+			<trans-unit id="be_users.first_name">
+				<source>Firstname</source>
+				<target>Vorname</target>
+			</trans-unit>
+			<trans-unit id="be_users.last_name">
+				<source>Lastname</source>
+				<target>Nachname</target>
+			</trans-unit>
+			<trans-unit id="be_users.security_group">
+				<source>AC Security Group</source>
+				<target>AC Security Group</target>
+			</trans-unit>
+			<trans-unit id="linkHandler.rteLinkDownload">
+				<source>Enable browser preview (no download)</source>
+				<target>Browservorschau aktivieren (kein download)</target>
+			</trans-unit>
+		</body>
+	</file>
 </xliff>

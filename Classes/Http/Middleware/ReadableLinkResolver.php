@@ -1,86 +1,85 @@
 <?php
-declare(strict_types = 1);
-namespace CPSIT\AdmiralCloudConnector\Http\Middleware;
 
-/**
- * This file extends the redirect handler of the TYPO3 CMS project.
+declare(strict_types=1);
+
+/*
+ * This file is part of the TYPO3 CMS extension "admiral_cloud_connector".
  *
- * 1. Option to keep request uri path which are builded with slugs
+ * It is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License, either version 2
+ * of the License, or any later version.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE.txt file that was distributed with this source code.
+ *
+ * The TYPO3 project - inspiring people to share!
  */
+
+namespace CPSIT\AdmiralCloudConnector\Http\Middleware;
 
 use CPSIT\AdmiralCloudConnector\Service\AdmiralCloudService;
 use CPSIT\AdmiralCloudConnector\Utility\ConfigurationUtility;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Fluid\View\StandaloneView;
+use TYPO3\CMS\Core\Http\HtmlResponse;
+use TYPO3\CMS\Core\Http\RedirectResponse;
+use TYPO3\CMS\Core\View\ViewFactoryData;
+use TYPO3\CMS\Core\View\ViewFactoryInterface;
 
 /**
- * Hooks into the frontend request, and checks if a redirect should apply,
- * If so, a redirect response is triggered.
- *
- * @internal
+ * 1. Option to keep request uri path which are built with slugs
  */
-class ReadableLinkResolver extends \TYPO3\CMS\Redirects\Http\Middleware\RedirectHandler
+readonly class ReadableLinkResolver implements MiddlewareInterface
 {
-    /**
-     * First hook within the Frontend Request handling
-     *
-     * @param ServerRequestInterface $request
-     * @param RequestHandlerInterface $handler
-     * @return ResponseInterface
-     */
+    public function __construct(
+        protected AdmiralCloudService $admiralCloudService,
+        protected ViewFactoryInterface $viewFactory,
+    ) {}
+
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $path = $request->getUri()->getPath();
 
-        if (0 === strpos($path, ConfigurationUtility::getLocalFileUrl())) {
-            preg_match('/.*?\/.*?\/([a-z0-9]{8}\-[a-z0-9]{4}\-[a-z0-9]{4}\-[a-z0-9]{4}\-[a-z0-9]{12})\/(\d+).*/',$path,$matches);
-            if(isset($matches[1]) && isset($matches[2])){
-                /** @var AdmiralCloudService $admiralCloudService */
-                $admiralCloudService = GeneralUtility::makeInstance(AdmiralCloudService::class);
-                $value = $request->getParsedBody()['download'] ?? $request->getQueryParams()['download'] ?? null;
-                $url = $admiralCloudService->getDirectPublicUrlForHash(
-                    $matches[1],
-                    (bool) $value
-                );
-                $file = $admiralCloudService->getStorage()->getFile($matches[2]);
+        if (str_starts_with($path, ConfigurationUtility::getLocalFileUrl())) {
+            preg_match('/.*?\/.*?\/([a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12})\/(\d+).*/', $path, $matches);
+
+            if (isset($matches[1], $matches[2])) {
+                $url = $this->admiralCloudService->getDirectPublicUrlForHash($matches[1]);
+                $file = $this->admiralCloudService->getStorage()->getFile($matches[2]);
+
                 if ($file) {
-                    $this->renderTemplateToFile('Middleware/DownloadFile', [
+                    $content = $this->renderTemplateToFile(
+                        'Middleware/DownloadFile',
+                        [
                             'file' => $file,
                             'requestUri' => $request->getUri(),
                             'url' => $url,
-                            'image' => ConfigurationUtility::getImageUrl() . 'v3/deliverEmbed/' . $matches[1] . '/image/'
+                            'image' => ConfigurationUtility::getImageUrl() . 'v3/deliverEmbed/' . $matches[1] . '/image/',
                         ]
                     );
-                } else {
-                    header("Location: " . $url);
+
+                    return new HtmlResponse($content);
                 }
+
+                return new RedirectResponse($url);
             }
         }
 
         return $handler->handle($request);
     }
 
-    /**
-     * Render template to file.
-     *
-     * @param string $templateName
-     * @param array  $variables
-     * @param string $htaccessFile
-     */
-    protected function renderTemplateToFile(string $templateName, array $variables)
+    protected function renderTemplateToFile(string $templateName, array $variables): string
     {
-        /** @var StandaloneView $renderer */
-        $renderer = GeneralUtility::makeInstance(StandaloneView::class);
-        $renderer->setLayoutRootPaths(array(GeneralUtility::getFileAbsFileName('EXT:admiral_cloud_connector/Resources/Private/Layouts')));
-        $renderer->setPartialRootPaths(array(GeneralUtility::getFileAbsFileName('EXT:admiral_cloud_connector/Resources/Private/Partials')));
-        $renderer->setTemplateRootPaths(array(GeneralUtility::getFileAbsFileName('EXT:admiral_cloud_connector/Resources/Private/Templates')));
-        $renderer->setTemplate($templateName);
-        $renderer->assignMultiple($variables);
-        $content = \trim((string)$renderer->render());
-        echo $content;
-        die();
+        $data = new ViewFactoryData(
+            ['EXT:admiral_cloud_connector/Resources/Private/Templates'],
+            ['EXT:admiral_cloud_connector/Resources/Private/Partials'],
+            ['EXT:admiral_cloud_connector/Resources/Private/Layouts'],
+        );
+        $view = $this->viewFactory->create($data);
+        $view->assignMultiple($variables);
+
+        return \trim($view->render($templateName));
     }
 }

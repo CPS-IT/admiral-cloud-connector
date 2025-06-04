@@ -1,17 +1,16 @@
-.. ==================================================
-.. FOR YOUR INFORMATION
-.. --------------------------------------------------
+..  include:: /Includes.rst.txt
 
-.. include:: ../Includes.txt
+..  _introduction:
 
+============
 Introduction
 ============
 
-.. only:: html
+..  only:: html
 
-	This chapter gives you a basic introduction about the TYPO3 CMS extension "*admiral_cloud_connector*".
+    This chapter gives you a basic introduction about the TYPO3 CMS extension "*admiral_cloud_connector*".
 
-.. toctree::
+..  toctree::
 
     About/Index
     Faq/Index

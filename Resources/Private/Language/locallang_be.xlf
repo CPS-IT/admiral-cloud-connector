@@ -1,114 +1,114 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xliff version="1.0">
-    <file source-language="en" datatype="plaintext" original="messages" date="2018-02-20T11:13:11Z" product-name="admiral_cloud_connector">
-        <header/>
-        <body>
-            <trans-unit id="browser.button">
-                <source>AdmiralCloud</source>
-            </trans-unit>
-            <trans-unit id="browser.uploadbutton">
-                <source>AdmiralCloud Upload</source>
-            </trans-unit>
-            <trans-unit id="browser.header">
-                <source>AdmiralCloud</source>
-            </trans-unit>
-            <trans-unit id="browser.error-no-storage-access">
-                <source>Please make sure you have access to the AdmiralCloud file mount. This is needed to use the AdmiralCloud file picker</source>
-            </trans-unit>
-            <trans-unit id="be_groups.file_permissions.folder_add_via_admiral_cloud">
-                <source>Files: Add via AdmiralCloud</source>
-            </trans-unit>
-            <trans-unit id="be_users.file_permissions.folder_add_via_admiral_cloud">
-                <source>Files: Add via AdmiralCloud</source>
-            </trans-unit>
-            <trans-unit id="sys_file.tx_admiralcloudconnector_linkhash">
-                <source>Link hash for AdmiralCloud</source>
-            </trans-unit>
-            <trans-unit id="sys_file_reference.tx_admiralcloudconnector_crop">
-                <source>Image crop for AdmiralCloud</source>
-            </trans-unit>
-            <trans-unit id="be_users.first_name">
-                <source>Firstname</source>
-            </trans-unit>
-            <trans-unit id="be_users.last_name">
-                <source>Lastname</source>
-            </trans-unit>
-            <trans-unit id="be_users.security_group">
-                <source>AC Security Group</source>
-            </trans-unit>
-            <trans-unit id="linkHandler.label">
-                <source>AdmiralCloud</source>
-            </trans-unit>
-            <trans-unit id="linkHandler.rteLinkDownload">
-                <source>Enable browser preview (no download)</source>
-            </trans-unit>
+	<file source-language="en" datatype="plaintext" original="messages" date="2018-02-20T11:13:11Z" product-name="admiral_cloud_connector">
+		<header/>
+		<body>
+			<trans-unit id="browser.button">
+				<source>AdmiralCloud</source>
+			</trans-unit>
+			<trans-unit id="browser.uploadbutton">
+				<source>AdmiralCloud Upload</source>
+			</trans-unit>
+			<trans-unit id="browser.header">
+				<source>AdmiralCloud</source>
+			</trans-unit>
+			<trans-unit id="browser.error-no-storage-access">
+				<source>Please make sure you have access to the AdmiralCloud file mount. This is needed to use the AdmiralCloud file picker</source>
+			</trans-unit>
+			<trans-unit id="be_groups.file_permissions.folder_add_via_admiral_cloud">
+				<source>Files: Add via AdmiralCloud</source>
+			</trans-unit>
+			<trans-unit id="be_users.file_permissions.folder_add_via_admiral_cloud">
+				<source>Files: Add via AdmiralCloud</source>
+			</trans-unit>
+			<trans-unit id="sys_file.tx_admiralcloudconnector_linkhash">
+				<source>Link hash for AdmiralCloud</source>
+			</trans-unit>
+			<trans-unit id="sys_file_reference.tx_admiralcloudconnector_crop">
+				<source>Image crop for AdmiralCloud</source>
+			</trans-unit>
+			<trans-unit id="be_users.first_name">
+				<source>Firstname</source>
+			</trans-unit>
+			<trans-unit id="be_users.last_name">
+				<source>Lastname</source>
+			</trans-unit>
+			<trans-unit id="be_users.security_group">
+				<source>AC Security Group</source>
+			</trans-unit>
+			<trans-unit id="linkHandler.label">
+				<source>AdmiralCloud</source>
+			</trans-unit>
+			<trans-unit id="linkHandler.rteLinkDownload">
+				<source>Enable browser preview (no download)</source>
+			</trans-unit>
 
-            <trans-unit id="toolbarItem.title">
-                <source>AdmiralCloud</source>
-            </trans-unit>
-            <trans-unit id="toolbarItem.closeConnection.title">
-                <source>Close connection with AdmiralCloud</source>
-            </trans-unit>
-            <trans-unit id="toolbarItem.closeConnection.success">
-                <source>AdmiralCloud connection was closed successfully.</source>
-            </trans-unit>
-            <trans-unit id="toolbarItem.updateChangedMetadata.title">
-                <source>Update metadata for recently changed files.</source>
-            </trans-unit>
-            <trans-unit id="toolbarItem.updateChangedMetadata.info">
-                <source>Start updating metadata for AdmiralCloud files. This action could take a moment.</source>
-            </trans-unit>
-            <trans-unit id="toolbarItem.updateChangedMetadata.success">
-                <source>Metadata for AdmiralCloud files were updated successfully.</source>
-            </trans-unit>
-            <trans-unit id="toolbarItem.updateChangedMetadata.error">
-                <source>An error happened updating metadata for AdmiralCloud files. Please inform to your administrator.</source>
-            </trans-unit>
+			<trans-unit id="toolbarItem.title">
+				<source>AdmiralCloud</source>
+			</trans-unit>
+			<trans-unit id="toolbarItem.closeConnection.title">
+				<source>Close connection with AdmiralCloud</source>
+			</trans-unit>
+			<trans-unit id="toolbarItem.closeConnection.success">
+				<source>AdmiralCloud connection was closed successfully.</source>
+			</trans-unit>
+			<trans-unit id="toolbarItem.updateChangedMetadata.title">
+				<source>Update metadata for recently changed files.</source>
+			</trans-unit>
+			<trans-unit id="toolbarItem.updateChangedMetadata.info">
+				<source>Start updating metadata for AdmiralCloud files. This action could take a moment.</source>
+			</trans-unit>
+			<trans-unit id="toolbarItem.updateChangedMetadata.success">
+				<source>Metadata for AdmiralCloud files were updated successfully.</source>
+			</trans-unit>
+			<trans-unit id="toolbarItem.updateChangedMetadata.error">
+				<source>An error happened updating metadata for AdmiralCloud files. Please inform to your administrator.</source>
+			</trans-unit>
 
-            <trans-unit id="admiral_cloud_connector_title">
-                <source>AdmiralCloud</source>
-            </trans-unit>
-            <trans-unit id="usersettings.first_name">
-                <source>First Name</source>
-            </trans-unit>
-            <trans-unit id="usersettings.last_name">
-                <source>Last Name</source>
-            </trans-unit>
-            <trans-unit id="usersettings.security_group">
-                <source>AC Security Group</source>
-            </trans-unit>
+			<trans-unit id="admiral_cloud_connector_title">
+				<source>AdmiralCloud</source>
+			</trans-unit>
+			<trans-unit id="usersettings.first_name">
+				<source>First Name</source>
+			</trans-unit>
+			<trans-unit id="usersettings.last_name">
+				<source>Last Name</source>
+			</trans-unit>
+			<trans-unit id="usersettings.security_group">
+				<source>AC Security Group</source>
+			</trans-unit>
 
-            <trans-unit id="task.update_admiral_cloud_metadata.name">
-                <source>Update metadata for AdmiralCloud files</source>
-            </trans-unit>
-            <trans-unit id="task.update_admiral_cloud_metadata.description">
-                <source>Update metadata for AdmiralCloud files</source>
-            </trans-unit>
-            <trans-unit id="task.update_admiral_cloud_metadata.actionType">
-                <source>Action type</source>
-            </trans-unit>
-            <trans-unit id="task.update_admiral_cloud_metadata.actionType.update_all">
-                <source>Update metadata for all files from AdmiralCloud</source>
-            </trans-unit>
-            <trans-unit id="task.update_admiral_cloud_metadata.actionType.update_last_changed">
-                <source>Update metadata for last changed files from AdmiralCloud</source>
-            </trans-unit>
-            <trans-unit id="task.update_admiral_cloud_metadata.additionalInformation">
-                <source>Action: %s</source>
-            </trans-unit>
+			<trans-unit id="task.update_admiral_cloud_metadata.name">
+				<source>Update metadata for AdmiralCloud files</source>
+			</trans-unit>
+			<trans-unit id="task.update_admiral_cloud_metadata.description">
+				<source>Update metadata for AdmiralCloud files</source>
+			</trans-unit>
+			<trans-unit id="task.update_admiral_cloud_metadata.actionType">
+				<source>Action type</source>
+			</trans-unit>
+			<trans-unit id="task.update_admiral_cloud_metadata.actionType.update_all">
+				<source>Update metadata for all files from AdmiralCloud</source>
+			</trans-unit>
+			<trans-unit id="task.update_admiral_cloud_metadata.actionType.update_last_changed">
+				<source>Update metadata for last changed files from AdmiralCloud</source>
+			</trans-unit>
+			<trans-unit id="task.update_admiral_cloud_metadata.additionalInformation">
+				<source>Action: %s</source>
+			</trans-unit>
 
-            <trans-unit id="task.export_sys_file_with_metadata.name">
-                <source>Export sys_file table with metadata for AdmiralCloud.</source>
-            </trans-unit>
-            <trans-unit id="task.export_sys_file_with_metadata.description">
-                <source>Generate export file in the given path.</source>
-            </trans-unit>
-            <trans-unit id="task.export_sys_file_with_metadata.exportFilePath">
-                <source>Relative path for export file.</source>
-            </trans-unit>
-            <trans-unit id="task.export_sys_file_with_metadata.securityGroupMapping">
-                <source>Mapping for security groups. Pro line "path;security_group"</source>
-            </trans-unit>
-        </body>
-    </file>
+			<trans-unit id="task.export_sys_file_with_metadata.name">
+				<source>Export sys_file table with metadata for AdmiralCloud.</source>
+			</trans-unit>
+			<trans-unit id="task.export_sys_file_with_metadata.description">
+				<source>Generate export file in the given path.</source>
+			</trans-unit>
+			<trans-unit id="task.export_sys_file_with_metadata.exportFilePath">
+				<source>Relative path for export file.</source>
+			</trans-unit>
+			<trans-unit id="task.export_sys_file_with_metadata.securityGroupMapping">
+				<source>Mapping for security groups. Pro line "path;security_group"</source>
+			</trans-unit>
+		</body>
+	</file>
 </xliff>

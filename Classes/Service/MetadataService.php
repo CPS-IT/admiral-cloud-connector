@@ -1,105 +1,96 @@
 <?php
 
+declare(strict_types=1);
+
+/*
+ * This file is part of the TYPO3 CMS extension "admiral_cloud_connector".
+ *
+ * It is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License, either version 2
+ * of the License, or any later version.
+ *
+ * For the full copyright and license information, please read the
+ * LICENSE.txt file that was distributed with this source code.
+ *
+ * The TYPO3 project - inspiring people to share!
+ */
+
 namespace CPSIT\AdmiralCloudConnector\Service;
 
 use CPSIT\AdmiralCloudConnector\Exception\RuntimeException;
 use CPSIT\AdmiralCloudConnector\Traits\AdmiralCloudStorage;
 use CPSIT\AdmiralCloudConnector\Utility\ConfigurationUtility;
 use Psr\Log\LoggerInterface;
-use TYPO3\CMS\Core\Cache\CacheManager;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
 use TYPO3\CMS\Core\Database\Connection;
-use TYPO3\CMS\Core\Database\ConnectionPool;
-use TYPO3\CMS\Core\Log\LogManager;
-use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Extbase\Object\ObjectManager;
+use TYPO3\CMS\Core\Resource\StorageRepository;
 
-/**
- * Class MetadataService
- * @package CPSIT\AdmiralCloudConnector\Service
- */
 class MetadataService
 {
     use AdmiralCloudStorage;
 
-    public const ITEMS_LIMIT = 100;
-    public const MAXIMUM_ITERATION = 50000;
+    protected const ITEMS_LIMIT = 100;
+    protected const MAXIMUM_ITERATION = 50000;
     protected const DEFAULT_LAST_CHANGED_DATE = '-7 days';
 
-    /**
-     * @var Connection
-     */
-    protected $conSysFileMetadata;
-
-    /**
-     * @var Connection
-     */
-    protected $conSysFile;
-
-    /**
-     * @var LoggerInterface
-     */
-    protected $logger;
-
-    /**
-     * MetadataService constructor.
-     */
-    public function __construct()
-    {
-        $this->logger = GeneralUtility::makeInstance(LogManager::class)->getLogger(__CLASS__);
-        $this->conSysFileMetadata = $this->getConnectionPool()->getConnectionForTable('sys_file_metadata');
-        $this->conSysFile = $this->getConnectionPool()->getConnectionForTable('sys_file');
+    public function __construct(
+        protected readonly AdmiralCloudService $admiralCloudService,
+        #[Autowire(expression: 'service("TYPO3\\\\CMS\\\\Core\\\\Cache\\\\CacheManager").getCache("admiral_cloud_connector")')]
+        protected readonly FrontendInterface $cache,
+        #[Autowire(expression: 'service("TYPO3\\\\CMS\\\\Core\\\\Database\\\\ConnectionPool").getConnectionForTable("sys_file")')]
+        protected readonly Connection $conSysFile,
+        #[Autowire(expression: 'service("TYPO3\\\\CMS\\\\Core\\\\Database\\\\ConnectionPool").getConnectionForTable("sys_file_metadata")')]
+        protected readonly Connection $conSysFileMetadata,
+        protected readonly LoggerInterface $logger,
+        StorageRepository $storageRepository,
+    ) {
+        $this->storageRepository = $storageRepository;
     }
 
     /**
      * Update metadata for all files from AdmiralCloud storage
      */
-    public function updateAll()
+    public function updateAll(): void
     {
         $offset = 0;
         $iteration = 0;
-        $continue = true;
 
-        while ($continue && $iteration < static::MAXIMUM_ITERATION) {
+        while ($iteration < static::MAXIMUM_ITERATION) {
             $iteration++;
 
             // Get all AdmiralCloud files with their AdmiralCloud mediaContainerId (stored in identifier field)
-            $result = $this->conSysFile->select(
-                ['uid', 'identifier'],
-                'sys_file',
-                ['storage' => $this->getAdmiralCloudStorage()->getUid()],
-                [],
-                [],
-                static::ITEMS_LIMIT,
-                $offset
-            )->fetchAll(\PDO::FETCH_ASSOC);
+            $result = $this->conSysFile
+                ->select(['uid', 'identifier'], 'sys_file', ['storage' => $this->getAdmiralCloudStorage()->getUid()], [], [], static::ITEMS_LIMIT, $offset)
+                ->fetchAllAssociative();
+
+            if (!$result) {
+                break;
+            }
 
             $offset += static::ITEMS_LIMIT;
 
-            if ($result) {
-                // Make mapping array between sysFileUid and mediaContainerId (identifier)
-                $mappingSysFileAdmiralCloudId = [];
+            // Make mapping array between sysFileUid and mediaContainerId (identifier)
+            $mappingSysFileAdmiralCloudId = [];
 
-                foreach ($result as $sysFile) {
-                    if (!empty($sysFile['identifier'])) {
-                        $mappingSysFileAdmiralCloudId[$sysFile['uid']] = $sysFile['identifier'];
-                    }
+            foreach ($result as $sysFile) {
+                if (!empty($sysFile['identifier'])) {
+                    $mappingSysFileAdmiralCloudId[$sysFile['uid']] = $sysFile['identifier'];
                 }
-
-                // Get metadata for current bunch files
-                $metaDataForIdentifiers = $this->getAdmiralCloudService()
-                    ->searchMetaDataForIdentifiers(array_values($mappingSysFileAdmiralCloudId));
-
-                // Update metadata for AdmiralCloud files
-                $this->updateMetadataForAdmiralCloudBunchFiles($mappingSysFileAdmiralCloudId, $metaDataForIdentifiers);
-            } else {
-                $continue = false;
             }
+
+            // Get metadata for current bunch files
+            $metaDataForIdentifiers = $this->admiralCloudService
+                ->searchMetaDataForIdentifiers(array_values($mappingSysFileAdmiralCloudId));
+
+            // Update metadata for AdmiralCloud files
+            $this->updateMetadataForAdmiralCloudBunchFiles($mappingSysFileAdmiralCloudId, $metaDataForIdentifiers);
         }
 
         if ($iteration === static::MAXIMUM_ITERATION) {
             throw new RuntimeException(
-                'Error getting metadata for all AdmiralCloud files. Maximum iteration was reached.'
+                'Error getting metadata for all AdmiralCloud files. Maximum iteration was reached.',
+                1747036629,
             );
         }
     }
@@ -109,60 +100,51 @@ class MetadataService
      *
      * @throws \TYPO3\CMS\Core\Cache\Exception\NoSuchCacheException
      */
-    public function updateLastChangedMetadatas()
+    public function updateLastChangedMetadata(): void
     {
         $offset = 0;
         $iteration = 0;
-        $continue = true;
         $cacheKey = 'lastImportedChangedDate';
+        $now = new \DateTime();
 
-        /** @var FrontendInterface $cache */
-        $cache = GeneralUtility::makeInstance(CacheManager::class)
-            ->getCache(ConfigurationUtility::EXTENSION);
-
-        if ($cache->has($cacheKey)) {
-            preg_match('/\d+/',(string)$cache->get($cacheKey), $m);
-            $lastUpdatedMetaDataDate = \DateTime::createFromFormat('U', $m[0]);
+        if ($this->cache->has($cacheKey)) {
+            preg_match('/\d+/', (string)$this->cache->get($cacheKey), $matches);
+            $lastUpdatedMetaDataDate = \DateTime::createFromFormat('U', $matches[0]);
         } else {
             $lastUpdatedMetaDataDate = new \DateTime(static::DEFAULT_LAST_CHANGED_DATE);
         }
 
-        $now = new \DateTime();
-
-        while ($continue && $iteration < static::MAXIMUM_ITERATION) {
+        while ($iteration < static::MAXIMUM_ITERATION) {
             $iteration++;
 
             // Get metadata from recently updated files in AdmiralCloud
-            $result = $this->getAdmiralCloudService()
-                ->getUpdatedMetaData($lastUpdatedMetaDataDate, $offset, static::ITEMS_LIMIT);
+            $result = $this->admiralCloudService->getUpdatedMetaData($lastUpdatedMetaDataDate, $offset, static::ITEMS_LIMIT);
+
+            if (!$result) {
+                break;
+            }
 
             $offset += static::ITEMS_LIMIT;
-            if ($result) {
-                $mappingSysFileUidAcId = $this->getMappingSysFileAdmiralCloud(array_keys($result));
+            $mappingSysFileUidAcId = $this->getMappingSysFileAdmiralCloud(array_keys($result));
 
-                // Update metadata if some of the changed AdmiralCloud files were imported
-                if ($mappingSysFileUidAcId) {
-                    $this->updateMetadataForAdmiralCloudBunchFiles($mappingSysFileUidAcId, $result);
-                }
-            } else {
-                $continue = false;
+            // Update metadata if some of the changed AdmiralCloud files were imported
+            if ($mappingSysFileUidAcId) {
+                $this->updateMetadataForAdmiralCloudBunchFiles($mappingSysFileUidAcId, $result);
             }
         }
 
-        $cache->set($cacheKey, (string)$now->getTimestamp());
+        $this->cache->set($cacheKey, (string)$now->getTimestamp());
 
         if ($iteration === static::MAXIMUM_ITERATION) {
             throw new RuntimeException(
-                'Error getting metadata for last updated AdmiralCloud files. Maximum iteration was reached.'
+                'Error getting metadata for last updated AdmiralCloud files. Maximum iteration was reached.',
+                1747036724,
             );
         }
     }
 
     /**
      * Update sys_file_metadata with AdmiralCloud information
-     *
-     * @param array $mappingArray
-     * @param array $admiralCloudMetadata
      */
     protected function updateMetadataForAdmiralCloudBunchFiles(array $mappingArray, array $admiralCloudMetadata): void
     {
@@ -177,9 +159,9 @@ class MetadataService
                         'alternative' => $metadata[ConfigurationUtility::getMetaAlternativeField()] ?? '',
                         'title' => $metadata[ConfigurationUtility::getMetaTitleField()] ?? '',
                         'description' => $metadata[ConfigurationUtility::getMetaDescriptionField()] ?? '',
-                        'copyright' => $metadata[ConfigurationUtility::getMetaCopyrightField()] ?? ''
+                        'copyright' => $metadata[ConfigurationUtility::getMetaCopyrightField()] ?? '',
                     ],
-                    ['file' => $sysFileUid]
+                    ['file' => $sysFileUid],
                 );
             }
         }
@@ -187,9 +169,6 @@ class MetadataService
 
     /**
      * Update sys_file_metadata with AdmiralCloud information
-     *
-     * @param int $sysFileUid
-     * @param array $metadata
      */
     public function updateMetadataForAdmiralCloudFile(int $sysFileUid, array $metadata): void
     {
@@ -199,17 +178,14 @@ class MetadataService
                 'alternative' => $metadata[ConfigurationUtility::getMetaAlternativeField()] ?? '',
                 'title' => $metadata[ConfigurationUtility::getMetaTitleField()] ?? '',
                 'description' => $metadata[ConfigurationUtility::getMetaDescriptionField()] ?? '',
-                'copyright' => $metadata[ConfigurationUtility::getMetaCopyrightField()] ?? ''
+                'copyright' => $metadata[ConfigurationUtility::getMetaCopyrightField()] ?? '',
             ],
-            ['file' => $sysFileUid]
+            ['file' => $sysFileUid],
         );
     }
 
     /**
      * Get mapping between sys file and AdmiralCloud items
-     *
-     * @param array $identifiers
-     * @return array
      */
     protected function getMappingSysFileAdmiralCloud(array $identifiers): array
     {
@@ -218,32 +194,18 @@ class MetadataService
         $result = $queryBuilder
             ->select('uid', 'identifier')
             ->from('sys_file')
-            ->where($queryBuilder->expr()->in('identifier', $identifiers))
-            ->execute();
+            ->where(
+                $queryBuilder->expr()->in('identifier', $identifiers),
+            )
+            ->executeQuery()
+        ;
 
         $mapping = [];
 
-        while ($item = $result->fetch(\PDO::FETCH_ASSOC)) {
+        while ($item = $result->fetchAssociative()) {
             $mapping[$item['uid']] = $item['identifier'];
         }
 
         return $mapping;
-    }
-
-
-    /**
-     * @return ConnectionPool
-     */
-    protected function getConnectionPool(): ConnectionPool
-    {
-        return GeneralUtility::makeInstance(ConnectionPool::class);
-    }
-
-    /**
-     * @return AdmiralCloudService
-     */
-    protected function getAdmiralCloudService(): AdmiralCloudService
-    {
-        return GeneralUtility::makeInstance(AdmiralCloudService::class);
     }
 }
