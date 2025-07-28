@@ -17,12 +17,12 @@ declare(strict_types=1);
 
 namespace CPSIT\AdmiralCloudConnector\Utility;
 
+use Psr\Http\Message\ServerRequestInterface;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Database\Connection;
 use TYPO3\CMS\Core\Database\ConnectionPool;
-use TYPO3\CMS\Core\Domain\Repository\PageRepository;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
-use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
+use TYPO3\CMS\Frontend\Page\PageInformation;
 
 final readonly class PermissionUtility
 {
@@ -39,14 +39,14 @@ final readonly class PermissionUtility
      */
     public static function getPageFeGroup(): string
     {
-        $pageRepository = GeneralUtility::makeInstance(PageRepository::class);
-        $tsfe = self::getTypoScriptFrontendController();
+        $serverRequest = self::getServerRequest();
+        $pageInformation = $serverRequest?->getAttribute('frontend.page.information');
 
-        if ($tsfe === null) {
+        if (!($pageInformation instanceof PageInformation)) {
             return '';
         }
 
-        $page = $pageRepository->getPage($tsfe->id);
+        $page = $pageInformation->getPageRecord();
         $feGroup = (string)($page['fe_group'] ?? '');
 
         if ($feGroup === '-1') {
@@ -96,8 +96,8 @@ final readonly class PermissionUtility
         return $GLOBALS['BE_USER'] ?? null;
     }
 
-    private static function getTypoScriptFrontendController(): ?TypoScriptFrontendController
+    private static function getServerRequest(): ?ServerRequestInterface
     {
-        return $GLOBALS['TSFE'] ?? null;
+        return $GLOBALS['TYPO3_REQUEST'] ?? null;
     }
 }
