@@ -18,7 +18,7 @@ declare(strict_types=1);
 namespace CPSIT\AdmiralCloudConnector\Controller\Backend;
 
 use Psr\Http\Message\ServerRequestInterface;
-use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
+use Symfony\Component\DependencyInjection\Attribute\AsAlias;
 use TYPO3\CMS\Core\Configuration\Richtext;
 use TYPO3\CMS\Core\LinkHandling\LinkService;
 use TYPO3\CMS\Core\Localization\LanguageService;
@@ -27,7 +27,7 @@ use TYPO3\CMS\Core\Page\JavaScriptModuleInstruction;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\View\ViewInterface;
 
-#[Autoconfigure(public: true, shared: false)]
+#[AsAlias(\TYPO3\CMS\RteCKEditor\Controller\BrowseLinksController::class, public: true)]
 class BrowseLinksController extends AbstractLinkBrowserController
 {
     protected string $editorId;
