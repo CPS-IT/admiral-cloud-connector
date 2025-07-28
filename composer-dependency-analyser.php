@@ -27,6 +27,12 @@ $configuration
         ],
         [ErrorType::UNUSED_DEPENDENCY],
     )
+    ->ignoreErrorsOnPackages(
+        [
+            'typo3/cms-rte-ckeditor',
+        ],
+        [ErrorType::DEV_DEPENDENCY_IN_PROD],
+    )
 ;
 
 return $configuration;
