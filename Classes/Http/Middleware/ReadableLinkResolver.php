@@ -25,6 +25,7 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use TYPO3\CMS\Core\Http\HtmlResponse;
 use TYPO3\CMS\Core\Http\RedirectResponse;
+use TYPO3\CMS\Core\Resource\FileInterface;
 use TYPO3\CMS\Core\View\ViewFactoryData;
 use TYPO3\CMS\Core\View\ViewFactoryInterface;
 
@@ -47,6 +48,7 @@ readonly class ReadableLinkResolver implements MiddlewareInterface
 
             if (isset($matches[1], $matches[2])) {
                 $url = $this->admiralCloudService->getDirectPublicUrlForHash($matches[1]);
+                /** @var FileInterface|null $file */
                 $file = $this->admiralCloudService->getStorage()->getFile($matches[2]);
 
                 if ($file) {

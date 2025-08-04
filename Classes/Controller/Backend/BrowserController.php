@@ -18,6 +18,7 @@ declare(strict_types=1);
 namespace CPSIT\AdmiralCloudConnector\Controller\Backend;
 
 use CPSIT\AdmiralCloudConnector\Api\Oauth\Credentials;
+use CPSIT\AdmiralCloudConnector\Resource\File;
 use CPSIT\AdmiralCloudConnector\Resource\Index\FileIndexRepository;
 use CPSIT\AdmiralCloudConnector\Service\AdmiralCloudService;
 use CPSIT\AdmiralCloudConnector\Service\MetadataService;
@@ -34,10 +35,21 @@ use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Http\JsonResponse;
 use TYPO3\CMS\Core\Http\NormalizedParams;
-use TYPO3\CMS\Core\Resource\File;
+use TYPO3\CMS\Core\Resource\AbstractFile;
 use TYPO3\CMS\Core\Resource\FileInterface;
 use TYPO3\CMS\Core\Resource\StorageRepository;
 
+/**
+ * BrowserController
+ *
+ * @author Elias Häußler <elias@haeussler.dev>
+ * @license GPL-2.0-or-later
+ *
+ * @phpstan-type MediaPayload array{
+ *     mediaContainer: array<string, mixed>,
+ *     cropperData: array<string, mixed>,
+ * }
+ */
 #[AsController]
 class BrowserController
 {
@@ -192,7 +204,9 @@ class BrowserController
      */
     public function getFilesAction(ServerRequestInterface $request): ResponseInterface
     {
-        $media = $request->getParsedBody()['media'];
+        /** @var array{media: MediaPayload} $parsedBody */
+        $parsedBody = $request->getParsedBody();
+        $media = $parsedBody['media'];
 
         try {
             $files = [];
@@ -257,7 +271,9 @@ class BrowserController
      */
     public function getMediaPublicUrlAction(ServerRequestInterface $request): ResponseInterface
     {
-        $media = $request->getParsedBody()['media'];
+        /** @var array{media: MediaPayload} $parsedBody */
+        $parsedBody = $request->getParsedBody();
+        $media = $parsedBody['media'];
 
         try {
             $mediaContainer = $media['mediaContainer'];
@@ -270,6 +286,7 @@ class BrowserController
             );
 
             $this->admiralCloudService->addMediaByIdHashAndType($mediaContainer['id'], $linkHash, $mediaContainer['type']);
+            /** @var AbstractFile $file */
             $file = $this->getAdmiralCloudStorage()->getFile($mediaContainer['id']);
 
             return $this->createJsonResponse(
@@ -299,16 +316,18 @@ class BrowserController
      */
     public function cropFileAction(ServerRequestInterface $request): ResponseInterface
     {
-        $media = $request->getParsedBody()['media'];
-        $target = $request->getParsedBody()['target'];
+        /** @var array{media: MediaPayload, target: string} $parsedBody */
+        $parsedBody = $request->getParsedBody();
+        $media = $parsedBody['media'];
+        $target = $parsedBody['target'];
         $cropperData = $media['cropperData'];
         unset($cropperData['smartCropperUrl'], $cropperData['smartCropperUrlAOI']);
-        $cropperData = json_encode($cropperData);
+        $cropperData = json_encode($cropperData) ?: null;
 
         try {
             $storage = $this->getAdmiralCloudStorage();
             $mediaContainer = $media['mediaContainer'];
-            /** @var \CPSIT\AdmiralCloudConnector\Resource\File $file */
+            /** @var File $file */
             $file = $storage->getFile($mediaContainer['id']);
             $file->setTxAdmiralCloudConnectorCrop($cropperData);
             $link = $this->admiralCloudService->getImagePublicUrl($file, maxHeight: 150);
@@ -342,7 +361,7 @@ class BrowserController
      */
     protected function storeInSessionCropInformation(FileInterface $file, array $media): void
     {
-        if (!empty($media['cropperData'])) {
+        if (!empty($media['cropperData']) && $file instanceof AbstractFile) {
             $cropperData = $media['cropperData'];
             unset($cropperData['smartCropperUrl'], $cropperData['smartCropperUrlAOI']);
 

@@ -64,7 +64,7 @@ final readonly class PermissionUtility
         $content = self::getContent($uid);
 
         if ($content) {
-            $feGroup = (string)($content['fe_group'] ?? '');
+            $feGroup = $content['fe_group'];
 
             if ($feGroup === '-1') {
                 return '';
@@ -76,11 +76,15 @@ final readonly class PermissionUtility
         return '';
     }
 
-    public static function getContent(int $uid)
+    /**
+     * @return array{fe_group: string}|false
+     */
+    public static function getContent(int $uid): array|false
     {
         $queryBuilder = GeneralUtility::makeInstance(ConnectionPool::class)->getQueryBuilderForTable('tt_content');
 
-        return $queryBuilder
+        /** @var array{fe_group: string}|false $result */
+        $result = $queryBuilder
             ->select('fe_group')
             ->from('tt_content')
             ->where(
@@ -89,6 +93,8 @@ final readonly class PermissionUtility
             ->executeQuery()
             ->fetchAssociative()
         ;
+
+        return $result;
     }
 
     private static function getBackendUser(): ?BackendUserAuthentication

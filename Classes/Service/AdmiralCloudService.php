@@ -29,6 +29,7 @@ use CPSIT\AdmiralCloudConnector\Utility\ConfigurationUtility;
 use CPSIT\AdmiralCloudConnector\Utility\ImageUtility;
 use CPSIT\AdmiralCloudConnector\Utility\PermissionUtility;
 use Psr\Log\LoggerInterface;
+use TYPO3\CMS\Core\Resource\AbstractFile;
 use TYPO3\CMS\Core\Resource\FileInterface;
 use TYPO3\CMS\Core\Resource\FileReference;
 use TYPO3\CMS\Core\Resource\FileType;
@@ -396,7 +397,7 @@ class AdmiralCloudService implements SingletonInterface
     /**
      * Get public url for AdmiralCloud video
      */
-    public function getVideoPublicUrl(FileInterface $file): string
+    public function getVideoPublicUrl(File $file): string
     {
         return $this->getDirectPublicUrlForMedia($file);
     }
@@ -404,7 +405,7 @@ class AdmiralCloudService implements SingletonInterface
     /**
      * Get public url for AdmiralCloud audio
      */
-    public function getAudioPublicUrl(FileInterface $file): string
+    public function getAudioPublicUrl(File $file): string
     {
         return $this->getDirectPublicUrlForMedia($file);
     }
@@ -412,7 +413,7 @@ class AdmiralCloudService implements SingletonInterface
     /**
      * Get public url for AdmiralCloud document
      */
-    public function getDocumentPublicUrl(FileInterface $file): string
+    public function getDocumentPublicUrl(File $file): string
     {
         return $this->getDirectPublicUrlForFile($file);
     }
@@ -420,13 +421,15 @@ class AdmiralCloudService implements SingletonInterface
     /**
      * Get public url for AdmiralCloud player
      */
-    public function getPlayerPublicUrl(FileInterface $file, string $fe_group = ''): string
+    public function getPlayerPublicUrl(File $file, string $fe_group = ''): string
     {
         return $this->getPlayerPublicUrlForFile($file, $fe_group);
     }
 
     /**
      * Get public url for admiral cloud image
+     *
+     * @return non-empty-string
      */
     public function getImagePublicUrl(
         FileInterface $file,
@@ -441,8 +444,13 @@ class AdmiralCloudService implements SingletonInterface
         if ($file instanceof FileReference) {
             $crop = $file->getProperty('tx_admiralcloudconnector_crop');
             $file = $file->getOriginalFile();
-            $file->setTxAdmiralCloudConnectorCrop($crop);
+
+            if ($file instanceof File) {
+                $file->setTxAdmiralCloudConnectorCrop($crop);
+            }
         }
+
+        \assert($file instanceof File);
 
         // Get width and height with the correct ratio
         $dimensions = ImageUtility::calculateDimensions(
@@ -476,7 +484,7 @@ class AdmiralCloudService implements SingletonInterface
         // Get image public url
         if (!$isSvgMimeType && $file->getTxAdmiralCloudConnectorCrop()) {
             // With crop information
-            $cropData = json_decode((string)$file->getTxAdmiralCloudConnectorCrop()) or $cropData = json_decode('{"usePNG": "false"}');
+            $cropData = json_decode($file->getTxAdmiralCloudConnectorCrop()) or $cropData = json_decode('{"usePNG": "false"}');
 
             if (property_exists($cropData, 'usePNG') && $cropData->usePNG === 'true') {
                 $imageOutputFormat = 'png';
@@ -528,12 +536,8 @@ class AdmiralCloudService implements SingletonInterface
     /**
      * Get public url for file thumbnail
      */
-    public function getThumbnailUrl(FileInterface $file): string
+    public function getThumbnailUrl(File $file): string
     {
-        if ($file instanceof FileReference) {
-            $file = $file->getOriginalFile();
-        }
-
         return \sprintf(
             '%sv5/deliverEmbed/%s/image/144',
             ConfigurationUtility::getThumbnailUrl(),
@@ -641,7 +645,7 @@ class AdmiralCloudService implements SingletonInterface
     /**
      * Get direct public url for given file
      */
-    public function getDirectPublicUrlForFile(FileInterface $file): string
+    public function getDirectPublicUrlForFile(File $file): string
     {
         $credentials = new Credentials();
         $enableAcReadableLinks = $GLOBALS['TYPO3_REQUEST']->getAttribute('frontend.typoscript')->getSetupArray()['config.']['enableAcReadableLinks'] ?? false;
@@ -676,7 +680,7 @@ class AdmiralCloudService implements SingletonInterface
     /**
      * Get direct public url for given media file
      */
-    protected function getDirectPublicUrlForMedia(FileInterface $file, bool $download = false): string
+    protected function getDirectPublicUrlForMedia(File $file, bool $download = false): string
     {
         if (($GLOBALS['admiralcloud']['fe_group'][$file->getIdentifier()] ?? null) || PermissionUtility::getPageFeGroup()) {
             $mediaType = $this->getMediaType($file->getProperty('type'));
@@ -713,7 +717,7 @@ class AdmiralCloudService implements SingletonInterface
     /**
      * Get player public url for given file
      */
-    protected function getPlayerPublicUrlForFile(FileInterface $file, string $fe_group): string
+    protected function getPlayerPublicUrlForFile(File $file, string $fe_group): string
     {
         if ($fe_group) {
             $token = $this->getSecuredToken($file, $this->getMediaType($file->getProperty('type')), 'player');
@@ -734,7 +738,7 @@ class AdmiralCloudService implements SingletonInterface
     /**
      * @return array{hash: string, token: string}|null
      */
-    protected function getSecuredToken(FileInterface $file, string $linkType, string $extAuthType): ?array
+    protected function getSecuredToken(File $file, string $linkType, string $extAuthType): ?array
     {
         $searchData = $this->getSearch([
             'from' => 0,
@@ -835,7 +839,11 @@ class AdmiralCloudService implements SingletonInterface
                 $indexer->extractMetaData($file);
             }
 
-            return $file->getUid();
+            if ($file instanceof AbstractFile) {
+                return $file->getUid();
+            }
+
+            return false;
         } catch (\Exception $exception) {
             $this->logger->error('Error adding file from AdmiralCloud.', ['exception' => $exception]);
         }

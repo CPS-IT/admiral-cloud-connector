@@ -70,10 +70,13 @@ class AdmiralCloudApi
             RequestOptions::HEADERS => [
                 'Content-Type' => 'application/json',
                 'X-Admiralcloud-Accesskey' => $credentials->getAccessKey(),
-                'X-Admiralcloud-Rts' => $signedValues['timestamp'],
-                'X-Admiralcloud-Hash' => $signedValues['hash'],
             ],
         ];
+
+        if (\is_array($signedValues)) {
+            $requestOptions['X-Admiralcloud-Rts'] = $signedValues['timestamp'];
+            $requestOptions['X-Admiralcloud-Hash'] = $signedValues['hash'];
+        }
 
         if ($method === 'POST') {
             $requestOptions[RequestOptions::JSON] = $params['payload'];
@@ -135,26 +138,27 @@ class AdmiralCloudApi
                 'poc' => true,
             ],
         ];
-        $signedValues = self::acSignatureSign($params);
 
+        $signedValues = self::acSignatureSign($params);
         $loginUrl = ConfigurationUtility::getAuthUrl() . 'v4/login/app?poc=true';
 
         try {
-            $response = $requestFactory->request(
-                $loginUrl,
-                'POST',
-                [
-                    RequestOptions::HEADERS => [
-                        'X-Admiralcloud-Accesskey' => $credentials->getAccessKey(),
-                        'X-Admiralcloud-Rts' => $signedValues['timestamp'],
-                        'X-Admiralcloud-Hash' => $signedValues['hash'],
-                        'X-Admiralcloud-Debugsignature' => '1',
-                        'X-Admiralcloud-Clientid' => $credentials->getClientId(),
-                        'X-Admiralcloud-Device' => $device,
-                    ],
-                    RequestOptions::JSON => $params['payload'],
+            $requestOptions = [
+                RequestOptions::HEADERS => [
+                    'X-Admiralcloud-Accesskey' => $credentials->getAccessKey(),
+                    'X-Admiralcloud-Debugsignature' => '1',
+                    'X-Admiralcloud-Clientid' => $credentials->getClientId(),
+                    'X-Admiralcloud-Device' => $device,
                 ],
-            );
+                RequestOptions::JSON => $params['payload'],
+            ];
+
+            if (\is_array($signedValues)) {
+                $requestOptions['X-Admiralcloud-Rts'] = $signedValues['timestamp'];
+                $requestOptions['X-Admiralcloud-Hash'] = $signedValues['hash'];
+            }
+
+            $response = $requestFactory->request($loginUrl, 'POST', $requestOptions);
 
             $content = $response->getBody()->getContents();
             $statusCode = $response->getStatusCode();
@@ -219,7 +223,7 @@ class AdmiralCloudApi
 
         if ($content && !$code) {
             $logger = GeneralUtility::makeInstance(LogManager::class)->getLogger(self::class);
-            $logger->error('Error decoding JSON from auth response. JSON: ' . $response);
+            $logger->error('Error decoding JSON from auth response. JSON: ' . $content);
 
             throw new RuntimeException('Error decoding JSON from auth response.', 1744626760);
         }
@@ -271,10 +275,12 @@ class AdmiralCloudApi
         ];
     }
 
-    public static function getSecurityGroup()
+    public static function getSecurityGroup(): string
     {
-        if (isset($GLOBALS['BE_USER']->user['security_group']) && $GLOBALS['BE_USER']->user['security_group']) {
-            return $GLOBALS['BE_USER']->user['security_group'];
+        $securityGroup = $GLOBALS['BE_USER']->user['security_group'] ?? null;
+
+        if (is_string($securityGroup) && trim($securityGroup) !== '') {
+            return $securityGroup;
         }
 
         $groups = array_map(
@@ -408,7 +414,7 @@ class AdmiralCloudApi
         }
     }
 
-    protected static function validateSettings($credentials): bool
+    protected static function validateSettings(Credentials $credentials): bool
     {
         return $credentials->getAccessKey() && $credentials->getAccessSecret() && $credentials->getClientId();
     }

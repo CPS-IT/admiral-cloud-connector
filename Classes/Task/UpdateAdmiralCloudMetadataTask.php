@@ -52,9 +52,15 @@ class UpdateAdmiralCloudMetadataTask extends AbstractTask
      */
     public function getAdditionalInformation(): string
     {
+        $languageService = $this->getLanguageService();
+
+        if ($languageService === null) {
+            return '';
+        }
+
         return sprintf(
-            $this->getLanguageService()->sL('LLL:EXT:admiral_cloud_connector/Resources/Private/Language/locallang_be.xlf:task.update_admiral_cloud_metadata.additionalInformation'),
-            $this->getLanguageService()->sL('LLL:EXT:admiral_cloud_connector/Resources/Private/Language/locallang_be.xlf:task.update_admiral_cloud_metadata.actionType.' . $this->actionType),
+            $languageService->sL('LLL:EXT:admiral_cloud_connector/Resources/Private/Language/locallang_be.xlf:task.update_admiral_cloud_metadata.additionalInformation'),
+            $languageService->sL('LLL:EXT:admiral_cloud_connector/Resources/Private/Language/locallang_be.xlf:task.update_admiral_cloud_metadata.actionType.' . $this->actionType),
         );
     }
 }

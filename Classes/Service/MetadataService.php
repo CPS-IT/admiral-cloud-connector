@@ -107,9 +107,10 @@ class MetadataService
         $cacheKey = 'lastImportedChangedDate';
         $now = new \DateTime();
 
-        if ($this->cache->has($cacheKey)) {
-            preg_match('/\d+/', (string)$this->cache->get($cacheKey), $matches);
-            $lastUpdatedMetaDataDate = \DateTime::createFromFormat('U', $matches[0]);
+        if ($this->cache->has($cacheKey)
+            && preg_match('/\d+/', (string)$this->cache->get($cacheKey), $matches) === 1
+        ) {
+            $lastUpdatedMetaDataDate = new \DateTime('@' . $matches[0]);
         } else {
             $lastUpdatedMetaDataDate = new \DateTime(static::DEFAULT_LAST_CHANGED_DATE);
         }

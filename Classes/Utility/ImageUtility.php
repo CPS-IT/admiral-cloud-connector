@@ -96,7 +96,7 @@ final readonly class ImageUtility
     private static function getFileHeightWithCropInformation(FileInterface $file): int
     {
         $crop = self::getCropInformation($file);
-        $fileHeight = (int)$crop?->cropData->height;
+        $fileHeight = (int)($crop->cropData->height ?? 0);
 
         if (empty($fileHeight)) {
             $fileHeight = (int)$file->getProperty('height');

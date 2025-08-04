@@ -45,7 +45,7 @@ class Asset
         self::TYPE_AUDIO => ['audio'],
     ];
 
-    protected ?string $type = null;
+    protected string $type = '';
     protected ?File $file = null;
 
     /**
@@ -105,11 +105,9 @@ class Asset
      */
     public function getAssetType(): string
     {
-        if (isset($this->type)) {
+        if ($this->type !== '') {
             return $this->type;
         }
-
-        $this->type = '';
 
         $file = $this->getFileIndexRepository()->findOneByStorageAndIdentifier(
             $this->getAdmiralCloudStorage(),
@@ -117,7 +115,7 @@ class Asset
         );
 
         if ($file) {
-            $mimeType = str_replace('admiralCloud/', '', $file['mime_type']);
+            $mimeType = str_replace('admiralCloud/', '', $file['mime_type'] ?? '');
             [$fileType] = explode('/', $mimeType, 2);
 
             // Map mime type with asset type
@@ -133,7 +131,13 @@ class Asset
 
     public function getThumbnail(int $storageUid = 0): ?string
     {
-        return $this->getAdmiralCloudService()->getThumbnailUrl($this->getFile($storageUid));
+        $file = $this->getFile($storageUid);
+
+        if ($file === null) {
+            return null;
+        }
+
+        return $this->getAdmiralCloudService()->getThumbnailUrl($file);
     }
 
     /**

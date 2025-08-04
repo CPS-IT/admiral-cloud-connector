@@ -8,5 +8,6 @@
 /docker-compose.yaml export-ignore
 /ext_emconf.php export-ignore
 /packaging_exclude.php export-ignore
+/phpstan.neon export-ignore
 /rector.php export-ignore
 /version-bumper.yaml export-ignore

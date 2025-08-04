@@ -80,26 +80,31 @@ class AdmiralCloudDriver implements DriverInterface
 
     public function hashIdentifier(string $identifier): string
     {
+        /* @phpstan-ignore return.type */
         return $this->hash($identifier, 'sha1');
     }
 
     public function getRootLevelFolder(): string
     {
+        /* @phpstan-ignore return.type */
         return $this->rootFolder;
     }
 
     public function getDefaultFolder(): string
     {
+        /* @phpstan-ignore return.type */
         return $this->rootFolder;
     }
 
     public function getParentFolderIdentifierOfIdentifier(string $fileIdentifier): string
     {
+        /* @phpstan-ignore return.type */
         return $this->rootFolder;
     }
 
     public function getPublicUrl(string $identifier): ?string
     {
+        /* @phpstan-ignore return.type */
         return $this->getAsset($identifier)->getPublicUrl($this->storageUid);
     }
 
@@ -218,6 +223,7 @@ class AdmiralCloudDriver implements DriverInterface
 
     public function getFileForLocalProcessing(string $fileIdentifier, bool $writable = true): string
     {
+        /* @phpstan-ignore return.type */
         return $this->getAsset($fileIdentifier)->getLocalThumbnail($this->storageUid);
     }
 
@@ -257,6 +263,7 @@ class AdmiralCloudDriver implements DriverInterface
 
     public function getFileInFolder(string $fileName, string $folderIdentifier): string
     {
+        /* @phpstan-ignore return.type */
         return '';
     }
 
@@ -274,6 +281,7 @@ class AdmiralCloudDriver implements DriverInterface
 
     public function getFolderInFolder(string $folderName, string $folderIdentifier): string
     {
+        /* @phpstan-ignore return.type */
         return '';
     }
 
