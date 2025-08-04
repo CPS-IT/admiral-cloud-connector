@@ -60,7 +60,7 @@ class File extends \TYPO3\CMS\Core\Resource\File
     {
         $cropArray = json_decode($this->getTxAdmiralCloudConnectorCrop(), true);
 
-        if (!$cropArray) {
+        if (!$cropArray || !is_array($cropArray['cropData'] ?? null) || !is_array($cropArray['focusPoint'] ?? null)) {
             return '';
         }
 

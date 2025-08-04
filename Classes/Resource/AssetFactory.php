@@ -44,9 +44,6 @@ class AssetFactory implements SingletonInterface
         return isset(static::$instances[$identifier]);
     }
 
-    /**
-     * @throws InvalidAssetException
-     */
     public static function create(string $identifier): Asset
     {
         return GeneralUtility::makeInstance(Asset::class, $identifier);

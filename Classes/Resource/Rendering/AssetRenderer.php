@@ -120,10 +120,10 @@ class AssetRenderer implements FileRendererInterface
         );
 
         if ((int)$width > 0) {
-            $tag->addAttribute('width', !empty($width) ? $width : null);
+            $tag->addAttribute('width', (string)(int)$width);
         }
         if ((int)$height > 0) {
-            $tag->addAttribute('height', !empty($height) ? $height : null);
+            $tag->addAttribute('height', (string)(int)$height);
         }
 
         // The alt-attribute is mandatory to have valid html-code, therefore add it even if it is empty
@@ -137,8 +137,12 @@ class AssetRenderer implements FileRendererInterface
         return $tag->render();
     }
 
-    protected function getPlayerHtml(FileInterface $file, int|string $width, int|string $height, array $options = []): string
-    {
+    protected function getPlayerHtml(
+        FileInterface $file,
+        int|float|string $width,
+        int|float|string $height,
+        array $options = [],
+    ): string {
         if (is_callable([$file, 'getOriginalFile'])) {
             $originalFile = $file->getOriginalFile();
         } else {
@@ -163,11 +167,11 @@ class AssetRenderer implements FileRendererInterface
         $tag->forceClosingTag(true);
 
         if ((int)$width > 0) {
-            $tag->addAttribute('width', !empty($width) ? $width : null);
+            $tag->addAttribute('width', (string)(int)$width);
         }
 
         if ((int)$height > 0) {
-            $tag->addAttribute('height', !empty($height) ? $height : null);
+            $tag->addAttribute('height', (string)(int)$height);
         }
 
         if ($tag->hasAttribute('title') === false) {

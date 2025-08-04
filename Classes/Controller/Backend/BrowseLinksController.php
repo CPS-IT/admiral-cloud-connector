@@ -100,7 +100,7 @@ class BrowseLinksController extends AbstractLinkBrowserController
 
         $queryParameters = $request->getQueryParams();
 
-        $this->siteUrl = $request->getAttribute('normalizedParams')->getSiteUrl();
+        $this->siteUrl = $request->getAttribute('normalizedParams')?->getSiteUrl() ?? '';
         $this->currentLinkParts = $queryParameters['P']['curUrl'] ?? [];
         $this->editorId = $queryParameters['editorId'];
         $this->contentsLanguage = $queryParameters['contentsLanguage'];
@@ -215,7 +215,6 @@ class BrowseLinksController extends AbstractLinkBrowserController
                     || (
                         in_array($class, $classesAnchor['all'], true)
                         && isset($classesAnchor[$this->displayedLinkHandlerId])
-                        && is_array($classesAnchor[$this->displayedLinkHandlerId])
                         && in_array($class, $classesAnchor[$this->displayedLinkHandlerId], true)
                     )
                 ) {
@@ -373,7 +372,6 @@ class BrowseLinksController extends AbstractLinkBrowserController
         if ($this->displayedLinkHandler === $this->currentLinkHandler
             && !empty($this->currentLinkParts)
             && isset($this->linkAttributeValues['rel'])
-            && is_string($this->linkAttributeValues['rel'])
         ) {
             $currentRel = $this->linkAttributeValues['rel'];
         }

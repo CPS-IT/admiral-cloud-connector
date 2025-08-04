@@ -26,6 +26,9 @@
 		"armin/editorconfig-cli": "^2.1",
 		"eliashaeussler/version-bumper": "^2.3",
 		"ergebnis/composer-normalize": "^2.46",
+		"phpstan/extension-installer": "^1.4",
+		"phpstan/phpstan": "^2.1",
+		"saschaegerer/phpstan-typo3": "^2.1",
 		"shipmonk/composer-dependency-analyser": "^1.8",
 		"ssch/typo3-rector": "^3.1",
 		"typo3/cms-rte-ckeditor": "^13.4",
@@ -40,6 +43,7 @@
 		"allow-plugins": {
 			"eliashaeussler/version-bumper": true,
 			"ergebnis/composer-normalize": true,
+			"phpstan/extension-installer": true,
 			"typo3/class-alias-loader": true,
 			"typo3/cms-composer-installers": true
 		},
@@ -82,6 +86,10 @@
 		"migration": [
 			"@migration:rector"
 		],
-		"migration:rector": "rector process"
+		"migration:rector": "rector process",
+		"sca": [
+			"@sca:php"
+		],
+		"sca:php": "phpstan analyse -c phpstan.neon"
 	}
 }

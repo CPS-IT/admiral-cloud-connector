@@ -76,7 +76,7 @@ abstract class AbstractLinkBrowserController extends \TYPO3\CMS\Backend\Controll
             $this->renderCurrentUrl($view);
         }
 
-        if (method_exists($this->displayedLinkHandler, 'setView')) {
+        if ($this->displayedLinkHandler !== null && method_exists($this->displayedLinkHandler, 'setView')) {
             $this->displayedLinkHandler->setView($view);
         }
 
@@ -87,7 +87,7 @@ abstract class AbstractLinkBrowserController extends \TYPO3\CMS\Backend\Controll
             'contentOnly' => $request->getQueryParams()['contentOnly'] ?? false,
         ]);
 
-        $content = $this->displayedLinkHandler->render($request);
+        $content = $this->displayedLinkHandler?->render($request);
 
         if (empty($content)) {
             // @todo: b/w compat layer for link handler that don't render full view but return empty

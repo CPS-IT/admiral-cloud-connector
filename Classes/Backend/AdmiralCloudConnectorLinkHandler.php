@@ -28,6 +28,7 @@ use TYPO3\CMS\Core\LinkHandling\LinkService;
 use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\CMS\Core\Page\PageRenderer;
 use TYPO3\CMS\Core\Resource\File;
+use TYPO3\CMS\Core\Resource\FileInterface;
 use TYPO3\CMS\Core\View\ViewInterface;
 
 #[Autoconfigure(public: true)]
@@ -36,6 +37,10 @@ class AdmiralCloudConnectorLinkHandler implements LinkHandlerInterface
     protected ViewInterface $view;
 
     protected array $linkParts = [];
+
+    /**
+     * @var class-string<FileInterface>
+     */
     protected string $expectedClass = File::class;
     protected string $mode = 'file';
 
@@ -57,7 +62,8 @@ class AdmiralCloudConnectorLinkHandler implements LinkHandlerInterface
             return false;
         }
 
-        if (is_a($linkParts['url'][$this->mode] ?? null, $this->expectedClass, true)
+        if (\is_object($linkParts['url'][$this->mode] ?? null)
+            && is_a($linkParts['url'][$this->mode], $this->expectedClass, true)
             && str_starts_with($linkParts['url'][$this->mode]->getMimeType(), 'admiralCloud/')
         ) {
             $this->linkParts = $linkParts;

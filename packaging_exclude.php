@@ -37,6 +37,7 @@ return [
         'gitignore',
         'packaging_exclude.php',
         'php-cs-fixer.php',
+        'phpstan.neon',
         'rector.php',
         'version-bumper.yaml',
     ],

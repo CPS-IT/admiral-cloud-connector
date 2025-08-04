@@ -25,6 +25,9 @@ use TYPO3\CMS\Scheduler\Task\AbstractTask;
 
 class UpdateAdmiralCloudMetadataAdditionalFieldProvider extends AbstractAdditionalFieldProvider
 {
+    /**
+     * @param UpdateAdmiralCloudMetadataTask|null $task
+     */
     public function getAdditionalFields(array &$taskInfo, $task, SchedulerModuleController $schedulerModule): array
     {
         $currentSchedulerModuleAction = $schedulerModule->getCurrentAction();
@@ -36,7 +39,7 @@ class UpdateAdmiralCloudMetadataAdditionalFieldProvider extends AbstractAddition
             if ($currentSchedulerModuleAction === SchedulerManagementAction::ADD) {
                 $taskInfo['scheduler_updateAdmiralCloudMetadata_actionType'][0] = UpdateAdmiralCloudMetadataTask::ACTION_TYPE_UPDATE_LAST_CHANGED;
             } elseif ($currentSchedulerModuleAction === SchedulerManagementAction::EDIT) {
-                $taskInfo['scheduler_updateAdmiralCloudMetadata_actionType'][0] = $task->actionType;
+                $taskInfo['scheduler_updateAdmiralCloudMetadata_actionType'][0] = $task?->actionType;
             }
         }
 
