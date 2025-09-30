@@ -49,6 +49,7 @@ class AdmiralCloudApi
 
     public static function create(array $settings, string $method = 'POST'): self
     {
+        $logger = GeneralUtility::makeInstance(LogManager::class)->getLogger(self::class);
         $credentials = new Credentials();
         $method = strtoupper($method);
 
@@ -66,17 +67,26 @@ class AdmiralCloudApi
         $signedValues = self::acSignatureSign($params);
         $routeUrl = ConfigurationUtility::getApiUrl() . 'v5/' . $settings['route'];
 
+        if (!\is_array($signedValues)) {
+            $logger->error(
+                'Error while trying to sign request parameters for AdmiralCloud route process: {error}',
+                [
+                    'url' => $routeUrl,
+                    'error' => $signedValues,
+                ],
+            );
+
+            throw new RuntimeException('Error while trying to sign request parameters for AdmiralCloud route process: ' . $signedValues, 1758782772);
+        }
+
         $requestOptions = [
             RequestOptions::HEADERS => [
                 'Content-Type' => 'application/json',
                 'X-Admiralcloud-Accesskey' => $credentials->getAccessKey(),
+                'X-Admiralcloud-Rts' => $signedValues['timestamp'],
+                'X-Admiralcloud-Hash' => $signedValues['hash'],
             ],
         ];
-
-        if (\is_array($signedValues)) {
-            $requestOptions['X-Admiralcloud-Rts'] = $signedValues['timestamp'];
-            $requestOptions['X-Admiralcloud-Hash'] = $signedValues['hash'];
-        }
 
         if ($method === 'POST') {
             $requestOptions[RequestOptions::JSON] = $params['payload'];
@@ -90,7 +100,6 @@ class AdmiralCloudApi
             $isFailedSearch = ($settings['action'] ?? null) === 'search' && $content === '{"message":"error_search_search_failed"}';
 
             if ($statusCode >= 400 && !$isFailedSearch) {
-                $logger = GeneralUtility::makeInstance(LogManager::class)->getLogger(self::class);
                 $logger->error(
                     'Error in AdmiralCloud route process. URL: {url}. HTTP code: {httpCode}. Error message: {error}',
                     [
@@ -114,6 +123,7 @@ class AdmiralCloudApi
      */
     public static function auth(array $settings): string
     {
+        $logger = GeneralUtility::makeInstance(LogManager::class)->getLogger(self::class);
         $requestFactory = GeneralUtility::makeInstance(RequestFactory::class);
         $credentials = new Credentials();
         $device = $settings['device'] ?? md5((string)$GLOBALS['BE_USER']->user['uid']);
@@ -142,29 +152,35 @@ class AdmiralCloudApi
         $signedValues = self::acSignatureSign($params);
         $loginUrl = ConfigurationUtility::getAuthUrl() . 'v4/login/app?poc=true';
 
+        if (!\is_array($signedValues)) {
+            $logger->error(
+                'Error while trying to sign request parameters for AdmiralCloud login process: {error}',
+                [
+                    'url' => $loginUrl,
+                    'error' => $signedValues,
+                ],
+            );
+
+            throw new RuntimeException('Error while trying to sign request parameters for AdmiralCloud login process: ' . $signedValues, 1758782635);
+        }
+
         try {
-            $requestOptions = [
+            $response = $requestFactory->request($loginUrl, 'POST', [
                 RequestOptions::HEADERS => [
                     'X-Admiralcloud-Accesskey' => $credentials->getAccessKey(),
                     'X-Admiralcloud-Debugsignature' => '1',
                     'X-Admiralcloud-Clientid' => $credentials->getClientId(),
                     'X-Admiralcloud-Device' => $device,
+                    'X-Admiralcloud-Rts' => $signedValues['timestamp'],
+                    'X-Admiralcloud-Hash' => $signedValues['hash'],
                 ],
                 RequestOptions::JSON => $params['payload'],
-            ];
-
-            if (\is_array($signedValues)) {
-                $requestOptions['X-Admiralcloud-Rts'] = $signedValues['timestamp'];
-                $requestOptions['X-Admiralcloud-Hash'] = $signedValues['hash'];
-            }
-
-            $response = $requestFactory->request($loginUrl, 'POST', $requestOptions);
+            ]);
 
             $content = $response->getBody()->getContents();
             $statusCode = $response->getStatusCode();
 
             if ($statusCode >= 400) {
-                $logger = GeneralUtility::makeInstance(LogManager::class)->getLogger(self::class);
                 $logger->error(
                     'Error in AdmiralCloud login process. URL: {url}. HTTP Code: {httpCode}. Error message: {error}',
                     [
@@ -203,7 +219,6 @@ class AdmiralCloudApi
             $statusCode = $response->getStatusCode();
 
             if ($statusCode >= 400) {
-                $logger = GeneralUtility::makeInstance(LogManager::class)->getLogger(self::class);
                 $logger->error(
                     'Error in AdmiralCloud auth process. URL: {url}. HTTP Code: {httpCode}. Error message: {error}',
                     [
