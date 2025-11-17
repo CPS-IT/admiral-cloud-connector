@@ -42,10 +42,7 @@ readonly class AdmiralCloudToolbarItem implements ToolbarItemInterface
             templatePathAndFilename: 'EXT:admiral_cloud_connector/Resources/Private/Templates/ToolbarMenu/MenuItem.html',
         );
 
-        $view = $this->viewFactory->create($data);
-        $view->assign('ACGroup', AdmiralCloudApi::getSecurityGroup());
-
-        return $view->render();
+        return $this->viewFactory->create($data)->render();
     }
 
     public function hasDropDown(): bool
@@ -59,7 +56,10 @@ readonly class AdmiralCloudToolbarItem implements ToolbarItemInterface
             templatePathAndFilename: 'EXT:admiral_cloud_connector/Resources/Private/Templates/ToolbarMenu/DropDown.html',
         );
 
-        return $this->viewFactory->create($data)->render();
+        $view = $this->viewFactory->create($data);
+        $view->assign('ACGroup', AdmiralCloudApi::getSecurityGroup());
+
+        return $view->render();
     }
 
     public function getAdditionalAttributes(): array
