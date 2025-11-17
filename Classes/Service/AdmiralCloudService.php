@@ -122,7 +122,7 @@ class AdmiralCloudService implements SingletonInterface
             'controller' => 'metadata',
             'action' => 'findbatch',
             'payload' => [
-                'ids' => array_map('intval', $identifiers),
+                'ids' => array_map(intval(...), $identifiers),
                 'title' => $this->metaDataFields,
             ],
         ];
@@ -182,7 +182,7 @@ class AdmiralCloudService implements SingletonInterface
             'controller' => 'media',
             'action' => 'findbatch',
             'payload' => [
-                'ids' => array_map('intval', $identifiers),
+                'ids' => array_map(intval(...), $identifiers),
             ],
         ];
 

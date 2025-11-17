@@ -299,7 +299,7 @@ class AdmiralCloudApi
         }
 
         $groups = array_map(
-            'strval',
+            strval(...),
             GeneralUtility::makeInstance(Context::class)->getPropertyFromAspect('backend.user', 'groupIds', []),
         );
 
