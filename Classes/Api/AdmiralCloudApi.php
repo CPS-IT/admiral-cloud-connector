@@ -18,6 +18,7 @@ declare(strict_types=1);
 namespace CPSIT\AdmiralCloudConnector\Api;
 
 use CPSIT\AdmiralCloudConnector\Api\Oauth\Credentials;
+use CPSIT\AdmiralCloudConnector\Exception\CannotCreateSignature;
 use CPSIT\AdmiralCloudConnector\Exception\InvalidPropertyException;
 use CPSIT\AdmiralCloudConnector\Exception\RuntimeException;
 use CPSIT\AdmiralCloudConnector\Utility\ConfigurationUtility;
@@ -28,6 +29,7 @@ use TYPO3\CMS\Core\Database\ConnectionPool;
 use TYPO3\CMS\Core\Database\Query\QueryBuilder;
 use TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction;
 use TYPO3\CMS\Core\Http\RequestFactory;
+use TYPO3\CMS\Core\Http\Uri;
 use TYPO3\CMS\Core\Log\LogManager;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
@@ -47,7 +49,7 @@ class AdmiralCloudApi
         $this->device = md5((string)$backendUserId);
     }
 
-    public static function create(array $settings, string $method = 'POST'): self
+    public static function create(string $route, array $payload, ?string $action = null, string $method = 'POST'): self
     {
         $logger = GeneralUtility::makeInstance(LogManager::class)->getLogger(self::class);
         $credentials = new Credentials();
@@ -57,47 +59,46 @@ class AdmiralCloudApi
             throw new \InvalidArgumentException('Settings passed for AdmiralCloudApi service creation are not valid.', 1744626269);
         }
 
-        $params = [
-            'accessSecret' => $credentials->getAccessSecret(),
-            'controller' => $settings['controller'],
-            'action' => $settings['action'],
-            'payload' => $settings['payload'],
-        ];
+        $routeUrl = new Uri(ConfigurationUtility::getApiUrl() . 'v5/' . ltrim($route, '/'));
 
-        $signedValues = self::acSignatureSign($params);
-        $routeUrl = ConfigurationUtility::getApiUrl() . 'v5/' . $settings['route'];
-
-        if (!\is_array($signedValues)) {
+        try {
+            $signature = Signature\AdmiralCloudSignature::sign($credentials, $routeUrl->getPath(), $payload);
+        } catch (CannotCreateSignature $exception) {
             $logger->error(
                 'Error while trying to sign request parameters for AdmiralCloud route process: {error}',
                 [
                     'url' => $routeUrl,
-                    'error' => $signedValues,
+                    'error' => $exception->getMessage(),
                 ],
             );
 
-            throw new RuntimeException('Error while trying to sign request parameters for AdmiralCloud route process: ' . $signedValues, 1758782772);
+            throw new RuntimeException(
+                'Error while trying to sign request parameters for AdmiralCloud route process: ' . $exception->getMessage(),
+                1758782772,
+                $exception,
+            );
         }
 
         $requestOptions = [
             RequestOptions::HEADERS => [
                 'Content-Type' => 'application/json',
                 'X-Admiralcloud-Accesskey' => $credentials->getAccessKey(),
-                'X-Admiralcloud-Rts' => $signedValues['timestamp'],
-                'X-Admiralcloud-Hash' => $signedValues['hash'],
+                'X-Admiralcloud-Version' => $signature->version,
+                'X-Admiralcloud-Rts' => $signature->timestamp,
+                'X-Admiralcloud-Hash' => $signature->hash,
             ],
         ];
 
         if ($method === 'POST') {
-            $requestOptions[RequestOptions::JSON] = $params['payload'];
+            $requestOptions[RequestOptions::JSON] = $signature->payload;
         }
 
         try {
             $requestFactory = GeneralUtility::makeInstance(RequestFactory::class);
-            $response = $requestFactory->request($routeUrl, $method, $requestOptions);
+            $response = $requestFactory->request((string)$routeUrl, $method, $requestOptions);
             $content = $response->getBody()->getContents();
             $statusCode = $response->getStatusCode();
-            $isFailedSearch = ($settings['action'] ?? null) === 'search' && $content === '{"message":"error_search_search_failed"}';
+            $isFailedSearch = $action === 'search' && $content === '{"message":"error_search_search_failed"}';
 
             if ($statusCode >= 400 && !$isFailedSearch) {
                 $logger->error(
@@ -121,60 +122,59 @@ class AdmiralCloudApi
     /**
      * @throws \InvalidArgumentException Oauth settings not valid, consumer key or secret not in array.
      */
-    public static function auth(array $settings): string
+    public static function auth(string $callbackUrl, ?string $device = null): string
     {
         $logger = GeneralUtility::makeInstance(LogManager::class)->getLogger(self::class);
         $requestFactory = GeneralUtility::makeInstance(RequestFactory::class);
         $credentials = new Credentials();
-        $device = $settings['device'] ?? md5((string)$GLOBALS['BE_USER']->user['uid']);
+        $device ??= md5((string)$GLOBALS['BE_USER']->user['uid']);
 
         static::validateAuthData($credentials);
 
-        $state = '0.' . base_convert(random_int(0, mt_getrandmax()) . '00', 10, 36);
-        $params = [
-            'accessSecret' => $credentials->getAccessSecret(),
-            'controller' => $settings['controller'],
-            'action' => $settings['action'],
-            'payload' => [
-                'email' => $GLOBALS['BE_USER']->user['email'],
-                'firstname' => $GLOBALS['BE_USER']->user['first_name'] ?: $GLOBALS['BE_USER']->user['realName'],
-                'lastname' => $GLOBALS['BE_USER']->user['last_name'] ?: $GLOBALS['BE_USER']->user['realName'],
-                'state' => $state,
-                'client_id' => $credentials->getClientId(),
-                'callbackUrl' => base64_encode((string)$settings['callbackUrl']),
-                'settings' => [
-                    'typo3group' => self::getSecurityGroup(),
-                ],
-                'poc' => true,
+        $loginUrl = new Uri(ConfigurationUtility::getAuthUrl() . 'v4/login/app');
+        $payload = [
+            'email' => $GLOBALS['BE_USER']->user['email'],
+            'firstname' => $GLOBALS['BE_USER']->user['first_name'] ?: $GLOBALS['BE_USER']->user['realName'],
+            'lastname' => $GLOBALS['BE_USER']->user['last_name'] ?: $GLOBALS['BE_USER']->user['realName'],
+            'state' => '0.' . base_convert(random_int(0, mt_getrandmax()) . '00', 10, 36),
+            'client_id' => $credentials->getClientId(),
+            'callbackUrl' => base64_encode($callbackUrl),
+            'settings' => [
+                'typo3group' => self::getSecurityGroup(),
             ],
+            'poc' => true,
         ];
 
-        $signedValues = self::acSignatureSign($params);
-        $loginUrl = ConfigurationUtility::getAuthUrl() . 'v4/login/app?poc=true';
-
-        if (!\is_array($signedValues)) {
+        try {
+            $signature = Signature\AdmiralCloudSignature::sign($credentials, $loginUrl->getPath(), $payload);
+        } catch (CannotCreateSignature $exception) {
             $logger->error(
                 'Error while trying to sign request parameters for AdmiralCloud login process: {error}',
                 [
                     'url' => $loginUrl,
-                    'error' => $signedValues,
+                    'error' => $exception->getMessage(),
                 ],
             );
 
-            throw new RuntimeException('Error while trying to sign request parameters for AdmiralCloud login process: ' . $signedValues, 1758782635);
+            throw new RuntimeException(
+                'Error while trying to sign request parameters for AdmiralCloud login process: ' . $exception->getMessage(),
+                1758782635,
+                $exception,
+            );
         }
 
         try {
-            $response = $requestFactory->request($loginUrl, 'POST', [
+            $response = $requestFactory->request((string)$loginUrl, 'POST', [
                 RequestOptions::HEADERS => [
                     'X-Admiralcloud-Accesskey' => $credentials->getAccessKey(),
-                    'X-Admiralcloud-Debugsignature' => '1',
+                    'X-Admiralcloud-Debugsignature' => true,
                     'X-Admiralcloud-Clientid' => $credentials->getClientId(),
                     'X-Admiralcloud-Device' => $device,
-                    'X-Admiralcloud-Rts' => $signedValues['timestamp'],
-                    'X-Admiralcloud-Hash' => $signedValues['hash'],
+                    'X-Admiralcloud-Version' => $signature->version,
+                    'X-Admiralcloud-Rts' => $signature->timestamp,
+                    'X-Admiralcloud-Hash' => $signature->hash,
                 ],
-                RequestOptions::JSON => $params['payload'],
+                RequestOptions::JSON => $signature->payload,
             ]);
 
             $content = $response->getBody()->getContents();
@@ -197,7 +197,7 @@ class AdmiralCloudApi
         }
 
         $codeParams = [
-            'state' => $params['payload']['state'],
+            'state' => $signature->payload['state'],
             'device' => $device,
             'client_id' => $credentials->getClientId(),
         ];
@@ -248,46 +248,6 @@ class AdmiralCloudApi
         }
 
         return $code->code;
-    }
-
-    /**
-     * @return array{hash: string, timestamp: int}|non-empty-string
-     */
-    public static function acSignatureSign(array $params, string $version = 'v5'): array|string
-    {
-        $accessSecret = $params['accessSecret'] ?? null;
-        $controller = $params['controller'] ?? null;
-        $action = $params['action'] ?? null;
-        $data = $params['payload'] ?? null;
-
-        if (!$accessSecret) {
-            return 'accessSecretMissing';
-        }
-        if (!$controller) {
-            return 'controllerMissing';
-        }
-        if (!$action) {
-            return 'actionMissing';
-        }
-        if (!$data) {
-            return 'payloadMustBeObject';
-        }
-
-        ksort($data);
-
-        $payload = $data;
-        $ts = time();
-
-        $valueToHash = match ($version) {
-            'v4' => strtolower((string)$params['controller']) . PHP_EOL . strtolower((string)$params['action']) . PHP_EOL . $ts . (empty($payload) ? '' : PHP_EOL . '{}'),
-            'v5' => strtolower((string)$params['controller']) . PHP_EOL . strtolower((string)$params['action']) . PHP_EOL . $ts . (empty($payload) ? '' : PHP_EOL . json_encode($payload)),
-            default => throw new \InvalidArgumentException('Version for acSignatureSign should be v4 or v5. Version given: ' . $version, 1744626847),
-        };
-
-        return [
-            'hash' => hash_hmac('sha256', $valueToHash, (string)$accessSecret),
-            'timestamp' => $ts,
-        ];
     }
 
     public static function getSecurityGroup(): string
