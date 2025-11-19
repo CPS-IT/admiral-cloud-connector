@@ -167,15 +167,12 @@ class BrowserController
     public function authAction(ServerRequestInterface $request): ResponseInterface
     {
         $bodyParams = json_decode($request->getBody()->getContents());
-        $settings = [
-            'callbackUrl' => $bodyParams->callbackUrl,
-            'controller' => 'loginapp',
-            'action' => 'login',
-            'device' => $bodyParams->device,
-        ];
 
         try {
-            $admiralCloudAuthCode = $this->admiralCloudService->getAdmiralCloudAuthCode($settings);
+            $admiralCloudAuthCode = $this->admiralCloudService->getAdmiralCloudAuthCode(
+                $bodyParams->callbackUrl,
+                $bodyParams->device,
+            );
 
             return $this->createJsonResponse(
                 [

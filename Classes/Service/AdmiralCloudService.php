@@ -97,19 +97,19 @@ class AdmiralCloudService implements SingletonInterface
         };
     }
 
-    public function getAdmiralCloudAuthCode(array $settings): string
+    public function getAdmiralCloudAuthCode(string $callbackUrl, ?string $device = null): string
     {
         try {
-            return AdmiralCloudApiFactory::auth($settings);
+            return AdmiralCloudApiFactory::auth($callbackUrl, $device);
         } catch (InvalidArgumentException $exception) {
             throw new InvalidArgumentException('AdmiralCloud Auth Code cannot be created', 1559128418168, $exception);
         }
     }
 
-    public function callAdmiralCloudApi(array $settings, string $method = 'post'): AdmiralCloudApi
+    public function callAdmiralCloudApi(string $route, array $payload, ?string $action = null, string $method = 'POST'): AdmiralCloudApi
     {
         try {
-            return AdmiralCloudApiFactory::create($settings, $method);
+            return AdmiralCloudApiFactory::create($route, $payload, $action, $method);
         } catch (InvalidArgumentException $exception) {
             throw new InvalidArgumentException('AdmiralCloud API cannot be created', 1559128418168, $exception);
         }
@@ -117,17 +117,12 @@ class AdmiralCloudService implements SingletonInterface
 
     public function getMetaData(array $identifiers): array
     {
-        $settings = [
-            'route' => 'metadata/findBatch',
-            'controller' => 'metadata',
-            'action' => 'findbatch',
-            'payload' => [
-                'ids' => array_map(intval(...), $identifiers),
-                'title' => $this->metaDataFields,
-            ],
+        $payload = [
+            'ids' => array_map(intval(...), $identifiers),
+            'title' => $this->metaDataFields,
         ];
 
-        $fileInfoData = $this->callAdmiralCloudApi($settings)->getData();
+        $fileInfoData = $this->callAdmiralCloudApi('/metadata/findBatch', $payload)->getData();
 
         if (!$fileInfoData) {
             $this->logger->error(
@@ -157,12 +152,12 @@ class AdmiralCloudService implements SingletonInterface
         $metadata = [];
 
         foreach ($fileInfo as $file) {
-            foreach ($settings['payload']['title'] as $index => $title) {
+            foreach ($payload['title'] as $index => $title) {
                 $metadata[$file->mediaContainerId][$title] = '';
 
                 if (strtolower((string)$file->title) === strtolower((string)$title)) {
                     $metadata[$file->mediaContainerId][$title] = $file->content;
-                    unset($settings['payload']['title'][$index]);
+                    unset($payload['title'][$index]);
                     break;
                 }
             }
@@ -177,17 +172,12 @@ class AdmiralCloudService implements SingletonInterface
             $admiralCloudStorageUid = $this->getAdmiralCloudStorage()->getUid();
         }
 
-        $settings = [
-            'route' => 'media/findBatch',
-            'controller' => 'media',
-            'action' => 'findbatch',
-            'payload' => [
-                'ids' => array_map(intval(...), $identifiers),
-            ],
+        $payload = [
+            'ids' => array_map(intval(...), $identifiers),
         ];
 
         $fileMetaData = $this->getMetaData($identifiers);
-        $fileInfoData = $this->callAdmiralCloudApi($settings)->getData();
+        $fileInfoData = $this->callAdmiralCloudApi('/media/findBatch', $payload)->getData();
 
         if (!$fileInfoData) {
             $this->logger->error(
@@ -254,28 +244,16 @@ class AdmiralCloudService implements SingletonInterface
 
     public function getSearch(array $search): array
     {
-        $settings = [
-            'route' => 'search',
-            'controller' => 'search',
-            'action' => 'search',
-            'payload' => $search,
-        ];
-
-        return json_decode($this->callAdmiralCloudApi($settings)->getData())->hits->hits ?? [];
+        return json_decode($this->callAdmiralCloudApi('/search', $search)->getData())->hits->hits ?? [];
     }
 
     public function getEmbedLinks(int $id): array
     {
-        $settings = [
-            'route' => 'embedlink/' . $id,
-            'controller' => 'embedlink',
-            'action' => 'find',
-            'payload' => [
-                'mediaContainerId' => $id,
-            ],
+        $payload = [
+            'mediaContainerId' => $id,
         ];
 
-        return json_decode($this->callAdmiralCloudApi($settings, 'get')->getData()) ?? [];
+        return json_decode($this->callAdmiralCloudApi('/embedlink/' . $id, $payload, null, 'GET')->getData()) ?? [];
     }
 
     /**
@@ -305,15 +283,8 @@ class AdmiralCloudService implements SingletonInterface
         $filter->range->updatedAt->gte = $lastUpdated->format('Y-m-d');
         $payload['query']->bool->filter[] = $filter;
 
-        $settings = [
-            'route' => 'search',
-            'controller' => 'search',
-            'action' => 'search',
-            'payload' => $payload,
-        ];
-
         // Make AdmiralCloud API call
-        $result = json_decode($this->callAdmiralCloudApi($settings)->getData(), true) ?? [];
+        $result = json_decode($this->callAdmiralCloudApi('/search', $payload)->getData(), true) ?? [];
 
         // Get metadata information from result
         $metaDataArray = [];
@@ -332,18 +303,12 @@ class AdmiralCloudService implements SingletonInterface
      */
     public function getExternalAuthToken(string $identifier, string $type): array
     {
-        $payload = [];
-        $payload['identifier'] = $identifier;
-        $payload['type'] = $type;
-
-        $settings = [
-            'route' => 'extAuth',
-            'controller' => 'user',
-            'action' => 'extAuth',
-            'payload' => $payload,
+        $payload = [
+            'identifier' => $identifier,
+            'type' => $type,
         ];
 
-        return json_decode($this->callAdmiralCloudApi($settings)->getData(), true) ?? [];
+        return json_decode($this->callAdmiralCloudApi('/extAuth', $payload)->getData(), true) ?? [];
     }
 
     /**
@@ -364,15 +329,8 @@ class AdmiralCloudService implements SingletonInterface
         $filter->terms->id = $identifiers;
         $payload['query']->bool->filter[] = $filter;
 
-        $settings = [
-            'route' => 'search',
-            'controller' => 'search',
-            'action' => 'search',
-            'payload' => $payload,
-        ];
-
         // Make AdmiralCloud API call
-        $result = json_decode($this->callAdmiralCloudApi($settings)->getData(), true) ?? [];
+        $result = json_decode($this->callAdmiralCloudApi('/search', $payload)->getData(), true) ?? [];
 
         // Get metadata information from result
         $metaDataArray = [];

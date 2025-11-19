@@ -25,16 +25,16 @@ class AdmiralCloudApiFactory
     /**
      * @throws \InvalidArgumentException Oauth settings not valid, consumer key or secret not in array.
      */
-    public static function create(array $settings, string $method = 'POST'): AdmiralCloudApi
+    public static function create(string $route, array $payload, ?string $action = null, string $method = 'POST'): AdmiralCloudApi
     {
-        return AdmiralCloudApi::create($settings, $method);
+        return AdmiralCloudApi::create($route, $payload, $action, $method);
     }
 
     /**
      * @throws \InvalidArgumentException Oauth settings not valid, consumer key or secret not in array.
      */
-    public static function auth(array $settings): string
+    public static function auth(string $callbackUrl, ?string $device = null): string
     {
-        return AdmiralCloudApi::auth($settings);
+        return AdmiralCloudApi::auth($callbackUrl, $device);
     }
 }
