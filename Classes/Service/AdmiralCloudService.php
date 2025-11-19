@@ -217,7 +217,7 @@ class AdmiralCloudService implements SingletonInterface
         $mediaInfo = [];
 
         foreach ($fileInfo as $file) {
-            $mediaInfo[$file->mediaContainerId] = [
+            $mediaInfoForCurrentFile = [
                 'type' => $file->type,
                 'name' => $file->fileName . '_' . $file->mediaContainerId . '.' . $file->fileExtension,
                 'mimetype' => 'admiralCloud/' . $file->type . '/' . $file->fileExtension,
@@ -238,6 +238,15 @@ class AdmiralCloudService implements SingletonInterface
                 'copyright' => $fileMetaData[$file->mediaContainerId]['meta_iptc_copyrightNotice'] ?? '',
                 'keywords' => '',
             ];
+
+            if (!isset($mediaInfo[$file->mediaContainerId])) {
+                $mediaInfo[$file->mediaContainerId] = $mediaInfoForCurrentFile;
+            } else {
+                $mediaInfo[$file->mediaContainerId] = array_replace(
+                    $mediaInfo[$file->mediaContainerId],
+                    array_filter($mediaInfoForCurrentFile),
+                );
+            }
         }
 
         return $mediaInfo;
