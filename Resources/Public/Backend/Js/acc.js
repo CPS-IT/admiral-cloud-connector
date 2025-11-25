@@ -153,8 +153,14 @@ export class Acc {
 
         parent.window.onmessage = function (e) {
             let data = false;
+            let origin = new URL(e.origin);
 
-            if(e.data) {
+            // Make sure only AdmiralCloud messages are handled
+            if (!origin.hostname.endsWith('admiralcloud.com')) {
+                return;
+            }
+
+            if (e.data) {
                 data = JSON.parse(e.data);
             }
 
