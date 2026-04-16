@@ -39,6 +39,7 @@ return [
         'php-cs-fixer.php',
         'phpstan.neon',
         'rector.php',
+        'renovate.json',
         'version-bumper.yaml',
     ],
 ];
