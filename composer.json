@@ -20,7 +20,7 @@
 		"typo3/cms-frontend": "^13.4",
 		"typo3/cms-redirects": "^13.4",
 		"typo3/cms-scheduler": "^13.4",
-		"typo3fluid/fluid": "^4.0"
+		"typo3fluid/fluid": "^4.0 || ^5.0"
 	},
 	"require-dev": {
 		"armin/editorconfig-cli": "^2.1",
