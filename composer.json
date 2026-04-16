@@ -73,7 +73,7 @@
 			"@fix:editorconfig",
 			"@fix:php"
 		],
-		"fix:composer": "@composer normalize --no-check-lock --no-update-lock",
+		"fix:composer": "@composer normalize",
 		"fix:editorconfig": "@lint:editorconfig --fix",
 		"fix:php": "php-cs-fixer fix",
 		"lint": [
