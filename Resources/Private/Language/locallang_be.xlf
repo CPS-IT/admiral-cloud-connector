@@ -39,9 +39,6 @@
 			<trans-unit id="linkHandler.label">
 				<source>AdmiralCloud</source>
 			</trans-unit>
-			<trans-unit id="linkHandler.rteLinkDownload">
-				<source>Enable browser preview (no download)</source>
-			</trans-unit>
 
 			<trans-unit id="toolbarItem.title">
 				<source>AdmiralCloud</source>
