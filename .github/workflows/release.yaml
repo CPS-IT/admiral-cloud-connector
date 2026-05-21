@@ -35,7 +35,7 @@ jobs:
           GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         run: |
           url="$(gh release create "$REF_NAME" --generate-notes)"
-          echo "url=$url" >> "$GITHUB_OUTPUT
+          echo "url=$url" >> "$GITHUB_OUTPUT"
 
   # Job: Publish on TER
   ter-publish:
