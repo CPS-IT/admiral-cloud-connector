@@ -7,13 +7,16 @@ on:
     branches:
       - master
 
+permissions:
+  contents: read
+
 jobs:
   cgl:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
-          fetch-depth: 0
+          persist-credentials: false
 
       # Prepare environment
       - name: Setup PHP
@@ -55,3 +58,7 @@ jobs:
         run: |
           mkdir -p .Build/docs
           composer docs:build -- --no-progress --fail-on-log
+
+      # Zizmor
+      - name: Run zizmor
+        uses: zizmorcore/zizmor-action@5f14fd08f7cf1cb1609c1e344975f152c7ee938d # v0.5.6
