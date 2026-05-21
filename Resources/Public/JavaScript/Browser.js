@@ -90,8 +90,6 @@ const init = function() {
             Browser.open();
         });
         $(document).on("click", Browser.rteLinkButton, function () {
-            // Store if rte link should set to be downloaded
-            window.rteLinkDownload = !document.getElementById('rteLinkDownload').checked;
             Browser.browserUrl = $(this).data('admiral_cloudBrowserUrl');
             Browser.open();
         });
@@ -291,7 +289,6 @@ const init = function() {
             dataType: 'json',
             data: {
                 media: media,
-                rteLinkDownload: window.rteLinkDownload
             },
             beforeSend: function () {
                 NProgress.start();

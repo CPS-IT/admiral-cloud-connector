@@ -14,8 +14,6 @@
  */
 
 use CPSIT\AdmiralCloudConnector\Backend\FilesControlContainer;
-use CPSIT\AdmiralCloudConnector\Controller\Backend\BrowseLinksController;
-use CPSIT\AdmiralCloudConnector\Controller\Backend\LinkBrowserController;
 use CPSIT\AdmiralCloudConnector\Form\Element\AdmiralCloudImageManipulationElement;
 use CPSIT\AdmiralCloudConnector\Resource\AdmiralCloudDriver;
 use CPSIT\AdmiralCloudConnector\Resource\File;
@@ -74,12 +72,6 @@ $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Core\Resource\Processed
 ];
 $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Core\Resource\Index\FileIndexRepository::class] = [
     'className' => FileIndexRepository::class,
-];
-$GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Backend\Controller\LinkBrowserController::class] = [
-    'className' => LinkBrowserController::class,
-];
-$GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\RteCKEditor\Controller\BrowseLinksController::class] = [
-    'className' => BrowseLinksController::class,
 ];
 
 // Add task to update metadata of AdmiralCloud files

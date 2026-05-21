@@ -21,9 +21,8 @@ use Psr\Http\Message\ServerRequestInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use TYPO3\CMS\Backend\Controller\AbstractLinkBrowserController;
 use TYPO3\CMS\Backend\LinkHandler\LinkHandlerInterface;
-use TYPO3\CMS\Backend\Routing\UriBuilder;
-use TYPO3\CMS\Core\Imaging\IconFactory;
-use TYPO3\CMS\Core\Imaging\IconSize;
+use TYPO3\CMS\Backend\LinkHandler\LinkHandlerViewProviderInterface;
+use TYPO3\CMS\Backend\View\BackendViewFactory;
 use TYPO3\CMS\Core\LinkHandling\LinkService;
 use TYPO3\CMS\Core\Localization\LanguageService;
 use TYPO3\CMS\Core\Page\PageRenderer;
@@ -32,7 +31,7 @@ use TYPO3\CMS\Core\Resource\FileInterface;
 use TYPO3\CMS\Core\View\ViewInterface;
 
 #[Autoconfigure(public: true)]
-class AdmiralCloudConnectorLinkHandler implements LinkHandlerInterface
+class AdmiralCloudConnectorLinkHandler implements LinkHandlerInterface, LinkHandlerViewProviderInterface
 {
     protected ViewInterface $view;
 
@@ -45,10 +44,8 @@ class AdmiralCloudConnectorLinkHandler implements LinkHandlerInterface
     protected string $mode = 'file';
 
     public function __construct(
-        protected readonly IconFactory $iconFactory,
         protected readonly LinkService $linkService,
         protected readonly PageRenderer $pageRenderer,
-        protected readonly UriBuilder $uriBuilder,
     ) {}
 
     public function initialize(AbstractLinkBrowserController $linkBrowser, $identifier, array $configuration): void
@@ -82,25 +79,6 @@ class AdmiralCloudConnectorLinkHandler implements LinkHandlerInterface
     public function render(ServerRequestInterface $request): string
     {
         $this->pageRenderer->loadJavaScriptModule('@cpsit/admiral-cloud-connector/Browser.js');
-
-        $languageService = $this->getLanguageService();
-        $compactViewUrl = (string)$this->uriBuilder->buildUriFromRoute('admiral_cloud_browser_rte_link');
-        $rteLinkDownloadLabel = htmlspecialchars((string)$languageService->sL('LLL:EXT:admiral_cloud_connector/Resources/Private/Language/locallang_be.xlf:linkHandler.rteLinkDownload'));
-        $buttonText = htmlspecialchars((string)$languageService->sL('LLL:EXT:admiral_cloud_connector/Resources/Private/Language/locallang_be.xlf:browser.button'));
-        $titleText = htmlspecialchars((string)$languageService->sL('LLL:EXT:admiral_cloud_connector/Resources/Private/Language/locallang_be.xlf:browser.header'));
-
-        $buttonHtml = [];
-        $buttonHtml[] = '<div style="text-align: center;margin-top: 1rem;">'
-              . '<span style="display:none"><input id="rteLinkDownload" type="checkbox" style="margin-right: 0.5rem; position: relative; top: 2px;"/>' . $rteLinkDownloadLabel . '</span></div>'
-              . '<a href="#" class="btn btn-default t3js-admiral_cloud-browser-btn rte-link"'
-              . ' style="margin: 2rem auto;"'
-              . ' data-admiral_cloud-browser-url="' . htmlspecialchars($compactViewUrl) . '" '
-              . ' data-title="' . htmlspecialchars($titleText) . '">';
-        $buttonHtml[] = $this->iconFactory->getIcon('actions-admiral_cloud-browser', IconSize::SMALL)->render();
-        $buttonHtml[] = $buttonText;
-        $buttonHtml[] = '</a>';
-
-        $this->view->assign('html', LF . implode(LF, $buttonHtml));
 
         return $this->view->render('LinkBrowser/AdmiralCloud');
     }
@@ -140,9 +118,21 @@ class AdmiralCloudConnectorLinkHandler implements LinkHandlerInterface
         return false;
     }
 
-    public function setView(ViewInterface $view): void
+    public function createView(BackendViewFactory $backendViewFactory, ServerRequestInterface $request): ViewInterface
+    {
+        return $backendViewFactory->create($request, ['cpsit/admiral-cloud-connector']);
+    }
+
+    public function setView(ViewInterface $view): self
     {
         $this->view = $view;
+
+        return $this;
+    }
+
+    public function getView(): ViewInterface
+    {
+        return $this->view;
     }
 
     protected function getLanguageService(): LanguageService

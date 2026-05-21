@@ -1,4 +1,5 @@
 <html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+      xmlns:core="http://typo3.org/ns/TYPO3/CMS/Core/ViewHelpers"
       data-namespace-typo3-fluid="true">
 
 <f:layout name="LinkBrowser" />
@@ -12,7 +13,14 @@
 </f:section>
 
 <f:section name="Content">
-    <f:format.raw>{html}</f:format.raw>
+    <a href="#"
+       class="btn btn-default t3js-admiral_cloud-browser-btn rte-link"
+       data-admiral_cloud-browser-url="{f:be.uri(route: 'admiral_cloud_browser_rte_link')}"
+       data-title="{f:translate(key: 'LLL:EXT:admiral_cloud_connector/Resources/Private/Language/locallang_be.xlf:browser.header')}"
+    >
+        <core:icon identifier="actions-admiral_cloud-browser" />
+        <f:translate key="LLL:EXT:admiral_cloud_connector/Resources/Private/Language/locallang_be.xlf:browser.button" />
+    </a>
 </f:section>
 
 </html>

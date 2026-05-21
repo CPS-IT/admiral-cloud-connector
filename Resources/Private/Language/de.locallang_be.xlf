@@ -47,10 +47,6 @@
 				<source>AC Security Group</source>
 				<target>AC Security Group</target>
 			</trans-unit>
-			<trans-unit id="linkHandler.rteLinkDownload">
-				<source>Enable browser preview (no download)</source>
-				<target>Browservorschau aktivieren (kein download)</target>
-			</trans-unit>
 		</body>
 	</file>
 </xliff>
