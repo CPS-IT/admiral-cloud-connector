@@ -24,7 +24,7 @@
 	},
 	"require-dev": {
 		"armin/editorconfig-cli": "^2.1",
-		"eliashaeussler/version-bumper": "^3.3",
+		"eliashaeussler/version-bumper": "^4.0",
 		"ergebnis/composer-normalize": "^2.46",
 		"phpstan/extension-installer": "^1.4",
 		"phpstan/phpstan": "^2.1",
