@@ -93,7 +93,7 @@ class AdmiralCloudService implements SingletonInterface
             FileType::IMAGE => 'image',
             FileType::AUDIO => 'audio',
             FileType::VIDEO => 'video',
-            default => (string) $type,
+            default => (string)$type,
         };
     }
 
