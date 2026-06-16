@@ -61,6 +61,9 @@
 			<trans-unit id="toolbarItem.updateChangedMetadata.error">
 				<source>An error happened updating metadata for AdmiralCloud files. Please inform to your administrator.</source>
 			</trans-unit>
+			<trans-unit id="toolbarItem.openApp.title">
+				<source>Open AdmiralCloud app (external)</source>
+			</trans-unit>
 
 			<trans-unit id="admiral_cloud_connector_title">
 				<source>AdmiralCloud</source>
