@@ -84,7 +84,7 @@ class AdmiralCloudService implements SingletonInterface
         $this->storageRepository = $storageRepository;
     }
 
-    public function getMediaType(string $type): string
+    public function getMediaType(int|string $type): string
     {
         $fileType = FileType::tryFrom((int)$type);
 
@@ -93,7 +93,7 @@ class AdmiralCloudService implements SingletonInterface
             FileType::IMAGE => 'image',
             FileType::AUDIO => 'audio',
             FileType::VIDEO => 'video',
-            default => $type,
+            default => (string)$type,
         };
     }
 
