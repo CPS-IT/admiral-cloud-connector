@@ -18,6 +18,8 @@ declare(strict_types=1);
 namespace CPSIT\AdmiralCloudConnector\Backend\ToolbarItems;
 
 use CPSIT\AdmiralCloudConnector\Api\AdmiralCloudApi;
+use CPSIT\AdmiralCloudConnector\Event\ToolbarLinkEvent;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use TYPO3\CMS\Backend\Toolbar\ToolbarItemInterface;
 use TYPO3\CMS\Core\View\ViewFactoryData;
 use TYPO3\CMS\Core\View\ViewFactoryInterface;
@@ -29,6 +31,7 @@ readonly class AdmiralCloudToolbarItem implements ToolbarItemInterface
 {
     public function __construct(
         protected ViewFactoryInterface $viewFactory,
+        protected EventDispatcherInterface $eventDispatcher,
     ) {}
 
     public function checkAccess(): bool
@@ -57,7 +60,10 @@ readonly class AdmiralCloudToolbarItem implements ToolbarItemInterface
         );
 
         $view = $this->viewFactory->create($data);
-        $view->assign('ACGroup', AdmiralCloudApi::getSecurityGroup());
+        $view->assignMultiple([
+            'ACGroup' => AdmiralCloudApi::getSecurityGroup(),
+            'externalLink' => $this->eventDispatcher->dispatch(new ToolbarLinkEvent()),
+        ]);
 
         return $view->render();
     }

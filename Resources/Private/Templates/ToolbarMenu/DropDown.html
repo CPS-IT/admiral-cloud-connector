@@ -27,6 +27,13 @@
             <f:translate key="LLL:EXT:admiral_cloud_connector/Resources/Private/Language/locallang_be.xlf:toolbarItem.closeConnection.title" />
         </a>
     </li>
+    <f:if condition="{externalLink.url}">
+        <li>
+            <a href="{externalLink.url}" class="dropdown-item" target="_blank">
+                <f:translate key="{externalLink.label}" />
+            </a>
+        </li>
+    </f:if>
 </ul>
 
 </html>
