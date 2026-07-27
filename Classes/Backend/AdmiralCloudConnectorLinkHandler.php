@@ -59,7 +59,7 @@ class AdmiralCloudConnectorLinkHandler implements LinkHandlerInterface, LinkHand
             return false;
         }
 
-        if (\is_object($linkParts['url'][$this->mode] ?? null)
+        if (is_object($linkParts['url'][$this->mode] ?? null)
             && is_a($linkParts['url'][$this->mode], $this->expectedClass, true)
             && str_starts_with($linkParts['url'][$this->mode]->getMimeType(), 'admiralCloud/')
         ) {
