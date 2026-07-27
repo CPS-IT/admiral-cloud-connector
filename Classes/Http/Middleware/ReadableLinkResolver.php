@@ -82,6 +82,6 @@ readonly class ReadableLinkResolver implements MiddlewareInterface
         $view = $this->viewFactory->create($data);
         $view->assignMultiple($variables);
 
-        return \trim($view->render($templateName));
+        return trim($view->render($templateName));
     }
 }

@@ -82,9 +82,9 @@ final class ImageViewHelper extends AbstractViewHelper
         }
 
         // Render admiral cloud image uri
-        if ($originalFile instanceof \CPSIT\AdmiralCloudConnector\Resource\File &&
-            $originalFile->getType() === FileType::IMAGE->value &&
-            str_starts_with($originalFile->getMimeType(), 'admiralCloud/')
+        if ($originalFile instanceof \CPSIT\AdmiralCloudConnector\Resource\File
+            && $originalFile->getType() === FileType::IMAGE->value
+            && str_starts_with($originalFile->getMimeType(), 'admiralCloud/')
         ) {
             $crop = $this->arguments['txAdmiralCloudCrop'];
 
