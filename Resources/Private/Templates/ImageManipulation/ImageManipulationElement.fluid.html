@@ -5,7 +5,7 @@
 <f:layout name="ImageManipulation" />
 
 <f:section name="Main">
-    <f:be.pageRenderer includeJavaScriptModules="{0: '@cpsit/admiral-cloud-connector/Browser.js'}" />
+    <f:be.pageRenderer includeJavaScriptModules="{0: '@cpsit/admiral-cloud-connector/browser.js'}" />
 
     <div class="form-control-wrap">
         <input type="hidden" id="{formEngine.field.id}"
@@ -43,13 +43,13 @@
                                 data-modal-title="{f:render(partial: 'ModalTitle', section:'Main', arguments: _all)}"
                                 data-image-uid="{image.uid}"
                                 data-crop-variants="{config.cropVariants -> f:format.json()}"
-                                data-button-preview-text="{f:translate(key:'LLL:EXT:core/Resources/Private/Language/locallang_wizards.xlf:imwizard.preview')}"
-                                data-button-dismiss-text="{f:translate(key:'LLL:EXT:core/Resources/Private/Language/locallang_wizards.xlf:imwizard.cancel')}"
-                                data-button-save-text="{f:translate(key:'LLL:EXT:core/Resources/Private/Language/locallang_wizards.xlf:imwizard.accept')}"
+                                data-button-preview-text="{f:translate(domain:'core.wizards',key:'imwizard.preview')}"
+                                data-button-dismiss-text="{f:translate(domain:'core.wizards',key:'imwizard.cancel')}"
+                                data-button-save-text="{f:translate(domain:'core.wizards',key:'imwizard.accept')}"
                                 data-file-field="{config.file_field}"
                                 data-field="{formEngine.field.id}">
                             <span class="t3-icon fa fa-crop"></span>
-                            <f:translate id="LLL:EXT:core/Resources/Private/Language/locallang_wizards.xlf:imwizard.open-editor"/>
+                            <f:translate domain="core.wizards" key="imwizard.open-editor"/>
                         </button>
                     </div>
                 </f:else>
@@ -59,7 +59,7 @@
                     <div class="col-xs-6 col-sm-4 col-md-3 media-gallery__item">
                         <p>
                             <b><f:translate id="{cropVariant.title}" default="{cropVariant.title}" /></b><br/>
-                            <f:translate id="LLL:EXT:core/Resources/Private/Language/locallang_wizards.xlf:imwizard.aspect-ratio"/>: <span class="t3js-image-manipulation-selected-ratio" data-crop-variant-id="{cropVariant.id}"><f:translate id="{cropVariant.allowedAspectRatios.{cropVariant.selectedRatio}.title}" default="{cropVariant.allowedAspectRatios.{cropVariant.selectedRatio}.title}" /></span>
+                            <f:translate domain="core.wizards" key="imwizard.aspect-ratio"/>: <span class="t3js-image-manipulation-selected-ratio" data-crop-variant-id="{cropVariant.id}"><f:translate id="{cropVariant.allowedAspectRatios.{cropVariant.selectedRatio}.title}" default="{cropVariant.allowedAspectRatios.{cropVariant.selectedRatio}.title}" /></span>
                         </p>
                         <div class="t3js-image-manipulation-preview media-object"
                             data-preview-height="150"
@@ -80,7 +80,7 @@
                 <f:then>
                     <p>
                         <em>
-                            <f:translate id="LLL:EXT:core/Resources/Private/Language/locallang_wizards.xlf:imwizard.supported-types-message" /><br/>
+                            <f:translate domain="core.wizards" key="imwizard.supported-types-message" /><br/>
                             {config.allowedExtensions -> f:format.case(mode: 'upper')}
                         </em>
                     </p>
@@ -88,10 +88,10 @@
                 <f:else>
                     <div class="alert alert-info">
                         <h4>
-                            <f:translate key="LLL:EXT:core/Resources/Private/Language/locallang_wizards.xlf:imwizard.no-image-dimensions"/>
+                            <f:translate domain="core.wizards" key="imwizard.no-image-dimensions"/>
                         </h4>
                         <p>
-                            <f:translate key="LLL:EXT:core/Resources/Private/Language/locallang_wizards.xlf:imwizard.no-image-dimensions-message"/>
+                            <f:translate domain="core.wizards" key="imwizard.no-image-dimensions-message"/>
                         </p>
                     </div>
                 </f:else>
@@ -106,7 +106,7 @@
 <f:section name="cropButton">
         <a href="#" class="btn btn-default t3js-admiral_cloud-browser-btn crop " data-admiral_cloud-browser-url="{cropUrl}">
             <span class="t3-icon fa fa-crop"></span>
-            <f:translate id="LLL:EXT:core/Resources/Private/Language/locallang_wizards.xlf:imwizard.open-editor"/>
+            <f:translate domain="core.wizards" key="imwizard.open-editor"/>
         </a>
 </f:section>
 

@@ -30,9 +30,7 @@ return RectorConfig::configure()
     ->withPaths([
         __DIR__ . '/Classes',
         __DIR__ . '/Configuration',
-        __DIR__ . '/ext_emconf.php',
-        __DIR__ . '/ext_localconf.php',
-        __DIR__ . '/ext_tables.php',
+        __DIR__ . '/ext_*.php',
     ])
     ->withComposerBased(doctrine: true, symfony: true)
     ->withPhpSets(php82: true)
@@ -40,7 +38,7 @@ return RectorConfig::configure()
     ->withSets([
         Typo3SetList::CODE_QUALITY,
         Typo3SetList::GENERAL,
-        Typo3LevelSetList::UP_TO_TYPO3_13,
+        Typo3LevelSetList::UP_TO_TYPO3_14,
     ])
     // To have a better analysis from PHPStan, we teach it here some more things
     ->withPHPStanConfigs([Typo3Option::PHPSTAN_FOR_RECTOR_PATH])
@@ -49,7 +47,7 @@ return RectorConfig::configure()
     ])
     ->withConfiguredRule(ExtEmConfRector::class, [
         ExtEmConfRector::PHP_VERSION_CONSTRAINT => '8.2.0-8.5.99',
-        ExtEmConfRector::TYPO3_VERSION_CONSTRAINT => '13.4.0-13.4.99',
+        ExtEmConfRector::TYPO3_VERSION_CONSTRAINT => '14.3.0-14.3.99',
         ExtEmConfRector::ADDITIONAL_VALUES_TO_BE_REMOVED => [],
     ])
     // If you use withImportNames(), you should consider excluding some TYPO3 files.

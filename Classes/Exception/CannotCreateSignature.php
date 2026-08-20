@@ -17,12 +17,6 @@ declare(strict_types=1);
 
 namespace CPSIT\AdmiralCloudConnector\Exception;
 
-/**
- * CannotCreateSignature
- *
- * @author Elias Häußler <e.haeussler@familie-redlich.de>
- * @license GPL-2.0-or-later
- */
 final class CannotCreateSignature extends \RuntimeException implements AdmiralCloudConnectorException
 {
     public function __construct(string $path, string $reason)

@@ -39,6 +39,10 @@ class FileReference extends \TYPO3\CMS\Core\Resource\FileReference
 
         unset($GLOBALS['admiralcloud']['fe_group'][$file->getIdentifier()]);
 
+        if ($publicUrl === '') {
+            return null;
+        }
+
         return $publicUrl;
     }
 }

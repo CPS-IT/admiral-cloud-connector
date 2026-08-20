@@ -13,7 +13,22 @@
         <source>AdmiralCloud</source>
       </trans-unit>
       <trans-unit id="browser.error-no-storage-access">
-        <source>Please make sure you have access to the AdmiralCloud file mount. This is needed to use the AdmiralCloud file picker</source>
+        <source>Please make sure you have access to the AdmiralCloud file mount. This is needed to use the AdmiralCloud file picker.</source>
+      </trans-unit>
+      <trans-unit id="browser.error-open">
+        <source>It was not possible to open the AdmiralCloud browser.</source>
+      </trans-unit>
+      <trans-unit id="browser.error-auth">
+        <source>The authentication to AdmiralCloud was not possible.</source>
+      </trans-unit>
+      <trans-unit id="browser.error-auth-failure">
+        <source>The authentication to AdmiralCloud failed.</source>
+      </trans-unit>
+      <trans-unit id="browser.error-get-public-url">
+        <source>It was not possible to get the file public url.</source>
+      </trans-unit>
+      <trans-unit id="browser.error-unknown">
+        <source>An unknown error occurred.</source>
       </trans-unit>
       <trans-unit id="be_groups.file_permissions.folder_add_via_admiral_cloud">
         <source>Files: Add via AdmiralCloud</source>
@@ -67,15 +82,6 @@
 
       <trans-unit id="admiral_cloud_connector_title">
         <source>AdmiralCloud</source>
-      </trans-unit>
-      <trans-unit id="usersettings.first_name">
-        <source>First Name</source>
-      </trans-unit>
-      <trans-unit id="usersettings.last_name">
-        <source>Last Name</source>
-      </trans-unit>
-      <trans-unit id="usersettings.security_group">
-        <source>AC Security Group</source>
       </trans-unit>
 
       <trans-unit id="task.update_admiral_cloud_metadata.name">

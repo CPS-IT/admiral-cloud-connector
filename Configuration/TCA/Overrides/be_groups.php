@@ -19,7 +19,7 @@ ExtensionManagementUtility::addTcaSelectItem(
     'be_groups',
     'file_permissions',
     [
-        'label' => 'LLL:EXT:admiral_cloud_connector/Resources/Private/Language/locallang_be.xlf:be_groups.file_permissions.folder_add_via_admiral_cloud',
+        'label' => 'admiral_cloud_connector.be:be_groups.file_permissions.folder_add_via_admiral_cloud',
         'value' => 'addFileViaAdmiralCloud',
         'icon' => 'permissions-admiral_cloud-browser',
     ],

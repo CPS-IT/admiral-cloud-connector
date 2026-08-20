@@ -16,8 +16,28 @@
         <target>AdmiralCloud</target>
       </trans-unit>
       <trans-unit id="browser.error-no-storage-access">
-        <source>Please make sure you have access to the AdmiralCloud file mount. This is needed to use the AdmiralCloud file picker</source>
+        <source>Please make sure you have access to the AdmiralCloud file mount. This is needed to use the AdmiralCloud file picker.</source>
         <target>Bitte Zugriff auf AdmiralCloud Filemount prüfen.</target>
+      </trans-unit>
+      <trans-unit id="browser.error-open">
+        <source>It was not possible to open the AdmiralCloud browser.</source>
+        <target>Der AdmiralCloud-Browser konnte nicht geöffnet werden.</target>
+      </trans-unit>
+      <trans-unit id="browser.error-auth">
+        <source>The authentication to AdmiralCloud was not possible.</source>
+        <target>Die Authentifizierung bei AdmiralCloud war nicht möglich.</target>
+      </trans-unit>
+      <trans-unit id="browser.error-auth-failure">
+        <source>The authentication to AdmiralCloud failed.</source>
+        <target>Die Authentifizierung bei AdmiralCloud ist fehlgeschlagen.</target>
+      </trans-unit>
+      <trans-unit id="browser.error-get-public-url">
+        <source>It was not possible to get the file public url.</source>
+        <target>Es war nicht möglich, die öffentliche URL der Datei abzurufen.</target>
+      </trans-unit>
+      <trans-unit id="browser.error-unknown">
+        <source>An unknown error occurred.</source>
+        <target>Es ist ein unbekannter Fehler aufgetreten.</target>
       </trans-unit>
       <trans-unit id="be_groups.file_permissions.folder_add_via_admiral_cloud">
         <source>Files: Add via AdmiralCloud</source>

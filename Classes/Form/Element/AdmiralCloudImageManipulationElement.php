@@ -84,7 +84,7 @@ class AdmiralCloudImageManipulationElement extends AbstractFormElement
         $data = new ViewFactoryData(
             partialRootPaths: ['EXT:admiral_cloud_connector/Resources/Private/Partials/ImageManipulation/'],
             layoutRootPaths: ['EXT:admiral_cloud_connector/Resources/Private/Layouts/ImageManipulation/'],
-            templatePathAndFilename: 'EXT:admiral_cloud_connector/Resources/Private/Templates/ImageManipulation/ImageManipulationElement.html',
+            templatePathAndFilename: 'EXT:admiral_cloud_connector/Resources/Private/Templates/ImageManipulation/ImageManipulationElement.fluid.html',
         );
 
         $this->storageRepository = $storageRepository;

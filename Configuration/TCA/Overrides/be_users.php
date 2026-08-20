@@ -21,7 +21,7 @@ ExtensionManagementUtility::addTcaSelectItem(
     'be_users',
     'file_permissions',
     [
-        'label' => 'LLL:EXT:admiral_cloud_connector/Resources/Private/Language/locallang_be.xlf:be_users.file_permissions.folder_add_via_admiral_cloud',
+        'label' => 'admiral_cloud_connector.be:be_users.file_permissions.folder_add_via_admiral_cloud',
         'value' => 'addFileViaAdmiralCloud',
         'icon' => 'permissions-admiral_cloud-browser',
     ],
@@ -31,7 +31,7 @@ ExtensionManagementUtility::addTcaSelectItem(
 
 ExtensionManagementUtility::addTCAcolumns('be_users', [
     'first_name' => [
-        'label' => 'LLL:EXT:admiral_cloud_connector/Resources/Private/Language/locallang_be.xlf:be_users.first_name',
+        'label' => 'admiral_cloud_connector.be:be_users.first_name',
         'config' => [
             'type' => 'input',
             'size' => 15,
@@ -39,7 +39,7 @@ ExtensionManagementUtility::addTCAcolumns('be_users', [
         ],
     ],
     'last_name' => [
-        'label' => 'LLL:EXT:admiral_cloud_connector/Resources/Private/Language/locallang_be.xlf:be_users.last_name',
+        'label' => 'admiral_cloud_connector.be:be_users.last_name',
         'config' => [
             'type' => 'input',
             'size' => 15,
@@ -47,7 +47,7 @@ ExtensionManagementUtility::addTCAcolumns('be_users', [
         ],
     ],
     'security_group' => [
-        'label' => 'LLL:EXT:admiral_cloud_connector/Resources/Private/Language/locallang_be.xlf:be_users.security_group',
+        'label' => 'admiral_cloud_connector.be:be_users.security_group',
         'config' => [
             'type' => 'input',
             'size' => 15,
@@ -61,4 +61,29 @@ ExtensionManagementUtility::addToAllTCAtypes(
     'first_name,last_name,security_group',
     '',
     'after:realName',
+);
+
+// User settings
+$GLOBALS['TCA']['be_users']['columns']['user_settings']['showitem'] .= ', --div--;admiral_cloud_connector.be:admiral_cloud_connector_title';
+
+ExtensionManagementUtility::addUserSetting(
+    'first_name',
+    [
+        'inheritFromParent' => true,
+    ],
+    'after:--div--;admiral_cloud_connector.be:admiral_cloud_connector_title',
+);
+ExtensionManagementUtility::addUserSetting(
+    'last_name',
+    [
+        'inheritFromParent' => true,
+    ],
+    'after:first_name',
+);
+ExtensionManagementUtility::addUserSetting(
+    'security_group',
+    [
+        'inheritFromParent' => true,
+    ],
+    'after:last_name',
 );
