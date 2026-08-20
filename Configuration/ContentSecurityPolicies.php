@@ -19,6 +19,7 @@ use TYPO3\CMS\Core\Security\ContentSecurityPolicy\Directive;
 use TYPO3\CMS\Core\Security\ContentSecurityPolicy\Mutation;
 use TYPO3\CMS\Core\Security\ContentSecurityPolicy\MutationCollection;
 use TYPO3\CMS\Core\Security\ContentSecurityPolicy\MutationMode;
+use TYPO3\CMS\Core\Security\ContentSecurityPolicy\RawValue;
 use TYPO3\CMS\Core\Security\ContentSecurityPolicy\Scope;
 use TYPO3\CMS\Core\Security\ContentSecurityPolicy\SourceKeyword;
 use TYPO3\CMS\Core\Security\ContentSecurityPolicy\UriValue;
@@ -31,6 +32,7 @@ return Map::fromEntries([
             MutationMode::Extend,
             Directive::FrameSrc,
             new UriValue('https://*.admiralcloud.com'),
+            new RawValue('data:'),
         ),
         new Mutation(
             MutationMode::Extend,

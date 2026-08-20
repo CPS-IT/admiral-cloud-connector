@@ -15,19 +15,21 @@ declare(strict_types=1);
  * The TYPO3 project - inspiring people to share!
  */
 
-namespace CPSIT\AdmiralCloudConnector\Resource\Index;
+namespace CPSIT\AdmiralCloudConnector\Command;
 
-use Psr\EventDispatcher\EventDispatcherInterface;
-
-class FileIndexRepository extends \TYPO3\CMS\Core\Resource\Index\FileIndexRepository
+enum UpdateActionType: string
 {
-    protected array $extendedFields = [
-        'tx_admiralcloudconnector_linkhash',
-    ];
+    case All = 'all';
+    case LastChanged = 'lastChanged';
 
-    public function __construct(EventDispatcherInterface $eventDispatcher)
+    /**
+     * @return list<non-empty-string>
+     */
+    public static function values(): array
     {
-        parent::__construct($eventDispatcher);
-        $this->fields = array_merge($this->fields, $this->extendedFields);
+        return array_map(
+            static fn(self $case): string => $case->value,
+            self::cases(),
+        );
     }
 }

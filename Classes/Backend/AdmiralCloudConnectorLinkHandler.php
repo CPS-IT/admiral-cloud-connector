@@ -78,8 +78,6 @@ class AdmiralCloudConnectorLinkHandler implements LinkHandlerInterface, LinkHand
 
     public function render(ServerRequestInterface $request): string
     {
-        $this->pageRenderer->loadJavaScriptModule('@cpsit/admiral-cloud-connector/Browser.js');
-
         return $this->view->render('LinkBrowser/AdmiralCloud');
     }
 
@@ -88,7 +86,7 @@ class AdmiralCloudConnectorLinkHandler implements LinkHandlerInterface, LinkHand
     */
     public function getBodyTagAttributes(): array
     {
-        if (count($this->linkParts) === 0 || empty($this->linkParts['url']['pageuid'])) {
+        if (count($this->linkParts) === 0 || empty($this->linkParts['url']['file'])) {
             return [];
         }
 
@@ -120,7 +118,10 @@ class AdmiralCloudConnectorLinkHandler implements LinkHandlerInterface, LinkHand
 
     public function createView(BackendViewFactory $backendViewFactory, ServerRequestInterface $request): ViewInterface
     {
-        return $backendViewFactory->create($request, ['cpsit/admiral-cloud-connector']);
+        $view = $backendViewFactory->create($request, ['cpsit/admiral-cloud-connector']);
+        $view->assign('currentFile', $this->linkParts['url']['file'] ?? null);
+
+        return $view;
     }
 
     public function setView(ViewInterface $view): self

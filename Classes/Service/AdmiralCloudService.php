@@ -23,7 +23,6 @@ use CPSIT\AdmiralCloudConnector\Api\Oauth\Credentials;
 use CPSIT\AdmiralCloudConnector\Exception\InvalidArgumentException;
 use CPSIT\AdmiralCloudConnector\Exception\InvalidFileConfigurationException;
 use CPSIT\AdmiralCloudConnector\Resource\File;
-use CPSIT\AdmiralCloudConnector\Resource\Index\FileIndexRepository;
 use CPSIT\AdmiralCloudConnector\Traits\AdmiralCloudStorage;
 use CPSIT\AdmiralCloudConnector\Utility\ConfigurationUtility;
 use CPSIT\AdmiralCloudConnector\Utility\ImageUtility;
@@ -33,34 +32,11 @@ use TYPO3\CMS\Core\Resource\AbstractFile;
 use TYPO3\CMS\Core\Resource\FileInterface;
 use TYPO3\CMS\Core\Resource\FileReference;
 use TYPO3\CMS\Core\Resource\FileType;
+use TYPO3\CMS\Core\Resource\Index\FileIndexRepository;
 use TYPO3\CMS\Core\Resource\ResourceStorage;
 use TYPO3\CMS\Core\Resource\StorageRepository;
 use TYPO3\CMS\Core\SingletonInterface;
 
-/***************************************************************
- *
- *  Copyright notice
- *
- *  (c) 2020
- *
- *  All rights reserved
- *
- *  This script is part of the TYPO3 project. The TYPO3 project is
- *  free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  The GNU General Public License can be found at
- *  http://www.gnu.org/copyleft/gpl.html.
- *
- *  This script is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  This copyright notice MUST APPEAR in all copies of the script!
- ***************************************************************/
 class AdmiralCloudService implements SingletonInterface
 {
     use AdmiralCloudStorage;
@@ -217,7 +193,7 @@ class AdmiralCloudService implements SingletonInterface
                 'atime' => (new \DateTime($file->updatedAt))->getTimestamp(),
                 'mtime' => (new \DateTime($file->updatedAt))->getTimestamp(),
                 'ctime' => (new \DateTime($file->createdAt))->getTimestamp(),
-                'identifier' => $file->mediaContainerId,
+                'identifier' => (string)$file->mediaContainerId,
                 'identifier_hash' => sha1((string)$file->mediaContainerId),
                 'folder_hash' => sha1('AdmiralCloud' . $admiralCloudStorageUid),
                 'alternative' => $fileMetaData[$file->mediaContainerId]['meta_altTag'] ?? '',

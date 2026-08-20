@@ -20,12 +20,6 @@ namespace CPSIT\AdmiralCloudConnector\Api\Signature;
 use CPSIT\AdmiralCloudConnector\Api\Oauth\Credentials;
 use CPSIT\AdmiralCloudConnector\Exception\CannotCreateSignature;
 
-/**
- * AdmiralCloudSignature
- *
- * @author Elias Häußler <e.haeussler@familie-redlich.de>
- * @license GPL-2.0-or-later
- */
 final readonly class AdmiralCloudSignature
 {
     /**

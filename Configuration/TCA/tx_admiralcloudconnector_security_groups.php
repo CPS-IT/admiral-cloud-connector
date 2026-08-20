@@ -33,7 +33,6 @@ return [
             'starttime' => 'starttime',
             'endtime' => 'endtime',
         ],
-        'searchFields' => 'uid, ac_security_group_id',
         'iconfile' => 'EXT:admiral_cloud_connector/Resources/Public/Icons/ac.svg',
     ],
     'types' => [

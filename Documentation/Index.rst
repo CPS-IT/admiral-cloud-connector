@@ -40,3 +40,4 @@ Contents
 
     Introduction/Index
     Installation/Index
+    Migration/Index

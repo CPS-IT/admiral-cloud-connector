@@ -17,12 +17,6 @@ declare(strict_types=1);
 
 namespace CPSIT\AdmiralCloudConnector\Event;
 
-/**
- * ToolbarLinkEvent
- *
- * @author Elias Häußler <e.haeussler@familie-redlich.de>
- * @license GPL-2.0-or-later
- */
 final class ToolbarLinkEvent
 {
     public function __construct(
