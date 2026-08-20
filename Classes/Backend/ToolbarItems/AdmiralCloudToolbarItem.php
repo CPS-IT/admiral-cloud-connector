@@ -42,7 +42,7 @@ readonly class AdmiralCloudToolbarItem implements ToolbarItemInterface
     public function getItem(): string
     {
         $data = new ViewFactoryData(
-            templatePathAndFilename: 'EXT:admiral_cloud_connector/Resources/Private/Templates/ToolbarMenu/MenuItem.html',
+            templatePathAndFilename: 'EXT:admiral_cloud_connector/Resources/Private/Templates/ToolbarMenu/MenuItem.fluid.html',
         );
 
         return $this->viewFactory->create($data)->render();
@@ -56,7 +56,7 @@ readonly class AdmiralCloudToolbarItem implements ToolbarItemInterface
     public function getDropDown(): string
     {
         $data = new ViewFactoryData(
-            templatePathAndFilename: 'EXT:admiral_cloud_connector/Resources/Private/Templates/ToolbarMenu/DropDown.html',
+            templatePathAndFilename: 'EXT:admiral_cloud_connector/Resources/Private/Templates/ToolbarMenu/DropDown.fluid.html',
         );
 
         $view = $this->viewFactory->create($data);

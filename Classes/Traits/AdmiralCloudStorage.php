@@ -19,7 +19,7 @@ namespace CPSIT\AdmiralCloudConnector\Traits;
 
 use CPSIT\AdmiralCloudConnector\Exception\InvalidArgumentException;
 use CPSIT\AdmiralCloudConnector\Resource\AdmiralCloudDriver;
-use CPSIT\AdmiralCloudConnector\Resource\Index\FileIndexRepository;
+use TYPO3\CMS\Core\Resource\Index\FileIndexRepository;
 use TYPO3\CMS\Core\Resource\Index\Indexer;
 use TYPO3\CMS\Core\Resource\ResourceStorage;
 use TYPO3\CMS\Core\Resource\StorageRepository;
