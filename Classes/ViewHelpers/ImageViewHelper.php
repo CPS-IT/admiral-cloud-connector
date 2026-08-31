@@ -66,9 +66,7 @@ final class ImageViewHelper extends AbstractTagBasedViewHelper
         // Prepare arguments from delegate only once, because final argument definitions are cached anyways
         if (!self::$delegateArgumentsProcessed) {
             foreach ($this->delegate->prepareArguments() as $name => $argumentDefinition) {
-                if (!isset($this->argumentDefinitions[$name])) {
-                    $this->argumentDefinitions[$name] = $argumentDefinition;
-                }
+                $this->argumentDefinitions[$name] ??= $argumentDefinition;
             }
 
             self::$delegateArgumentsProcessed = true;
