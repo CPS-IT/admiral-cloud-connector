@@ -63,6 +63,10 @@ final class ImageViewHelper extends AbstractViewHelper
 
     public function render(): string
     {
+        if ($this->renderingContext === null) {
+            throw new Exception('ViewHelper must only be called from within a Fluid template.', 1787212371);
+        }
+
         $src = (string)$this->arguments['src'];
         $imageArgument = $this->arguments['image'];
         $treatIdAsReference = (bool)$this->arguments['treatIdAsReference'];

@@ -1,8 +1,8 @@
 TCEMAIN.linkHandler.admiralCloud {
     handler = CPSIT\AdmiralCloudConnector\Backend\AdmiralCloudConnectorLinkHandler
-    label = LLL:EXT:admiral_cloud_connector/Resources/Private/Language/locallang_be.xlf:linkHandler.label
+    label = admiral_cloud_connector.be:linkHandler.label
     displayAfter = page
-    scanAfter = page
+    scanBefore = file
     configuration {
         customConfig = passed to the handler
     }
