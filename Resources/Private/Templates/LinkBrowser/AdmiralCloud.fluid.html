@@ -1,0 +1,25 @@
+<html xmlns:f="http://typo3.org/ns/TYPO3/CMS/Fluid/ViewHelpers"
+      xmlns:core="http://typo3.org/ns/TYPO3/CMS/Core/ViewHelpers"
+      xmlns:ac="http://typo3.org/ns/CPSIT/AdmiralCloudConnector/ViewHelpers"
+      data-namespace-typo3-fluid="true">
+
+<f:layout name="LinkBrowser" />
+
+<f:section name="Content">
+    <a href="#"
+       class="btn btn-default t3js-admiral_cloud-browser-btn rte-link"
+       data-admiral_cloud-browser-url="{f:be.uri(route: 'admiral_cloud_browser_rte_link')}"
+       data-title="{f:translate(domain: 'admiral_cloud_connector.be', key: 'browser.header')}"
+    >
+        <core:icon identifier="actions-admiral_cloud-browser" />
+        <f:translate domain="admiral_cloud_connector.be" key="browser.button" />
+    </a>
+
+    <f:if condition="{currentFile}">
+        <div class="admiral-cloud-link-browser-preview">
+            <ac:image image="{currentFile}" maxWidth="600" />
+        </div>
+    </f:if>
+</f:section>
+
+</html>

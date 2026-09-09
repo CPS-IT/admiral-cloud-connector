@@ -1,8 +1,10 @@
 'use strict';
 
 import AjaxRequest from '@typo3/core/ajax/ajax-request.js';
+import Browser from '@cpsit/admiral-cloud-connector/browser.js';
 import Notification from '@typo3/backend/notification.js';
 import Viewport from '@typo3/backend/viewport.js';
+import labels from '~labels/admiral_cloud_connector.be';
 
 class Dropdown {
   constructor() {
@@ -14,20 +16,16 @@ class Dropdown {
     document.querySelector('#js-admiral-cloud-toolbar-dropdown-close-connection').onclick = Dropdown.closeAdmiralCloudConnection;
   }
 
-  static closeAdmiralCloudConnection() {
-    const modalParent = top.document.getElementById('acModalParent');
+  static async closeAdmiralCloudConnection() {
+    Browser.resetConnection();
 
-    if (modalParent) {
-      modalParent.remove();
-    }
-
-    Notification.success('', TYPO3.lang.acSuccessMessage, 5);
+    Notification.success('', labels.get('toolbarItem.closeConnection.success'), 5);
 
     return false;
   }
 
   static async updateChangedMetadata() {
-    Notification.info('', TYPO3.lang.acUpdateChangedMetadataInfoMessage, 5);
+    Notification.info('', labels.get('toolbarItem.updateChangedMetadata.info'), 5);
 
     const url = TYPO3.settings.ajaxUrls['admiral_cloud_toolbar_update_changed_metadata'];
 
@@ -41,10 +39,10 @@ class Dropdown {
         async function (response) {
           await response.resolve();
 
-          Notification.success('', TYPO3.lang.acUpdateChangedMetadataSuccessMessage, 5);
+          Notification.success('', labels.get('toolbarItem.updateChangedMetadata.success'), 5);
         },
         function () {
-          Notification.error('', TYPO3.lang.acUpdateChangedMetadataErrorMessage, 5);
+          Notification.error('', labels.get('toolbarItem.updateChangedMetadata.error'), 5);
         },
       )
     ;

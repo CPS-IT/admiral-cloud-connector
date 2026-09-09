@@ -72,7 +72,7 @@ class AdmiralCloudDriver implements DriverInterface
         return true;
     }
 
-    public function sanitizeFileName(string $fileName, string $charset = ''): string
+    public function sanitizeFileName(string $fileName): string
     {
         // Admiral cloud allows all
         return $fileName;

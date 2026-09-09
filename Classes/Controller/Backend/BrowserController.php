@@ -19,7 +19,6 @@ namespace CPSIT\AdmiralCloudConnector\Controller\Backend;
 
 use CPSIT\AdmiralCloudConnector\Api\Oauth\Credentials;
 use CPSIT\AdmiralCloudConnector\Resource\File;
-use CPSIT\AdmiralCloudConnector\Resource\Index\FileIndexRepository;
 use CPSIT\AdmiralCloudConnector\Service\AdmiralCloudService;
 use CPSIT\AdmiralCloudConnector\Service\MetadataService;
 use CPSIT\AdmiralCloudConnector\Traits\AdmiralCloudStorage;
@@ -30,13 +29,13 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 use TYPO3\CMS\Backend\Attribute\AsController;
 use TYPO3\CMS\Backend\Routing\UriBuilder;
-use TYPO3\CMS\Backend\Template\ModuleTemplate;
-use TYPO3\CMS\Backend\Template\ModuleTemplateFactory;
 use TYPO3\CMS\Core\Authentication\BackendUserAuthentication;
 use TYPO3\CMS\Core\Http\JsonResponse;
 use TYPO3\CMS\Core\Http\NormalizedParams;
+use TYPO3\CMS\Core\Http\Uri;
 use TYPO3\CMS\Core\Resource\AbstractFile;
 use TYPO3\CMS\Core\Resource\FileInterface;
+use TYPO3\CMS\Core\Resource\Index\FileIndexRepository;
 use TYPO3\CMS\Core\Resource\StorageRepository;
 
 /**
@@ -55,34 +54,12 @@ class BrowserController
 {
     use AdmiralCloudStorage;
 
-    /**
-     * TemplateRootPath
-     *
-     * @var string[]
-     */
-    protected array $templateRootPaths = ['EXT:admiral_cloud_connector/Resources/Private/Templates/Browser'];
-
-    /**
-     * PartialRootPath
-     *
-     * @var string[]
-     */
-    protected array $partialRootPaths = ['EXT:admiral_cloud_connector/Resources/Private/Partials/Browser'];
-
-    /**
-     * LayoutRootPath
-     *
-     * @var string[]
-     */
-    protected array $layoutRootPaths = ['EXT:admiral_cloud_connector/Resources/Private/Layouts/Browser'];
-
     public function __construct(
         FileIndexRepository $fileIndexRepository,
         StorageRepository $storageRepository,
         protected readonly AdmiralCloudService $admiralCloudService,
         protected readonly LoggerInterface $logger,
         protected readonly MetadataService $metadataService,
-        protected readonly ModuleTemplateFactory $moduleTemplateFactory,
         protected readonly UriBuilder $backendUriBuilder,
     ) {
         $this->fileIndexRepository = $fileIndexRepository;
@@ -91,73 +68,75 @@ class BrowserController
 
     public function showAction(ServerRequestInterface $request): ResponseInterface
     {
-        $credentials = new Credentials();
-        $iframeUrl = ConfigurationUtility::getIframeUrl() . 'overview?clientId=' . $credentials->getClientId() . '&cmsOrigin=';
-
-        return $this->prepareIframe($request, $iframeUrl);
+        return $this->prepareIframe($request, '/overview');
     }
 
     public function uploadAction(ServerRequestInterface $request): ResponseInterface
     {
-        $credentials = new Credentials();
-        $iframeUrl = ConfigurationUtility::getIframeUrl() . 'upload/files?clientId=' . $credentials->getClientId() . '&cmsOrigin=';
+        $callback = $this->getBackendUser()->getTSConfig()['admiralcloud.']['overrideUploadIframeUrl'] ?? null;
 
-        if (PermissionUtility::userHasPermissionForAdmiralCloud()
-            && isset($this->getBackendUser()->getTSConfig()['admiralcloud.']['overrideUploadIframeUrl'])
-        ) {
-            $iframeUrl = $this->getBackendUser()->getTSConfig()['admiralcloud.']['overrideUploadIframeUrl'];
+        if ($callback === null || !PermissionUtility::userHasPermissionForAdmiralCloud()) {
+            $callback = '/upload/files';
         }
 
-        return $this->prepareIframe($request, $iframeUrl);
+        return $this->prepareIframe($request, $callback);
     }
 
     public function cropAction(ServerRequestInterface $request): ResponseInterface
     {
-        $moduleTemplate = $this->moduleTemplateFactory->create($request);
-        $moduleTemplate->assignMultiple([
-            'mediaContainerId' => $request->getQueryParams()['mediaContainerId'],
-            'embedLink' => $request->getQueryParams()['embedLink'],
-            'modus' => 'crop',
-        ]);
-
-        $credentials = new Credentials();
-        $iframeUrl = ConfigurationUtility::getIframeUrl() . 'overview?clientId=' . $credentials->getClientId() . '&cmsOrigin=';
-
-        return $this->prepareIframe($request, $iframeUrl, $moduleTemplate);
+        return $this->prepareIframe(
+            $request,
+            '/overview',
+            [
+                'mediaContainerId' => $request->getQueryParams()['mediaContainerId'],
+                'embedLink' => $request->getQueryParams()['embedLink'],
+                'modus' => 'crop',
+            ],
+        );
     }
 
     public function rteLinkAction(ServerRequestInterface $request): ResponseInterface
     {
-        $moduleTemplate = $this->moduleTemplateFactory->create($request);
-        $moduleTemplate->assign('modus', 'rte-link');
-
-        $credentials = new Credentials();
-        $iframeUrl = ConfigurationUtility::getIframeUrl() . 'overview?clientId=' . $credentials->getClientId() . '&cmsOrigin=';
-
-        return $this->prepareIframe($request, $iframeUrl, $moduleTemplate);
+        return $this->prepareIframe($request, '/overview', ['modus' => 'rte-link']);
     }
 
+    /**
+     * Build the JSON payload the merged AdmiralCloud browser JavaScript module needs to
+     * (re)initialize the persistent AdmiralCloud iframe for a given action.
+     */
     protected function prepareIframe(
         ServerRequestInterface $request,
-        string $callbackUrl,
-        ?ModuleTemplate $moduleTemplate = null,
+        string $callback,
+        array $extra = [],
     ): ResponseInterface {
         $parameters = $request->getQueryParams();
-        $moduleTemplate ??= $this->moduleTemplateFactory->create($request);
+
+        return $this->createJsonResponse(
+            [
+                'ajaxUrl' => (string)$this->backendUriBuilder->buildUriFromRoute('ajax_admiral_cloud_browser_auth'),
+                'iframeUrl' => $this->buildCallbackUrl($callback, $request),
+                'irreObject' => $parameters['irreObject'] ?? null,
+                ...$extra,
+            ],
+        );
+    }
+
+    protected function buildCallbackUrl(string $route, ServerRequestInterface $request): string
+    {
         /** @var NormalizedParams $normalizedParams */
         $normalizedParams = $request->getAttribute('normalizedParams');
 
-        $moduleTemplate->assignMultiple([
-            'iframeHost' => rtrim(ConfigurationUtility::getIframeUrl(), '/'),
-            'ajaxUrl' => (string)$this->backendUriBuilder->buildUriFromRoute('ajax_admiral_cloud_browser_auth'),
-            'iframeUrl' => $callbackUrl . base64_encode($normalizedParams->getRequestHost()),
-            'parameters' => [
-                'element' => $parameters['element'] ?? null,
-                'irreObject' => $parameters['irreObject'] ?? null,
-            ],
-        ]);
+        if (str_contains($route, '://')) {
+            $iframeUrl = new Uri($route);
+            parse_str($iframeUrl->getQuery(), $queryParams);
+        } else {
+            $iframeUrl = (new Uri(ConfigurationUtility::getIframeUrl()))->withPath($route);
+            $queryParams['clientId'] = (new Credentials())->getClientId();
+        }
 
-        return $moduleTemplate->renderResponse('Backend/Browser/Show');
+        $queryParams['cmsOrigin'] = base64_encode($normalizedParams->getRequestHost());
+
+        return (string)$iframeUrl->withQuery(http_build_query($queryParams));
     }
 
     /**
@@ -178,7 +157,6 @@ class BrowserController
                 [
                     'code' => $admiralCloudAuthCode,
                 ],
-                200,
             );
         } catch (\Throwable $exception) {
             $this->logger->error('The authentication to AdmiralCloud was not possible.', ['exception' => $exception]);
@@ -283,14 +261,12 @@ class BrowserController
             );
 
             $this->admiralCloudService->addMediaByIdHashAndType($mediaContainer['id'], $linkHash, $mediaContainer['type']);
-            /** @var AbstractFile $file */
             $file = $this->getAdmiralCloudStorage()->getFile($mediaContainer['id']);
 
             return $this->createJsonResponse(
                 [
-                    'publicUrl' => 't3://file?uid=' . $file->getUid(),
+                    'publicUrl' => 't3://file?uid=' . $file?->getUid(),
                 ],
-                200,
             );
         } catch (\Exception $e) {
             $this->logger->error('Error adding file from AdmiralCloud.', ['exception' => $e]);
@@ -358,7 +334,7 @@ class BrowserController
      */
     protected function storeInSessionCropInformation(FileInterface $file, array $media): void
     {
-        if (!empty($media['cropperData']) && $file instanceof AbstractFile) {
+        if (is_array($media['cropperData']) && $media['cropperData'] !== [] && $file instanceof AbstractFile) {
             $cropperData = $media['cropperData'];
             unset($cropperData['smartCropperUrl'], $cropperData['smartCropperUrlAOI']);
 
@@ -369,7 +345,7 @@ class BrowserController
         }
     }
 
-    protected function createJsonResponse(array $data, int $statusCode): ResponseInterface
+    protected function createJsonResponse(array $data, int $statusCode = 200): ResponseInterface
     {
         return new JsonResponse(
             $data,
