@@ -17,6 +17,12 @@ It is important to select "AdmiralCloud" as driver.
 
 If the Filestorage is setup properly you can use, you can create a Filemount.
 
+..  important::
+
+    It is essential to define a processing folder, e.g. *1:/_processed_/*. This folder
+    **must** point to another file storage, e.g. *fileadmin*, since the AdmiralCloud
+    storage itself cannot be used for processed files.
+
 ..  image:: ../Images/filestorage.png
 
 When Filemount is setup properly, you have to assign the Filemount in the "Mounts & Workspaces" tab in the Usergroup or User properties:
