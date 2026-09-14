@@ -15,6 +15,7 @@ declare(strict_types=1);
  * The TYPO3 project - inspiring people to share!
  */
 
+use CPSIT\AdmiralCloudConnector\Utility\ConfigurationUtility;
 use TYPO3\CMS\Core\Security\ContentSecurityPolicy\Directive;
 use TYPO3\CMS\Core\Security\ContentSecurityPolicy\Mutation;
 use TYPO3\CMS\Core\Security\ContentSecurityPolicy\MutationCollection;
@@ -25,20 +26,34 @@ use TYPO3\CMS\Core\Security\ContentSecurityPolicy\SourceKeyword;
 use TYPO3\CMS\Core\Security\ContentSecurityPolicy\UriValue;
 use TYPO3\CMS\Core\Type\Map;
 
-return Map::fromEntries([
-    Scope::backend(),
-    new MutationCollection(
-        new Mutation(
-            MutationMode::Extend,
-            Directive::FrameSrc,
-            new UriValue('https://*.admiralcloud.com'),
-            new RawValue('data:'),
+$smartcropUrl = ConfigurationUtility::getSmartcropUrl();
+
+return Map::fromEntries(
+    [
+        Scope::backend(),
+        new MutationCollection(
+            new Mutation(
+                MutationMode::Extend,
+                Directive::FrameSrc,
+                new UriValue('https://*.admiralcloud.com'),
+                new RawValue('data:'),
+            ),
+            new Mutation(
+                MutationMode::Extend,
+                Directive::ImgSrc,
+                SourceKeyword::self,
+                new UriValue($smartcropUrl),
+            ),
         ),
-        new Mutation(
-            MutationMode::Extend,
-            Directive::ImgSrc,
-            SourceKeyword::self,
-            new UriValue('https://images.admiralcloud.com'),
+    ],
+    [
+        Scope::frontend(),
+        new MutationCollection(
+            new Mutation(
+                MutationMode::Extend,
+                Directive::ImgSrc,
+                new UriValue($smartcropUrl),
+            ),
         ),
-    ),
-]);
+    ],
+);
