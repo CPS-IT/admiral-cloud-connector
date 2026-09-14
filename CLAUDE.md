@@ -66,6 +66,9 @@ height/width for images/documents) from the `Asset` into `sys_file_metadata` dur
 ### API / auth layer
 
 `Api/AdmiralCloudApi.php` + `Api/AdmiralCloudApiFactory.php` talk to the AdmiralCloud REST API over Guzzle.
+Guzzle v8 validates `RequestOptions::HEADERS` strictly: each header value must be a `string` (or array of
+`string`s), not an `int`/`bool`/etc. — cast non-string values (e.g. signature timestamps, version numbers,
+booleans as `'1'`/`'0'`) before passing them as headers.
 `Api/Oauth/Credentials.php` and `Api/Signature/AdmiralCloudSignature.php` handle request signing. Credentials
 and per-environment config (API/auth/image/CDN URLs, per-asset-type player "config IDs", metadata field
 overrides, production vs. dev endpoints) all come from environment variables (`ADMIRALCLOUD_*`), centralized in
