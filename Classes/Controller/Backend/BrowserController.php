@@ -199,14 +199,21 @@ class BrowserController
             $file = $storage->getFile((string)$mediaContainer['id']);
 
             if ($file instanceof File) {
+                $mimeType = $mediaContainer['type'] . '/' . ($mediaContainer['fileExtension'] ?? '');
+
                 $file->setTxAdmiralCloudConnectorLinkhash($linkHash);
-                $file->setTypeFromMimeType($mediaContainer['type'] . '/' . $mediaContainer['fileExtension']);
+                $file->setTypeFromMimeType($mimeType);
 
                 if (!$file->getProperty('extension')) {
-                    $file->updateProperties([
-                        'mime_type' => 'admiralCloud' . '/' . $mediaContainer['type'] . '/' . $mediaContainer['fileExtension'],
-                        'extension' => $mediaContainer['fileExtension'],
-                    ]);
+                    $propertiesToUpdate = [
+                        'mime_type' => 'admiralCloud' . '/' . $mimeType,
+                    ];
+
+                    if (is_string($mediaContainer['fileExtension'] ?? null)) {
+                        $propertiesToUpdate['extension'] = $mediaContainer['fileExtension'];
+                    }
+
+                    $file->updateProperties($propertiesToUpdate);
                 }
 
                 $this->getFileIndexRepository()->add($file);
