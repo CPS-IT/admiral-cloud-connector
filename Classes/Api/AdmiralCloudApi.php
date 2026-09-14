@@ -83,8 +83,8 @@ class AdmiralCloudApi
             RequestOptions::HEADERS => [
                 'Content-Type' => 'application/json',
                 'X-Admiralcloud-Accesskey' => $credentials->getAccessKey(),
-                'X-Admiralcloud-Version' => $signature->version,
-                'X-Admiralcloud-Rts' => $signature->timestamp,
+                'X-Admiralcloud-Version' => (string)$signature->version,
+                'X-Admiralcloud-Rts' => (string)$signature->timestamp,
                 'X-Admiralcloud-Hash' => $signature->hash,
             ],
         ];
@@ -167,11 +167,11 @@ class AdmiralCloudApi
             $response = $requestFactory->request((string)$loginUrl, 'POST', [
                 RequestOptions::HEADERS => [
                     'X-Admiralcloud-Accesskey' => $credentials->getAccessKey(),
-                    'X-Admiralcloud-Debugsignature' => true,
+                    'X-Admiralcloud-Debugsignature' => '1',
                     'X-Admiralcloud-Clientid' => $credentials->getClientId(),
                     'X-Admiralcloud-Device' => $device,
-                    'X-Admiralcloud-Version' => $signature->version,
-                    'X-Admiralcloud-Rts' => $signature->timestamp,
+                    'X-Admiralcloud-Version' => (string)$signature->version,
+                    'X-Admiralcloud-Rts' => (string)$signature->timestamp,
                     'X-Admiralcloud-Hash' => $signature->hash,
                 ],
                 RequestOptions::JSON => $signature->payload,
