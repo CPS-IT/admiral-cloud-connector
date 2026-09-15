@@ -55,7 +55,7 @@ class Asset
         protected string $identifier,
         protected ?array $information = null,
     ) {
-        if (!static::validateIdentifier($this->identifier)) {
+        if (!static::isValidIdentifier($this->identifier)) {
             throw new InvalidAssetException(
                 'Invalid identifier given: ' . $this->identifier,
                 1558014684521,
@@ -66,7 +66,7 @@ class Asset
     /**
      * Identifier pattern should be a numeric string greater than 0
      */
-    protected static function validateIdentifier(string $identifier): bool
+    public static function isValidIdentifier(string $identifier): bool
     {
         if (!is_numeric($identifier)) {
             return false;
@@ -141,6 +141,7 @@ class Asset
     }
 
     /**
+     * @return non-empty-string|null
      * @throws NotImplementedException
      */
     public function getPublicUrl(int $storageUid = 0): ?string

@@ -104,7 +104,10 @@ class AdmiralCloudDriver implements DriverInterface
 
     public function getPublicUrl(string $identifier): ?string
     {
-        /* @phpstan-ignore return.type */
+        if (!Asset::isValidIdentifier($identifier)) {
+            return null;
+        }
+
         return $this->getAsset($identifier)->getPublicUrl($this->storageUid);
     }
 
