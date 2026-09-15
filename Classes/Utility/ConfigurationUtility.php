@@ -35,6 +35,9 @@ final readonly class ConfigurationUtility
         return false;
     }
 
+    /**
+     * @return non-empty-string
+     */
     public static function getApiUrl(): string
     {
         $add = '';
@@ -46,6 +49,9 @@ final readonly class ConfigurationUtility
         return 'https://api' . $add . '.admiralcloud.com/';
     }
 
+    /**
+     * @return non-empty-string
+     */
     public static function getAuthUrl(): string
     {
         $add = '';
@@ -57,6 +63,9 @@ final readonly class ConfigurationUtility
         return 'https://auth' . $add . '.admiralcloud.com/';
     }
 
+    /**
+     * @return non-empty-string
+     */
     public static function getSmartcropUrl(): string
     {
         if (!self::isProduction()) {
@@ -66,6 +75,9 @@ final readonly class ConfigurationUtility
         return 'https://images.admiralcloud.com/';
     }
 
+    /**
+     * @return non-empty-string
+     */
     public static function getImageUrl(): string
     {
         $add = '';
@@ -77,6 +89,9 @@ final readonly class ConfigurationUtility
         return 'https://images' . $add . '.admiralcloud.com/';
     }
 
+    /**
+     * @return non-empty-string
+     */
     public static function getThumbnailUrl(): string
     {
         $add = '';
@@ -88,6 +103,9 @@ final readonly class ConfigurationUtility
         return 'https://images' . $add . '.admiralcloud.com/';
     }
 
+    /**
+     * @return non-empty-string
+     */
     public static function getIframeUrl(): string
     {
         if (!self::isProduction()) {
@@ -97,6 +115,9 @@ final readonly class ConfigurationUtility
         return getenv('ADMIRALCLOUD_IFRAMEURL') ?: 'https://t3prod.admiralcloud.com/';
     }
 
+    /**
+     * @return non-empty-string
+     */
     public static function getDirectFileUrl(): string
     {
         $add = '';
@@ -108,6 +129,9 @@ final readonly class ConfigurationUtility
         return 'https://filehub' . $add . '.admiralcloud.com/v5/deliverFile/';
     }
 
+    /**
+     * @return non-empty-string
+     */
     public static function getPlayerFileUrl(): string
     {
         $add = '';

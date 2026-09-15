@@ -338,7 +338,7 @@ class AdmiralCloudService implements SingletonInterface
     }
 
     /**
-     * Get public url for AdmiralCloud video
+     * @return non-empty-string
      */
     public function getVideoPublicUrl(File $file): string
     {
@@ -346,7 +346,7 @@ class AdmiralCloudService implements SingletonInterface
     }
 
     /**
-     * Get public url for AdmiralCloud audio
+     * @return non-empty-string
      */
     public function getAudioPublicUrl(File $file): string
     {
@@ -354,7 +354,7 @@ class AdmiralCloudService implements SingletonInterface
     }
 
     /**
-     * Get public url for AdmiralCloud document
+     * @return non-empty-string
      */
     public function getDocumentPublicUrl(File $file): string
     {
@@ -370,8 +370,6 @@ class AdmiralCloudService implements SingletonInterface
     }
 
     /**
-     * Get public url for admiral cloud image
-     *
      * @return non-empty-string
      */
     public function getImagePublicUrl(
@@ -586,7 +584,7 @@ class AdmiralCloudService implements SingletonInterface
     }
 
     /**
-     * Get direct public url for given file
+     * @return non-empty-string
      */
     public function getDirectPublicUrlForFile(File $file): string
     {
@@ -622,6 +620,8 @@ class AdmiralCloudService implements SingletonInterface
 
     /**
      * Get direct public url for given media file
+     *
+     * @return non-empty-string
      */
     protected function getDirectPublicUrlForMedia(File $file, bool $download = false): string
     {
